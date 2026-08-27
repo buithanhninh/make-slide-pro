@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/quality-assessment.schema.json",
+  "title": "Make Slide Pro Quality Assessment",
+  "type": "object",
+  "required": ["schema_version", "assessment_id", "deck_path", "deck_sha256", "reviewer_context_id", "author_context_id", "independent", "domains", "overall_score", "findings", "generated_at"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "assessment_id": { "type": "string", "minLength": 1 },
+    "deck_path": { "type": "string", "minLength": 1 },
+    "deck_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "reviewer_context_id": { "type": "string", "minLength": 1 },
+    "author_context_id": { "type": "string", "minLength": 1 },
+    "independent": { "type": "boolean" },
+    "domains": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "type": "number", "minimum": 0, "maximum": 100 }
+    },
+    "overall_score": { "type": "number", "minimum": 0, "maximum": 100 },
+    "score_formula": { "type": "string", "minLength": 1 },
+    "findings": { "type": "array", "items": { "$ref": "qa-finding.schema.json" } },
+    "generated_at": { "type": "string", "format": "date-time" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "independent": { "const": true } }, "required": ["independent"] },
+      "then": { "properties": { "reviewer_context_id": { "not": { "const": "" } }, "author_context_id": { "not": { "const": "" } } } }
+    }
+  ],
+  "additionalProperties": false
+}

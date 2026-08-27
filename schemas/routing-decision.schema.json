@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/routing-decision.schema.json",
+  "title": "Make Slide Pro Routing Decision",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "input_class",
+    "maturity",
+    "primary_operation",
+    "modifiers",
+    "preservation_mode",
+    "visual_route",
+    "data_authority",
+    "required_adapters",
+    "certification_mode",
+    "job_contract_path",
+    "job_contract_sha256",
+    "source_count",
+    "blocking_reasons",
+    "unverified_reasons"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "status": { "enum": ["PASS", "UNVERIFIED", "BLOCKED"] },
+    "input_class": {
+      "enum": [
+        "EDITABLE_DECK",
+        "MIXED_SOURCES",
+        "REPORT_OR_FLAT_SOURCE",
+        "STRUCTURED_CONTENT",
+        "DATA_SOURCE",
+        "MEDIA_SOURCE",
+        "VISUAL_SOURCE",
+        "ARCHIVE_SOURCE",
+        "UNKNOWN_SOURCE"
+      ]
+    },
+    "maturity": { "enum": ["S0", "S1", "S2", "S3", "S4"] },
+    "primary_operation": {
+      "enum": ["AUDIT", "REPAIR", "REDESIGN", "REBUILD", "CREATE", "UPDATE_DATA", "EXTEND", "MERGE", "LOCALIZE", "MOTION", "CERTIFY"]
+    },
+    "modifiers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "enum": ["REPAIR", "UPDATE_DATA", "TRANSCRIBE_MEDIA", "EXTRACT_ARCHIVE", "RECONCILE_SOURCES", "CERTIFY"] }
+    },
+    "preservation_mode": { "enum": ["LOCKED", "CONTROLLED", "EDITORIAL", "CREATIVE"] },
+    "visual_route": {
+      "enum": ["SOURCE_DECK", "CUSTOM", "PDF_RECONSTRUCTION", "DATA_STORY", "TRANSCRIPT_TO_STORY", "VISUAL_RECONSTRUCTION", "ARCHIVE_EXTRACTION"]
+    },
+    "data_authority": { "type": ["string", "null"], "pattern": "^source-[0-9]{3,}$" },
+    "required_adapters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["format", "adapter"],
+        "properties": {
+          "format": { "type": "string", "minLength": 1 },
+          "adapter": { "enum": ["POWERPOINT", "DOCUMENT", "PDF", "DATA", "AUDIO", "VIDEO", "IMAGE", "ARCHIVE", "UNKNOWN"] }
+        },
+        "additionalProperties": false
+      }
+    },
+    "certification_mode": { "enum": ["DRAFT", "STANDARD", "CERTIFIED"] },
+    "job_contract_path": { "type": ["string", "null"], "minLength": 1 },
+    "job_contract_sha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+    "source_count": { "type": "integer", "minimum": 0 },
+    "blocking_reasons": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "unverified_reasons": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "PASS" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "source_count": { "minimum": 1 },
+          "blocking_reasons": { "maxItems": 0 },
+          "unverified_reasons": { "maxItems": 0 }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "UNVERIFIED" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "blocking_reasons": { "maxItems": 0 },
+          "unverified_reasons": { "minItems": 1 }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "BLOCKED" } }, "required": ["status"] },
+      "then": { "properties": { "blocking_reasons": { "minItems": 1 } } }
+    },
+    {
+      "if": { "properties": { "job_contract_path": { "type": "string" } }, "required": ["job_contract_path"] },
+      "then": { "properties": { "job_contract_sha256": { "type": "string" } } },
+      "else": { "properties": { "job_contract_sha256": { "type": "null" } } }
+    }
+  ],
+  "additionalProperties": false
+}

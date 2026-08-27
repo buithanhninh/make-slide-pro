@@ -1,0 +1,87 @@
+{
+  "schema_version": "1.0",
+  "preset_id": "MODERN_REFINED",
+  "description": "Presentation token preset for calm, high-contrast, premium business storytelling.",
+  "canvas": {
+    "width": 1280,
+    "height": 720,
+    "safe_inset": 56,
+    "grid_unit": 8
+  },
+  "colors": {
+    "base": "#F4F7FB",
+    "surface": "#FFFFFF",
+    "ink": "#102033",
+    "muted": "#53677D",
+    "line": "#D9E3EE",
+    "brand": "#D71920",
+    "brand_deep": "#A80F17",
+    "accent": "#22C7E8",
+    "accent_deep": "#087C9A",
+    "navy": "#07172E",
+    "navy_surface": "#0D2746",
+    "success": "#198754",
+    "warning": "#B26A00",
+    "danger": "#B42318",
+    "info": "#175CD3",
+    "white": "#FFFFFF",
+    "black": "#020617"
+  },
+  "typography": {
+    "primary_family": "Segoe UI",
+    "numeric_family": "Bahnschrift",
+    "fallback_families": ["Arial", "Aptos"],
+    "title_pt": 32,
+    "section_pt": 26,
+    "body_pt": 18,
+    "small_pt": 12,
+    "minimum_body_pt": 16,
+    "minimum_title_pt": 28,
+    "artifact_tool_px_per_pt": 1.3333333333,
+    "title_weight": 700,
+    "body_weight": 400,
+    "line_height": 1.18,
+    "letter_spacing": 0
+  },
+  "spacing": {
+    "xs": 8,
+    "sm": 16,
+    "md": 24,
+    "lg": 32,
+    "xl": 48,
+    "xxl": 64
+  },
+  "radii": {
+    "small": 8,
+    "medium": 16,
+    "large": 24,
+    "pill": 999
+  },
+  "shadows": {
+    "none": "shadow-none",
+    "subtle": "shadow-sm",
+    "maximum_levels": 2
+  },
+  "charts": {
+    "categorical": ["#D71920", "#22C7E8", "#07172E", "#7C4DFF", "#198754", "#B26A00"],
+    "sequential": ["#E8F3FB", "#A7DFF0", "#22C7E8", "#087C9A", "#07172E"],
+    "positive": "#198754",
+    "negative": "#B42318",
+    "neutral": "#7B8DA2",
+    "gridline": "#D9E3EE",
+    "label": "#53677D"
+  },
+  "image_policy": {
+    "minimum_effective_ppi": 150,
+    "hero_minimum_effective_ppi": 180,
+    "preferred_crop": "cover",
+    "evidence_requires_provenance": true
+  },
+  "constraints": {
+    "max_font_families": 2,
+    "max_shadow_levels": 2,
+    "max_primary_claims_per_slide": 1,
+    "content_slide_requires_visual_anchor": true,
+    "final_deck_click_controlled": true
+  }
+}

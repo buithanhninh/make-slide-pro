@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/evidence-graph.schema.json",
+  "title": "Make Slide Pro Evidence Graph",
+  "type": "object",
+  "required": ["schema_version", "status", "nodes", "edges", "conflicts"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "status": { "enum": ["PASS", "UNVERIFIED", "BLOCKED"] },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["node_id", "node_type", "label", "source_refs"],
+        "properties": {
+          "node_id": { "type": "string", "minLength": 1 },
+          "node_type": { "enum": ["SOURCE", "ATOM", "CLAIM", "METRIC", "ASSET", "SLIDE", "DECISION", "ACTION", "RISK", "CAVEAT"] },
+          "label": { "type": "string", "minLength": 1 },
+          "source_refs": { "type": "array", "items": { "type": "string" } },
+          "locator": { "type": ["object", "string", "null"] },
+          "confidence": { "enum": ["VERIFIED", "REVIEW_REQUIRED", "UNVERIFIED", "CONFLICTED"] }
+        },
+        "additionalProperties": false
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["edge_id", "from", "to", "relation"],
+        "properties": {
+          "edge_id": { "type": "string", "minLength": 1 },
+          "from": { "type": "string", "minLength": 1 },
+          "to": { "type": "string", "minLength": 1 },
+          "relation": { "enum": ["DERIVED_FROM", "SUPPORTS", "CONTRADICTS", "ALLOCATED_TO", "VISUALIZED_BY", "QUALIFIED_BY", "DEPENDS_ON", "REQUIRES"] },
+          "logic": { "type": ["string", "null"] }
+        },
+        "additionalProperties": false
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["conflict_id", "subject", "sources", "resolution_status"],
+        "properties": {
+          "conflict_id": { "type": "string" },
+          "subject": { "type": "string" },
+          "sources": { "type": "array", "minItems": 2, "items": { "type": "string" } },
+          "resolution_status": { "enum": ["OPEN", "RESOLVED", "ACCEPTED_WITH_CAVEAT"] },
+          "resolution": { "type": ["string", "null"] }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

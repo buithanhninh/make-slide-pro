@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/qa-finding.schema.json",
+  "title": "Make Slide Pro QA Finding",
+  "type": "object",
+  "required": ["severity", "code", "detail"],
+  "properties": {
+    "severity": { "enum": ["P0", "P1", "P2", "P3", "INFO"] },
+    "code": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,}$" },
+    "slide": { "type": ["integer", "string", "null"], "minimum": 1 },
+    "object": { "type": ["string", "null"] },
+    "detail": { "type": "string", "minLength": 1 },
+    "evidence": { "type": "array", "items": { "type": "string" } },
+    "remediation": { "type": ["string", "null"] },
+    "owner": { "type": ["string", "null"] },
+    "status": { "enum": ["OPEN", "RESOLVED", "ACCEPTED", "WAIVED"] },
+    "destination": { "type": "string", "minLength": 1 },
+    "metric_key": { "type": "string", "minLength": 1 },
+    "metric_ids": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "atom_ids": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "data_metric_ids": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "values": { "type": "array" },
+    "data_values": { "type": "array" },
+    "content_value": {},
+    "baseline_size": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer", "minimum": 1 } },
+    "candidate_size": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "integer", "minimum": 1 } },
+    "different_ratio": { "type": "number", "minimum": 0, "maximum": 1 },
+    "instance_path": { "type": "string" },
+    "schema_path": { "type": "string" }
+  },
+  "additionalProperties": false
+}

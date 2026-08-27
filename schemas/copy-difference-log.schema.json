@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/copy-difference-log.schema.json",
+  "title": "Make Slide Pro Copy Difference Log",
+  "type": "object",
+  "required": ["schema_version", "changes"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["change_id", "atom_id", "transformation", "before", "after", "meaning_preserved", "review_status"],
+        "properties": {
+          "change_id": { "type": "string" },
+          "atom_id": { "type": "string" },
+          "slide_id": { "type": ["string", "null"] },
+          "transformation": { "enum": ["NORMALIZE", "TRANSLATE", "PARAPHRASE_EQUIVALENT", "COMPRESS", "REORDER", "VISUALIZE", "DERIVE", "OMIT_WITH_APPROVAL"] },
+          "before": {},
+          "after": {},
+          "meaning_preserved": { "type": "boolean" },
+          "review_status": { "enum": ["APPROVED", "REVIEW_REQUIRED", "REJECTED"] },
+          "rationale": { "type": "string", "minLength": 1 },
+          "approval": {
+            "type": ["object", "null"],
+            "required": ["approver", "scope", "reason", "expiry", "impact"],
+            "properties": {
+              "approver": { "type": "string", "minLength": 1 },
+              "scope": { "type": "string", "minLength": 1 },
+              "reason": { "type": "string", "minLength": 1 },
+              "expiry": { "type": "string", "format": "date-time" },
+              "impact": { "type": "string", "minLength": 1 }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "meaning_preserved": { "const": false },
+                "transformation": { "not": { "const": "OMIT_WITH_APPROVAL" } }
+              },
+              "required": ["meaning_preserved", "transformation"]
+            },
+            "then": { "properties": { "review_status": { "not": { "const": "APPROVED" } } } }
+          },
+          {
+            "if": { "properties": { "transformation": { "const": "OMIT_WITH_APPROVAL" } }, "required": ["transformation"] },
+            "then": {
+              "required": ["approval", "rationale"],
+              "properties": { "review_status": { "const": "APPROVED" }, "approval": { "type": "object" } }
+            }
+          },
+          {
+            "if": { "properties": { "transformation": { "const": "DERIVE" } }, "required": ["transformation"] },
+            "then": { "required": ["rationale"] }
+          }
+        ]
+      }
+    }
+  },
+  "additionalProperties": false
+}

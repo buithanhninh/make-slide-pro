@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/content-atom.schema.json",
+  "title": "Canonical Content Atom",
+  "type": "object",
+  "required": ["atom_id", "type", "source_id", "locator", "verbatim", "priority", "confidence", "must_preserve", "destination"],
+  "properties": {
+    "atom_id": { "type": "string", "minLength": 1 },
+    "type": { "enum": ["CLAIM", "METRIC", "FACT", "DEFINITION", "INSIGHT", "ASSUMPTION", "RISK", "CONSTRAINT", "DECISION", "ACTION", "QUESTION", "QUOTE", "EXAMPLE", "EVIDENCE", "METHODOLOGY", "DEPENDENCY", "CAVEAT"] },
+    "source_id": { "type": "string", "minLength": 1 },
+    "locator": { "type": "object", "minProperties": 1 },
+    "verbatim": { "type": ["string", "number", "boolean"] },
+    "normalized": { "type": ["object", "string", "number", "boolean", "null"] },
+    "meaning": { "type": "string" },
+    "priority": { "enum": ["P0", "P1", "P2", "P3"] },
+    "confidence": { "enum": ["VERIFIED", "REVIEW_REQUIRED", "UNVERIFIED", "CONFLICTED"] },
+    "must_preserve": { "type": "boolean" },
+    "qualifiers": { "type": "array", "items": { "type": "string" } },
+    "dependencies": { "type": "array", "items": { "type": "string" } },
+    "allowed_transformations": { "type": "array", "items": { "enum": ["VERBATIM", "NORMALIZE", "TRANSLATE", "PARAPHRASE_EQUIVALENT", "COMPRESS", "REORDER", "VISUALIZE", "DERIVE", "OMIT_WITH_APPROVAL"] } },
+    "destination": { "enum": ["VISIBLE_SLIDE", "SPEAKER_NOTES", "APPENDIX", "INTENTIONALLY_OMITTED", "UNALLOCATED"] }
+  },
+  "additionalProperties": false
+}

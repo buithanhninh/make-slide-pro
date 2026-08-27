@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/gate-submission.schema.json",
+  "title": "Make Slide Pro Gate Submission",
+  "type": "object",
+  "required": ["schema_version", "run_id", "gate_id", "attempt_id", "producer", "actor_context_id", "input_artifacts", "output_artifacts", "dependency_hashes", "tool_fingerprint", "status", "findings", "generated_at"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "run_id": { "type": "string", "minLength": 1 },
+    "gate_id": { "type": "string", "pattern": "^G(?:0|[1-9]|1[0-5])_[A-Z0-9_]+$" },
+    "attempt_id": { "type": "string", "minLength": 1 },
+    "producer": { "type": "string", "minLength": 1 },
+    "actor_context_id": { "type": "string", "minLength": 1 },
+    "input_artifacts": { "type": "array", "items": { "$ref": "#/$defs/artifact" } },
+    "output_artifacts": { "type": "array", "items": { "$ref": "#/$defs/artifact" } },
+    "dependency_hashes": { "type": "object", "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{64}$" } },
+    "tool_fingerprint": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["PASS", "UNVERIFIED", "BLOCKED", "SKIPPED"] },
+    "findings": { "type": "array", "items": { "$ref": "qa-finding.schema.json" } },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "review_context_id": { "type": ["string", "null"], "minLength": 1 },
+    "metadata": { "type": "object", "additionalProperties": true }
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "required": ["path", "sha256", "kind"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "kind": { "type": "string", "minLength": 1 },
+        "schema": { "type": ["string", "null"], "minLength": 1 },
+        "immutable": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "PASS" } }, "required": ["status"] },
+      "then": { "properties": { "output_artifacts": { "minItems": 1 } } }
+    },
+    {
+      "if": { "properties": { "status": { "const": "SKIPPED" } }, "required": ["status"] },
+      "then": { "required": ["metadata"], "properties": { "metadata": { "required": ["skip_reason", "predicate"] } } }
+    }
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/native-visual-coverage-report.schema.json",
+  "title": "Make Slide Pro Native Visual Coverage Report",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "status", "findings"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "status": { "enum": ["PASS", "UNVERIFIED", "BLOCKED"] },
+    "blueprints_path": { "type": "string", "minLength": 1 },
+    "blueprints_sha256": { "$ref": "#/$defs/sha256" },
+    "assets_path": { "type": "string", "minLength": 1 },
+    "assets_sha256": { "$ref": "#/$defs/sha256" },
+    "native_bindings_required": { "type": "boolean" },
+    "native_layout_report_path": { "type": ["string", "null"], "minLength": 1 },
+    "native_layout_report_sha256": {
+      "oneOf": [
+        { "$ref": "#/$defs/sha256" },
+        { "type": "null" }
+      ]
+    },
+    "native_deck_path": { "type": ["string", "null"], "minLength": 1 },
+    "native_deck_sha256": {
+      "oneOf": [
+        { "$ref": "#/$defs/sha256" },
+        { "type": "null" }
+      ]
+    },
+    "native_bindings_verified": { "type": ["boolean", "null"] },
+    "slide_count": { "type": "integer", "minimum": 1 },
+    "findings": { "type": "array", "items": { "$ref": "qa-finding.schema.json" } },
+    "error": { "type": "string", "minLength": 1 }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "PASS" } }, "required": ["status"] },
+      "then": {
+        "required": [
+          "blueprints_path",
+          "blueprints_sha256",
+          "assets_path",
+          "assets_sha256",
+          "native_bindings_required",
+          "native_bindings_verified",
+          "slide_count"
+        ],
+        "properties": {
+          "findings": {
+            "items": {
+              "properties": { "severity": { "not": { "enum": ["P0", "P1"] } } }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": { "const": "PASS" },
+          "native_bindings_required": { "const": true }
+        },
+        "required": ["status", "native_bindings_required"]
+      },
+      "then": {
+        "required": [
+          "native_layout_report_path",
+          "native_layout_report_sha256",
+          "native_deck_path",
+          "native_deck_sha256"
+        ],
+        "properties": {
+          "native_bindings_verified": { "const": true },
+          "native_layout_report_path": { "type": "string", "minLength": 1 },
+          "native_layout_report_sha256": { "$ref": "#/$defs/sha256" },
+          "native_deck_path": { "type": "string", "minLength": 1 },
+          "native_deck_sha256": { "$ref": "#/$defs/sha256" }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/visual-asset.schema.json",
+  "title": "Make Slide Pro Visual Asset",
+  "type": "object",
+  "required": ["asset_id", "slide_number", "kind", "role", "source_type", "provenance", "usage", "pixel_width", "pixel_height"],
+  "properties": {
+    "asset_id": { "type": "string", "minLength": 1 },
+    "slide_number": { "type": "integer", "minimum": 1 },
+    "kind": { "enum": ["IMAGE", "PHOTO", "ILLUSTRATION", "ICON", "LOGO", "PRODUCT", "SCREENSHOT", "MAP", "VIDEO_STILL", "DATA_VISUAL"] },
+    "role": { "enum": ["EVIDENCE", "CONTEXT", "CONCEPTUAL", "DECORATIVE", "BRAND", "PRODUCT", "DATA_VISUAL", "NAVIGATION"] },
+    "source_type": { "enum": ["USER_PROVIDED", "OFFICIAL", "LICENSED", "AI_GENERATED", "PROGRAMMATIC", "SCREENSHOT", "UNKNOWN"] },
+    "provenance": {
+      "type": "object",
+      "required": ["kind"],
+      "properties": {
+        "kind": { "enum": ["SOURCE_FILE", "OFFICIAL_URL", "LICENSE_RECORD", "GENERATION_RECORD", "PROGRAMMATIC_RECIPE", "UNKNOWN"] },
+        "source_id": { "type": ["string", "null"] },
+        "uri": { "type": ["string", "null"] },
+        "generator": { "type": ["string", "null"] },
+        "license": { "type": ["string", "null"] },
+        "retrieved_at": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "usage": {
+      "type": "object",
+      "required": ["display_width_inches", "display_height_inches"],
+      "properties": {
+        "display_width_inches": { "type": "number", "exclusiveMinimum": 0 },
+        "display_height_inches": { "type": "number", "exclusiveMinimum": 0 },
+        "effective_ppi": { "type": ["number", "null"], "minimum": 0 },
+        "alt_text": { "type": ["string", "null"] },
+        "crop": { "type": ["string", "null"] },
+        "hero": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "pixel_width": { "type": "integer", "minimum": 1 },
+    "pixel_height": { "type": "integer", "minimum": 1 },
+    "sha256": { "type": ["string", "null"], "pattern": "^[a-fA-F0-9]{64}$" },
+    "path": { "type": ["string", "null"] },
+    "used_as_evidence": { "type": "boolean" },
+    "source_claim_refs": { "type": "array", "items": { "type": "string" } },
+    "editable": { "type": "boolean" },
+    "native_object_name": { "type": ["string", "null"] },
+    "family": { "type": ["string", "null"] },
+    "icon_name": { "type": ["string", "null"] },
+    "rendering": { "type": ["string", "null"] },
+    "stroke_width": { "type": ["number", "null"], "exclusiveMinimum": 0 }
+  },
+  "additionalProperties": false
+}

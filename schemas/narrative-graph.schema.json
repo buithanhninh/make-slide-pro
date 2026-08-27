@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/narrative-graph.schema.json",
+  "title": "Make Slide Pro Narrative Graph",
+  "type": "object",
+  "required": ["schema_version", "deck_thesis", "candidates", "selected_candidate_id", "question_chain", "sections"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "deck_thesis": { "type": "string", "minLength": 1 },
+    "selected_candidate_id": { "type": "string", "minLength": 1 },
+    "candidates": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["candidate_id", "name", "thesis", "sequence", "score"],
+        "properties": {
+          "candidate_id": { "type": "string" },
+          "name": { "type": "string", "minLength": 1 },
+          "thesis": { "type": "string", "minLength": 1 },
+          "sequence": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "score": { "type": "number", "minimum": 0, "maximum": 100 },
+          "rationale": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "question_chain": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["question_id", "question", "answer_slide_ids"],
+        "properties": {
+          "question_id": { "type": "string" },
+          "question": { "type": "string", "minLength": 1 },
+          "answer_slide_ids": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    },
+    "sections": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["section_id", "thesis", "slide_ids"],
+        "properties": {
+          "section_id": { "type": "string" },
+          "thesis": { "type": "string", "minLength": 1 },
+          "slide_ids": { "type": "array", "minItems": 1, "items": { "type": "string" } }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

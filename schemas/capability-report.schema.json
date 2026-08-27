@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/capability-report.schema.json",
+  "title": "Make Slide Pro Capability Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "probe_id",
+    "capabilities",
+    "fingerprint",
+    "ttl_expires_at",
+    "target_path",
+    "mode",
+    "profile",
+    "mandatory_ready",
+    "certification_ceiling",
+    "office",
+    "runtimes",
+    "hardware",
+    "disk",
+    "issues"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "status": { "enum": ["PASS", "UNVERIFIED", "BLOCKED"] },
+    "probe_id": { "type": "string", "minLength": 1 },
+    "capabilities": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["available", "evidence"],
+        "properties": {
+          "available": { "type": "boolean" },
+          "version": { "type": ["string", "null"], "minLength": 1 },
+          "path": { "type": ["string", "null"], "minLength": 1 },
+          "evidence": { "type": "string", "minLength": 1 },
+          "error": { "type": ["string", "null"] }
+        },
+        "additionalProperties": false
+      }
+    },
+    "fingerprint": { "type": "string", "minLength": 1 },
+    "ttl_expires_at": { "type": "string", "format": "date-time" },
+    "target_path": { "type": "string", "minLength": 1 },
+    "mode": { "enum": ["CERTIFIED", "CREATE", "EDIT", "AUDIT", "CERTIFY", "MEDIA"] },
+    "profile": { "enum": ["GPU_CANDIDATE", "CPU_ONLY"] },
+    "mandatory_ready": { "type": "boolean" },
+    "certification_ceiling": { "enum": ["PASS", "UNVERIFIED", "BLOCKED"] },
+    "office": {
+      "type": "object",
+      "required": ["powerpoint", "word", "excel"],
+      "properties": {
+        "powerpoint": { "$ref": "#/$defs/com_probe" },
+        "word": { "$ref": "#/$defs/com_probe" },
+        "excel": { "$ref": "#/$defs/com_probe" }
+      },
+      "additionalProperties": false
+    },
+    "runtimes": {
+      "type": "object",
+      "required": ["node", "node_modules", "bin_dir", "python", "python_probe", "artifact_tool", "ffmpeg", "ffprobe", "tesseract"],
+      "properties": {
+        "node": { "$ref": "#/$defs/command_probe" },
+        "node_modules": { "$ref": "#/$defs/presence_probe" },
+        "bin_dir": { "$ref": "#/$defs/presence_probe" },
+        "python": { "$ref": "#/$defs/command_probe" },
+        "python_probe": { "$ref": "#/$defs/python_probe" },
+        "artifact_tool": { "$ref": "#/$defs/artifact_tool_probe" },
+        "ffmpeg": { "$ref": "#/$defs/command_probe" },
+        "ffprobe": { "$ref": "#/$defs/command_probe" },
+        "tesseract": { "$ref": "#/$defs/command_probe" }
+      },
+      "additionalProperties": false
+    },
+    "hardware": {
+      "type": "object",
+      "required": ["nvidia_smi", "cuda_verified", "selected_asr_device", "selected_asr_compute_type", "asr_selection_source"],
+      "properties": {
+        "nvidia_smi": { "$ref": "#/$defs/command_probe" },
+        "cuda_verified": { "type": "boolean" },
+        "selected_asr_device": { "enum": ["cpu", "cuda"] },
+        "selected_asr_compute_type": { "type": "string", "minLength": 1 },
+        "asr_selection_source": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "disk": {
+      "type": "object",
+      "required": ["root", "free_bytes", "free_gb"],
+      "properties": {
+        "root": { "type": "string", "minLength": 1 },
+        "free_bytes": { "type": "integer", "minimum": 0 },
+        "free_gb": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "issues": { "type": "array", "items": { "$ref": "#/$defs/capability_issue" } }
+  },
+  "$defs": {
+    "com_probe": {
+      "type": "object",
+      "required": ["available"],
+      "properties": {
+        "available": { "type": "boolean" },
+        "version": { "type": ["string", "null"] },
+        "error": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "command_probe": {
+      "type": "object",
+      "required": ["available", "path"],
+      "properties": {
+        "available": { "type": "boolean" },
+        "path": { "type": ["string", "null"] },
+        "source": { "enum": ["RUNTIME_ENV", "SYSTEM_PATH", "NONE"] }
+      },
+      "additionalProperties": false
+    },
+    "presence_probe": {
+      "type": "object",
+      "required": ["available", "path"],
+      "properties": {
+        "available": { "type": ["boolean", "null", "string"] },
+        "path": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "python_probe": {
+      "type": "object",
+      "required": ["available", "version", "faster_whisper", "pytesseract", "jsonschema"],
+      "properties": {
+        "available": { "type": "boolean" },
+        "version": { "type": ["string", "null"] },
+        "faster_whisper": { "type": "boolean" },
+        "pytesseract": { "type": "boolean" },
+        "jsonschema": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "artifact_tool_probe": {
+      "type": "object",
+      "required": ["available", "directory_present", "importable", "path", "runtime_modules"],
+      "properties": {
+        "available": { "type": "boolean" },
+        "directory_present": { "type": "boolean" },
+        "importable": { "type": "boolean" },
+        "path": { "type": ["string", "null"] },
+        "runtime_modules": { "type": ["string", "null"] },
+        "import_exit_code": { "type": ["integer", "null"] },
+        "error": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    },
+    "capability_issue": {
+      "type": "object",
+      "required": ["code", "severity", "status"],
+      "properties": {
+        "code": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,}$" },
+        "severity": { "enum": ["BLOCK", "WARN", "INFO"] },
+        "status": { "enum": ["fail", "unknown", "pass"] },
+        "detail": { "type": ["string", "null"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

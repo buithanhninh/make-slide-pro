@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/adapter-result.schema.json",
+  "title": "Format Adapter Result",
+  "type": "object",
+  "required": ["schema_version", "source_id", "adapter", "status", "coverage", "artifacts", "risks"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "source_id": { "type": "string", "minLength": 1 },
+    "adapter": { "enum": ["POWERPOINT", "DOCUMENT", "PDF", "DATA", "AUDIO", "VIDEO", "IMAGE", "ARCHIVE", "UNKNOWN"] },
+    "status": { "enum": ["PASS", "UNVERIFIED", "BLOCKED"] },
+    "coverage": {
+      "type": "object",
+      "required": ["processed", "total"],
+      "properties": {
+        "processed": { "type": "integer", "minimum": 0 },
+        "total": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "path"],
+        "properties": {
+          "kind": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "minLength": 1 },
+          "sha256": { "type": ["string", "null"], "pattern": "^[a-fA-F0-9]{64}$" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "risks": { "type": "array", "items": { "$ref": "qa-finding.schema.json" } },
+    "archive_path": { "type": "string", "minLength": 1 },
+    "archive_format": { "enum": ["ZIP", "ZIP_CORRUPT", "7Z", "RAR"] },
+    "source_sha256_before": { "type": ["string", "null"], "pattern": "^[a-fA-F0-9]{64}$" },
+    "source_sha256_after": { "type": ["string", "null"], "pattern": "^[a-fA-F0-9]{64}$" },
+    "extraction_requested": { "type": "boolean" },
+    "extraction_directory": { "type": ["string", "null"], "minLength": 1 },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "directory", "compressed_bytes", "uncompressed_bytes", "route_hint", "signature_check_required"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "directory": { "type": "boolean" },
+          "compressed_bytes": { "type": "integer", "minimum": 0 },
+          "uncompressed_bytes": { "type": "integer", "minimum": 0 },
+          "route_hint": { "type": "string", "minLength": 1 },
+          "signature_check_required": { "type": "boolean" },
+          "detected_format": { "type": "string", "minLength": 1 },
+          "sha256": { "type": ["string", "null"], "pattern": "^[a-fA-F0-9]{64}$" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "error": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": false
+}

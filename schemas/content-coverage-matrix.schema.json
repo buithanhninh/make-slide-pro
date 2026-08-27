@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/content-coverage-matrix.schema.json",
+  "title": "Make Slide Pro Content Coverage Matrix",
+  "type": "object",
+  "required": ["schema_version", "rows"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["atom_id", "priority", "destination", "transformation", "evidence_status"],
+        "properties": {
+          "atom_id": { "type": "string" },
+          "priority": { "enum": ["P0", "P1", "P2", "P3"] },
+          "destination": { "enum": ["VISIBLE_SLIDE", "SPEAKER_NOTES", "APPENDIX", "INTENTIONALLY_OMITTED"] },
+          "slide_ids": { "type": "array", "items": { "type": "string" } },
+          "transformation": { "enum": ["VERBATIM", "NORMALIZE", "TRANSLATE", "PARAPHRASE_EQUIVALENT", "COMPRESS", "REORDER", "VISUALIZE", "DERIVE", "OMIT_WITH_APPROVAL"] },
+          "evidence_status": { "enum": ["VERIFIED", "REVIEW_REQUIRED", "UNVERIFIED", "CONFLICTED"] },
+          "approval": { "type": ["object", "null"] },
+          "omission_reason": { "type": ["string", "null"] }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

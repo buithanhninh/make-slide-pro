@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/contrast-manifest.schema.json",
+  "title": "Make Slide Pro Contrast Manifest",
+  "type": "object",
+  "required": ["schema_version", "items"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["slide_number", "object_id", "kind", "foreground", "background"],
+        "properties": {
+          "slide_number": { "type": "integer", "minimum": 1 },
+          "object_id": { "type": "string", "minLength": 1 },
+          "kind": { "enum": ["TEXT", "GRAPHIC", "ICON", "CHART"] },
+          "foreground": { "type": "string", "minLength": 1 },
+          "background": { "type": "string", "minLength": 1 },
+          "font_size": { "type": ["number", "null"], "minimum": 0 },
+          "bold": { "type": "boolean" },
+          "large_text": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/job-contract.schema.json",
+  "title": "Make Slide Pro Job Contract",
+  "type": "object",
+  "required": ["schema_version", "primary_operation", "modifiers", "audience", "purpose", "audience_action", "output_language", "duration_minutes", "slide_count_policy", "preservation_mode", "sequence_change_allowed", "visual_style", "motion_level", "confidentiality", "external_sourcing_allowed", "content_change_budget", "output_contract", "certification_mode"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "primary_operation": { "enum": ["AUDIT", "REPAIR", "REDESIGN", "REBUILD", "CREATE", "UPDATE_DATA", "EXTEND", "MERGE", "LOCALIZE", "MOTION", "CERTIFY"] },
+    "modifiers": { "type": "array", "uniqueItems": true, "items": { "enum": ["REPAIR", "UPDATE_DATA", "TRANSCRIBE_MEDIA", "EXTRACT_ARCHIVE", "RECONCILE_SOURCES", "CERTIFY"] } },
+    "audience": { "type": "string", "minLength": 1 },
+    "purpose": { "type": "string", "minLength": 1 },
+    "audience_action": { "type": "string", "minLength": 1 },
+    "output_language": { "type": "string", "minLength": 2 },
+    "duration_minutes": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+    "slide_count_policy": { "enum": ["FIXED", "TARGET_RANGE", "CONTENT_DRIVEN"] },
+    "fixed_slide_count": { "type": "integer", "minimum": 1 },
+    "target_slide_range": { "type": "array", "prefixItems": [{ "type": "integer", "minimum": 1 }, { "type": "integer", "minimum": 1 }], "items": false, "minItems": 2, "maxItems": 2 },
+    "preservation_mode": { "enum": ["LOCKED", "CONTROLLED", "EDITORIAL", "CREATIVE"] },
+    "sequence_change_allowed": { "type": "boolean" },
+    "visual_style": { "type": "string", "minLength": 1, "default": "MODERN_REFINED" },
+    "motion_level": { "enum": ["NONE", "SUBTLE", "NARRATIVE", "CINEMATIC"] },
+    "confidentiality": { "enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL", "RESTRICTED"] },
+    "external_sourcing_allowed": { "type": "boolean" },
+    "content_change_budget": {
+      "type": "object",
+      "required": ["max_semantic_change", "allow_derivation", "allow_reorder", "omission_policy", "p0_p1_omission_allowed"],
+      "properties": {
+        "max_semantic_change": { "enum": ["NONE", "EQUIVALENT_ONLY", "CONTROLLED_EDITORIAL", "CREATIVE"] },
+        "allow_derivation": { "type": "boolean" },
+        "allow_reorder": { "type": "boolean" },
+        "omission_policy": { "enum": ["NONE", "P2_P3_WITH_APPROVAL"] },
+        "p0_p1_omission_allowed": { "const": false }
+      },
+      "additionalProperties": false
+    },
+    "output_contract": {
+      "type": "object",
+      "required": ["format", "editable", "versioned", "source_notes", "evidence_package"],
+      "properties": {
+        "format": { "enum": ["PPTX", "PPTM", "PPT", "ODP", "PDF"] },
+        "editable": { "type": "boolean" },
+        "versioned": { "const": true },
+        "source_notes": { "enum": ["REQUIRED", "OPTIONAL", "NOT_APPLICABLE"] },
+        "evidence_package": { "enum": ["SUMMARY", "FULL"] }
+      },
+      "additionalProperties": false
+    },
+    "certification_mode": { "enum": ["DRAFT", "STANDARD", "CERTIFIED"] }
+  },
+  "allOf": [
+    { "if": { "properties": { "slide_count_policy": { "const": "FIXED" } }, "required": ["slide_count_policy"] }, "then": { "required": ["fixed_slide_count"] } },
+    { "if": { "properties": { "slide_count_policy": { "const": "TARGET_RANGE" } }, "required": ["slide_count_policy"] }, "then": { "required": ["target_slide_range"] } },
+    { "if": { "properties": { "slide_count_policy": { "const": "FIXED" } }, "required": ["slide_count_policy"] }, "then": { "not": { "required": ["target_slide_range"] } } },
+    { "if": { "properties": { "slide_count_policy": { "const": "TARGET_RANGE" } }, "required": ["slide_count_policy"] }, "then": { "not": { "required": ["fixed_slide_count"] } } },
+    {
+      "if": { "properties": { "slide_count_policy": { "const": "CONTENT_DRIVEN" } }, "required": ["slide_count_policy"] },
+      "then": {
+        "not": {
+          "anyOf": [
+            { "required": ["fixed_slide_count"] },
+            { "required": ["target_slide_range"] }
+          ]
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

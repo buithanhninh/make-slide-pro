@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/visual-assets.schema.json",
+  "title": "Make Slide Pro Visual Asset Manifest",
+  "type": "object",
+  "required": ["schema_version", "assets"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "assets": { "type": "array", "items": { "$ref": "visual-asset.schema.json" } }
+  },
+  "additionalProperties": false
+}

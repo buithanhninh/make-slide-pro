@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/release-input.schema.json",
+  "title": "Make Slide Pro Release Input",
+  "type": "object",
+  "required": [
+    "certification_profile",
+    "source_hash_unchanged",
+    "mandatory_capabilities_verified",
+    "all_slides_rendered",
+    "all_slides_reviewed",
+    "all_data_validated",
+    "all_changes_documented",
+    "blueprint_coverage_verified",
+    "visual_assets_verified",
+    "contrast_verified",
+    "icon_consistency_verified",
+    "source_traceability_verified",
+    "fresh_powerpoint_open",
+    "source_bindings",
+    "source_hash_before",
+    "source_hash_after",
+    "evidence_receipts",
+    "output_sha256",
+    "output_path",
+    "quality_score",
+    "domain_scores",
+    "findings"
+  ],
+  "properties": {
+    "certification_profile": { "enum": ["STATIC_READY_FOR_MOTION", "FINAL_RELEASE_STATIC", "FINAL_RELEASE_MOTION"] },
+    "source_hash_unchanged": { "type": "boolean" },
+    "mandatory_capabilities_verified": { "type": "boolean" },
+    "all_slides_rendered": { "type": "boolean" },
+    "all_slides_reviewed": { "type": "boolean" },
+    "all_data_validated": { "type": "boolean" },
+    "all_changes_documented": { "type": "boolean" },
+    "blueprint_coverage_verified": { "type": "boolean" },
+    "visual_assets_verified": { "type": "boolean" },
+    "contrast_verified": { "type": "boolean" },
+    "icon_consistency_verified": { "type": "boolean" },
+    "motion_verified": { "type": "boolean" },
+    "source_traceability_verified": { "type": "boolean" },
+    "static_motion_equivalent": { "type": "boolean" },
+    "fresh_powerpoint_open": { "type": "boolean" },
+    "source_bindings": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/source_binding" }
+    },
+    "source_hash_before": { "$ref": "#/$defs/sha256_input" },
+    "source_hash_after": { "$ref": "#/$defs/sha256_input" },
+    "evidence_receipts": {
+      "type": "object",
+      "properties": {
+        "mandatory_capabilities_verified": { "$ref": "#/$defs/evidence_receipt_binding" },
+        "all_slides_rendered": { "$ref": "#/$defs/evidence_receipt_binding" },
+        "all_slides_reviewed": { "$ref": "#/$defs/evidence_receipt_binding" },
+        "all_data_validated": { "$ref": "#/$defs/evidence_receipt_binding" },
+        "all_changes_documented": { "$ref": "#/$defs/evidence_receipt_binding" },
+        "blueprint_coverage_verified": { "$ref": "#/$defs/evidence_receipt_binding" },
+        "visual_assets_verified": { "$ref": "#/$defs/evidence_receipt_binding" },
+        "contrast_verified": { "$ref": "#/$defs/evidence_receipt_binding" },
+        "icon_consistency_verified": { "$ref": "#/$defs/evidence_receipt_binding" },
+        "motion_verified": { "$ref": "#/$defs/evidence_receipt_binding" },
+        "source_traceability_verified": { "$ref": "#/$defs/evidence_receipt_binding" },
+        "static_motion_equivalent": { "$ref": "#/$defs/evidence_receipt_binding" },
+        "fresh_powerpoint_open": { "$ref": "#/$defs/evidence_receipt_binding" }
+      },
+      "additionalProperties": false
+    },
+    "output_sha256": { "$ref": "#/$defs/sha256_input" },
+    "output_path": { "type": "string", "minLength": 1 },
+    "quality_score": { "type": "number", "minimum": 0, "maximum": 100 },
+    "domain_scores": {
+      "type": "object",
+      "properties": {
+        "source_integrity": { "type": "number", "minimum": 0, "maximum": 100 },
+        "content_fidelity": { "type": "number", "minimum": 0, "maximum": 100 },
+        "data_accuracy": { "type": "number", "minimum": 0, "maximum": 100 },
+        "narrative_logic": { "type": "number", "minimum": 0, "maximum": 100 },
+        "visual_design": { "type": "number", "minimum": 0, "maximum": 100 },
+        "layout_typography": { "type": "number", "minimum": 0, "maximum": 100 },
+        "charts_tables": { "type": "number", "minimum": 0, "maximum": 100 },
+        "images_icons": { "type": "number", "minimum": 0, "maximum": 100 },
+        "motion": { "type": "number", "minimum": 0, "maximum": 100 },
+        "native_compatibility": { "type": "number", "minimum": 0, "maximum": 100 }
+      },
+      "additionalProperties": false
+    },
+    "findings": { "type": "array", "items": { "$ref": "qa-finding.schema.json" } },
+    "macro_review_verified": { "type": "boolean" }
+  },
+  "$defs": {
+    "sha256_input": { "type": "string", "pattern": "^[0-9a-fA-F]{64}$" },
+    "source_binding": {
+      "type": "object",
+      "required": ["source_id", "path", "sha256_before", "sha256_after"],
+      "properties": {
+        "source_id": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 },
+        "sha256_before": { "$ref": "#/$defs/sha256_input" },
+        "sha256_after": { "$ref": "#/$defs/sha256_input" }
+      },
+      "additionalProperties": false
+    },
+    "evidence_receipt_binding": {
+      "type": "object",
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256_input" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "certification_profile": { "const": "FINAL_RELEASE_MOTION" } }, "required": ["certification_profile"] },
+      "then": {
+        "required": ["motion_verified", "static_motion_equivalent"],
+        "properties": {
+          "domain_scores": {
+            "required": ["source_integrity", "content_fidelity", "data_accuracy", "narrative_logic", "visual_design", "layout_typography", "charts_tables", "images_icons", "motion", "native_compatibility"]
+          },
+          "evidence_receipts": {
+            "required": ["mandatory_capabilities_verified", "all_slides_rendered", "all_slides_reviewed", "all_data_validated", "all_changes_documented", "blueprint_coverage_verified", "visual_assets_verified", "contrast_verified", "icon_consistency_verified", "motion_verified", "source_traceability_verified", "static_motion_equivalent", "fresh_powerpoint_open"]
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "certification_profile": { "enum": ["STATIC_READY_FOR_MOTION", "FINAL_RELEASE_STATIC"] } }, "required": ["certification_profile"] },
+      "then": {
+        "not": { "anyOf": [{ "required": ["motion_verified"] }, { "required": ["static_motion_equivalent"] }] },
+        "properties": {
+          "domain_scores": {
+            "required": ["source_integrity", "content_fidelity", "data_accuracy", "narrative_logic", "visual_design", "layout_typography", "charts_tables", "images_icons", "native_compatibility"],
+            "not": { "required": ["motion"] }
+          },
+          "evidence_receipts": {
+            "required": ["mandatory_capabilities_verified", "all_slides_rendered", "all_slides_reviewed", "all_data_validated", "all_changes_documented", "blueprint_coverage_verified", "visual_assets_verified", "contrast_verified", "icon_consistency_verified", "source_traceability_verified", "fresh_powerpoint_open"],
+            "not": { "anyOf": [{ "required": ["motion_verified"] }, { "required": ["static_motion_equivalent"] }] }
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}

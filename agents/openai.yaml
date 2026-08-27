@@ -1,0 +1,7 @@
+interface:
+  display_name: "Make Slide Pro"
+  short_description: "Tạo, sửa và kiểm định slide PowerPoint cao cấp"
+  brand_color: "#0B1F33"
+  default_prompt: "Dùng $make-slide-pro để phân tích nguồn, xây narrative, thiết kế deck hiện đại tinh tế, bổ sung visual và motion có chủ đích, rồi kiểm định fail-closed."
+policy:
+  allow_implicit_invocation: true

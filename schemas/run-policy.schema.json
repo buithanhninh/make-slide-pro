@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/run-policy.schema.json",
+  "title": "Make Slide Pro Run Policy",
+  "type": "object",
+  "required": ["schema_version", "max_attempts_per_gate", "max_run_duration_minutes", "capability_ttl_minutes", "allowed_tools", "external_sourcing_allowed", "confidentiality", "lease_duration_seconds"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "max_attempts_per_gate": { "type": "integer", "minimum": 1, "maximum": 20 },
+    "max_run_duration_minutes": { "type": "integer", "minimum": 1, "maximum": 10080 },
+    "capability_ttl_minutes": { "type": "integer", "minimum": 1, "maximum": 1440 },
+    "allowed_tools": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "external_sourcing_allowed": { "type": "boolean" },
+    "confidentiality": { "enum": ["PUBLIC", "INTERNAL", "CONFIDENTIAL", "RESTRICTED"] },
+    "lease_duration_seconds": { "type": "integer", "minimum": 30, "maximum": 3600 },
+    "retry_backoff_seconds": { "type": "integer", "minimum": 0, "maximum": 3600 },
+    "require_independent_qa": { "type": "boolean" },
+    "metadata": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": false
+}

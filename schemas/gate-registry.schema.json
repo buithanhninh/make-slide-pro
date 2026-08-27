@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/gate-registry.schema.json",
+  "title": "Make Slide Pro Gate Registry",
+  "type": "object",
+  "required": ["schema_version", "pipeline_version", "default_profile", "profiles", "gates"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "pipeline_version": { "type": "string", "minLength": 1 },
+    "default_profile": { "$ref": "#/$defs/profile" },
+    "profiles": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/profile" }
+    },
+    "gates": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/gate" }
+    }
+  },
+  "$defs": {
+    "profile": {
+      "enum": ["STATIC_READY_FOR_MOTION", "FINAL_RELEASE_STATIC", "FINAL_RELEASE_MOTION"]
+    },
+    "gate": {
+      "type": "object",
+      "required": ["gate_id", "handler_id", "owner", "dependencies", "profiles", "required_capabilities", "output_schema", "invalidation_keys", "skip_policy"],
+      "properties": {
+        "gate_id": { "type": "string", "pattern": "^G(?:0|[1-9]|1[0-5])_[A-Z0-9_]+$" },
+        "handler_id": { "type": "string", "pattern": "^[a-z][a-z0-9_.-]+$" },
+        "owner": { "type": "string", "minLength": 1 },
+        "dependencies": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^G(?:0|[1-9]|1[0-5])_[A-Z0-9_]+$" } },
+        "profiles": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/profile" } },
+        "required_capabilities": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "output_schema": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*\\.schema\\.json$" },
+        "invalidation_keys": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "skip_policy": { "$ref": "#/$defs/skip_policy" },
+        "independent_reviewer_required": { "type": "boolean" },
+        "terminal": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "skip_policy": {
+      "type": "object",
+      "required": ["mode"],
+      "properties": {
+        "mode": { "enum": ["NEVER", "PROFILE_EXCLUDED", "PREDICATE"] },
+        "excluded_profiles": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/profile" } },
+        "predicate": { "enum": ["MOTION_NOT_REQUESTED", "PROFILE_NOT_TARGET", "CAPABILITY_OPTIONAL"] },
+        "reason": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": { "properties": { "mode": { "const": "PROFILE_EXCLUDED" } }, "required": ["mode"] },
+          "then": { "required": ["excluded_profiles", "reason"] }
+        },
+        {
+          "if": { "properties": { "mode": { "const": "PREDICATE" } }, "required": ["mode"] },
+          "then": { "required": ["predicate", "reason"] }
+        },
+        {
+          "if": { "properties": { "mode": { "const": "NEVER" } }, "required": ["mode"] },
+          "then": { "not": { "anyOf": [{ "required": ["excluded_profiles"] }, { "required": ["predicate"] }] } }
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

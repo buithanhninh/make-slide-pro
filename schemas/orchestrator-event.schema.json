@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/orchestrator-event.schema.json",
+  "title": "Make Slide Pro Orchestrator Event",
+  "type": "object",
+  "required": ["schema_version", "event_id", "run_id", "state_revision", "previous_event_sha256", "event_sha256", "gate_id", "attempt_id", "actor_id", "actor_kind", "context_id", "status", "input_bindings", "output_bindings", "generated_at", "reason"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "event_id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "state_revision": { "type": "integer", "minimum": 1 },
+    "previous_event_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "event_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "gate_id": { "type": "string", "pattern": "^G(?:0|[1-9]|1[0-5])_[A-Z0-9_]+$" },
+    "attempt_id": { "type": "string", "minLength": 1 },
+    "actor_id": { "type": "string", "minLength": 1 },
+    "actor_kind": { "enum": ["MANAGER", "SPECIALIST", "VALIDATOR", "CERTIFIER", "SYSTEM", "HUMAN"] },
+    "context_id": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["STARTED", "PASS", "UNVERIFIED", "BLOCKED", "SKIPPED", "STALE", "QUARANTINED", "RECOVERED"] },
+    "input_bindings": { "type": "array", "items": { "$ref": "#/$defs/binding" } },
+    "output_bindings": { "type": "array", "items": { "$ref": "#/$defs/binding" } },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "reason": { "type": "string", "minLength": 1 },
+    "metadata": { "type": "object", "additionalProperties": true }
+  },
+  "$defs": {
+    "binding": {
+      "type": "object",
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "schema": { "type": ["string", "null"], "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

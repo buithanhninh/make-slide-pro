@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/prototype-review.schema.json",
+  "title": "Make Slide Pro Prototype Review",
+  "type": "object",
+  "required": ["schema_version", "status", "reviewer_context_id", "author_context_id", "slides", "findings", "generated_at"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "status": { "enum": ["PASS", "UNVERIFIED", "BLOCKED"] },
+    "reviewer_context_id": { "type": "string", "minLength": 1 },
+    "author_context_id": { "type": "string", "minLength": 1 },
+    "slides": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["slide_number", "role", "reviewed", "visual_anchor_present", "layout_ok", "typography_ok", "motion_feasible"],
+        "properties": {
+          "slide_number": { "type": "integer", "minimum": 1 },
+          "role": { "type": "string", "minLength": 1 },
+          "reviewed": { "const": true },
+          "visual_anchor_present": { "type": "boolean" },
+          "layout_ok": { "type": "boolean" },
+          "typography_ok": { "type": "boolean" },
+          "motion_feasible": { "type": "boolean" },
+          "notes": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "findings": { "type": "array", "items": { "$ref": "qa-finding.schema.json" } },
+    "generated_at": { "type": "string", "format": "date-time" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "PASS" } }, "required": ["status"] },
+      "then": { "properties": { "reviewer_context_id": { "not": { "const": "" } }, "findings": { "maxItems": 0 } } }
+    }
+  ],
+  "additionalProperties": false
+}

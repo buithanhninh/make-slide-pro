@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "corpus_version": "6.2.0",
+  "tiers": [
+    {
+      "tier_id": "deterministic-defects",
+      "kind": "DETERMINISTIC",
+      "cases": [
+        {"case_id":"overflow-text","detector":"audit-native-layout","expected_status":"BLOCKED","expected_codes":["TEXT_OVERFLOW"]},
+        {"case_id":"auto-advance","detector":"audit-motion","expected_status":"BLOCKED","expected_codes":["ACCIDENTAL_AUTO_ADVANCE"]},
+        {"case_id":"small-title","detector":"audit-typography","expected_status":"BLOCKED","expected_codes":["FONT_TOO_SMALL"]}
+      ]
+    },
+    {
+      "tier_id": "orchestrator-faults",
+      "kind": "FAULT_INJECTION",
+      "cases": [
+        {"case_id":"stale-revision","detector":"orchestrator_core","expected_status":"BLOCKED","expected_codes":["STATE_REVISION_CONFLICT"]},
+        {"case_id":"journal-tamper","detector":"orchestrator_core","expected_status":"BLOCKED","expected_codes":["EVENT_HASH_MISMATCH"]},
+        {"case_id":"invalid-skip","detector":"orchestrator_core","expected_status":"BLOCKED","expected_codes":["SKIP_NOT_ALLOWED"]}
+      ]
+    }
+  ]
+}

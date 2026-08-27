@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/approval-record.schema.json",
+  "title": "Make Slide Pro Approval Record",
+  "type": "object",
+  "required": ["schema_version", "request_id", "decision", "decision_digest", "approver_id", "approver_context_id", "scope", "reason", "impact", "input_hashes", "artifact_hash", "created_at", "expires_at"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "request_id": { "type": "string", "minLength": 1 },
+    "decision": { "enum": ["APPROVED", "REJECTED", "EXPIRED"] },
+    "decision_digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "approver_id": { "type": "string", "minLength": 1 },
+    "approver_context_id": { "type": "string", "minLength": 1 },
+    "scope": { "type": "string", "minLength": 1 },
+    "reason": { "type": "string", "minLength": 1 },
+    "impact": { "type": "string", "minLength": 1 },
+    "input_hashes": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{64}$" } },
+    "artifact_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "expires_at": { "type": "string", "format": "date-time" },
+    "signature_type": { "const": "UNSIGNED_AUDIT_RECORD" },
+    "metadata": { "type": "object", "additionalProperties": true }
+  },
+  "additionalProperties": false
+}

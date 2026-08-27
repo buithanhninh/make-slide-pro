@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/visual-assets-evidence-receipt.schema.json",
+  "title": "Make Slide Pro Native Visual Assets Evidence Receipt",
+  "allOf": [
+    { "$ref": "https://local.make-slide-pro/schemas/evidence-receipt.schema.json" },
+    {
+      "type": "object",
+      "required": ["evidence_name", "metadata"],
+      "properties": {
+        "evidence_name": { "const": "visual_assets_verified" },
+        "metadata": {
+          "type": "object",
+          "required": [
+            "native_bindings_verified",
+            "native_visual_coverage_report_path",
+            "native_visual_coverage_report_sha256",
+            "native_visual_coverage_deck_sha256"
+          ],
+          "properties": {
+            "native_bindings_verified": { "const": true },
+            "native_visual_coverage_report_path": { "type": "string", "minLength": 1 },
+            "native_visual_coverage_report_sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+            "native_visual_coverage_deck_sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

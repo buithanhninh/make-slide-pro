@@ -1,0 +1,281 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.make-slide-pro/schemas/release-certificate.schema.json",
+  "title": "Make Slide Pro Release Certificate",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "generated_at",
+    "certification_profile",
+    "status",
+    "quality_score",
+    "calculated_quality_score",
+    "domain_scores",
+    "source_hash_unchanged",
+    "source_hash_before",
+    "source_hash_after",
+    "source_bindings",
+    "output_sha256",
+    "output_path",
+    "output_detected_format",
+    "required_domains",
+    "required_evidence",
+    "evidence_receipts",
+    "findings",
+    "failed_requirements",
+    "blocking_requirements",
+    "unverified_requirements",
+    "certification_rules"
+  ],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "certification_profile": { "enum": ["STATIC_READY_FOR_MOTION", "FINAL_RELEASE_STATIC", "FINAL_RELEASE_MOTION"] },
+    "status": { "enum": ["PASS", "UNVERIFIED", "BLOCKED"] },
+    "quality_score": { "type": "number", "minimum": 0, "maximum": 100 },
+    "calculated_quality_score": { "type": "number", "minimum": 0, "maximum": 100 },
+    "domain_scores": {
+      "type": "object",
+      "properties": {
+        "source_integrity": { "type": "number", "minimum": 0, "maximum": 100 },
+        "content_fidelity": { "type": "number", "minimum": 0, "maximum": 100 },
+        "data_accuracy": { "type": "number", "minimum": 0, "maximum": 100 },
+        "narrative_logic": { "type": "number", "minimum": 0, "maximum": 100 },
+        "visual_design": { "type": "number", "minimum": 0, "maximum": 100 },
+        "layout_typography": { "type": "number", "minimum": 0, "maximum": 100 },
+        "charts_tables": { "type": "number", "minimum": 0, "maximum": 100 },
+        "images_icons": { "type": "number", "minimum": 0, "maximum": 100 },
+        "motion": { "type": "number", "minimum": 0, "maximum": 100 },
+        "native_compatibility": { "type": "number", "minimum": 0, "maximum": 100 }
+      },
+      "additionalProperties": false
+    },
+    "source_hash_unchanged": { "type": "boolean" },
+    "source_hash_before": { "$ref": "#/$defs/sha256" },
+    "source_hash_after": { "$ref": "#/$defs/sha256" },
+    "source_bindings": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/source_binding" } },
+    "output_sha256": { "$ref": "#/$defs/sha256" },
+    "output_path": { "type": "string", "minLength": 1 },
+    "output_detected_format": { "enum": ["PPTX", "PPTM", "PPT", "ODP", "UNKNOWN"] },
+    "required_domains": { "type": "array", "items": { "type": "string" } },
+    "required_evidence": { "type": "array", "items": { "type": "string" } },
+    "evidence_receipts": {
+      "type": "object",
+      "properties": {
+        "mandatory_capabilities_verified": { "$ref": "#/$defs/evidence_receipt" },
+        "all_slides_rendered": { "$ref": "#/$defs/evidence_receipt" },
+        "all_slides_reviewed": { "$ref": "#/$defs/evidence_receipt" },
+        "all_data_validated": { "$ref": "#/$defs/evidence_receipt" },
+        "all_changes_documented": { "$ref": "#/$defs/evidence_receipt" },
+        "blueprint_coverage_verified": { "$ref": "#/$defs/evidence_receipt" },
+        "visual_assets_verified": { "$ref": "#/$defs/visual_assets_receipt" },
+        "contrast_verified": { "$ref": "#/$defs/evidence_receipt" },
+        "icon_consistency_verified": { "$ref": "#/$defs/evidence_receipt" },
+        "motion_verified": { "$ref": "#/$defs/evidence_receipt" },
+        "source_traceability_verified": { "$ref": "#/$defs/evidence_receipt" },
+        "static_motion_equivalent": { "$ref": "#/$defs/evidence_receipt" },
+        "fresh_powerpoint_open": { "$ref": "#/$defs/evidence_receipt" }
+      },
+      "additionalProperties": false
+    },
+    "findings": { "type": "array", "items": { "$ref": "qa-finding.schema.json" } },
+    "failed_requirements": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "blocking_requirements": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "unverified_requirements": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "error": { "type": "string", "minLength": 1 },
+    "certification_rules": {
+      "type": "object",
+      "required": ["minimum_quality_score", "minimum_domain_score", "policy_minimum_quality_score", "policy_minimum_domain_score", "maximum_p0_findings", "maximum_p1_findings", "source_hash_formula", "quality_score_formula", "quality_score_tolerance", "domain_weights"],
+      "properties": {
+        "minimum_quality_score": { "type": "number", "minimum": 97, "maximum": 100 },
+        "minimum_domain_score": { "type": "number", "minimum": 90, "maximum": 100 },
+        "policy_minimum_quality_score": { "const": 97 },
+        "policy_minimum_domain_score": { "const": 90 },
+        "maximum_p0_findings": { "const": 0 },
+        "maximum_p1_findings": { "const": 0 },
+        "source_hash_formula": { "const": "SOURCE_FILE_SHA256_OR_SET_V1" },
+        "quality_score_formula": { "const": "WEIGHTED_DOMAIN_V1" },
+        "quality_score_tolerance": { "const": 0.05 },
+        "domain_weights": {
+          "type": "object",
+          "required": ["source_integrity", "content_fidelity", "data_accuracy", "narrative_logic", "visual_design", "layout_typography", "charts_tables", "images_icons", "motion", "native_compatibility"],
+          "properties": {
+            "source_integrity": { "const": 3 },
+            "content_fidelity": { "const": 18 },
+            "data_accuracy": { "const": 16 },
+            "narrative_logic": { "const": 10 },
+            "visual_design": { "const": 12 },
+            "layout_typography": { "const": 14 },
+            "charts_tables": { "const": 8 },
+            "images_icons": { "const": 7 },
+            "motion": { "const": 6 },
+            "native_compatibility": { "const": 6 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "source_binding": {
+      "type": "object",
+      "required": ["source_id", "path", "sha256_before", "sha256_after", "actual_sha256"],
+      "properties": {
+        "source_id": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 },
+        "sha256_before": { "$ref": "#/$defs/sha256" },
+        "sha256_after": { "$ref": "#/$defs/sha256" },
+        "actual_sha256": { "$ref": "#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "evidence_receipt": {
+      "type": "object",
+      "required": ["path", "sha256", "status", "generated_at", "subject_path", "subject_sha256", "producer", "check_count"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "status": { "enum": ["PASS", "UNVERIFIED", "BLOCKED"] },
+        "generated_at": { "type": "string", "format": "date-time" },
+        "subject_path": { "type": "string", "minLength": 1 },
+        "subject_sha256": { "$ref": "#/$defs/sha256" },
+        "producer": { "type": "string", "minLength": 1 },
+        "check_count": { "type": "integer", "minimum": 0 },
+        "metadata": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": false
+    },
+    "native_visual_binding": {
+      "type": "object",
+      "required": [
+        "native_bindings_verified",
+        "native_visual_coverage_report_path",
+        "native_visual_coverage_report_sha256",
+        "native_visual_coverage_deck_sha256"
+      ],
+      "properties": {
+        "native_bindings_verified": { "const": true },
+        "native_visual_coverage_report_path": { "type": "string", "minLength": 1 },
+        "native_visual_coverage_report_sha256": { "$ref": "#/$defs/sha256" },
+        "native_visual_coverage_deck_sha256": { "$ref": "#/$defs/sha256" }
+      },
+      "additionalProperties": false
+    },
+    "visual_assets_receipt": {
+      "allOf": [
+        { "$ref": "#/$defs/evidence_receipt" },
+        {
+          "required": ["metadata"],
+          "properties": { "metadata": { "$ref": "#/$defs/native_visual_binding" } }
+        }
+      ]
+    },
+    "pass_visual_assets_receipt": {
+      "allOf": [
+        { "$ref": "#/$defs/visual_assets_receipt" },
+        {
+          "properties": {
+            "status": { "const": "PASS" },
+            "check_count": { "type": "integer", "minimum": 1 }
+          }
+        }
+      ]
+    },
+    "pass_evidence_receipt": {
+      "allOf": [
+        { "$ref": "#/$defs/evidence_receipt" },
+        {
+          "properties": {
+            "status": { "const": "PASS" },
+            "check_count": { "type": "integer", "minimum": 1 }
+          }
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "certification_profile": { "const": "FINAL_RELEASE_MOTION" } }, "required": ["certification_profile"] },
+      "then": {
+        "properties": {
+          "quality_score": { "minimum": 97 },
+          "source_hash_unchanged": { "const": true },
+          "output_detected_format": { "enum": ["PPTX", "PPTM", "PPT", "ODP"] },
+          "domain_scores": {
+            "required": ["source_integrity", "content_fidelity", "data_accuracy", "narrative_logic", "visual_design", "layout_typography", "charts_tables", "images_icons", "motion", "native_compatibility"]
+          },
+          "required_domains": {
+            "const": ["source_integrity", "content_fidelity", "data_accuracy", "narrative_logic", "visual_design", "layout_typography", "charts_tables", "images_icons", "motion", "native_compatibility"]
+          },
+          "required_evidence": {
+            "const": ["source_hash_unchanged", "mandatory_capabilities_verified", "all_slides_rendered", "all_slides_reviewed", "all_data_validated", "all_changes_documented", "blueprint_coverage_verified", "visual_assets_verified", "contrast_verified", "icon_consistency_verified", "motion_verified", "source_traceability_verified", "static_motion_equivalent", "fresh_powerpoint_open"]
+          },
+          "evidence_receipts": {
+            "required": ["mandatory_capabilities_verified", "all_slides_rendered", "all_slides_reviewed", "all_data_validated", "all_changes_documented", "blueprint_coverage_verified", "visual_assets_verified", "contrast_verified", "icon_consistency_verified", "motion_verified", "source_traceability_verified", "static_motion_equivalent", "fresh_powerpoint_open"]
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "certification_profile": { "enum": ["STATIC_READY_FOR_MOTION", "FINAL_RELEASE_STATIC"] } }, "required": ["certification_profile"] },
+      "then": {
+        "properties": {
+          "quality_score": { "minimum": 97 },
+          "source_hash_unchanged": { "const": true },
+          "output_detected_format": { "enum": ["PPTX", "PPTM", "PPT", "ODP"] },
+          "domain_scores": {
+            "required": ["source_integrity", "content_fidelity", "data_accuracy", "narrative_logic", "visual_design", "layout_typography", "charts_tables", "images_icons", "native_compatibility"],
+            "not": { "required": ["motion"] }
+          },
+          "required_domains": {
+            "const": ["source_integrity", "content_fidelity", "data_accuracy", "narrative_logic", "visual_design", "layout_typography", "charts_tables", "images_icons", "native_compatibility"]
+          },
+          "required_evidence": {
+            "const": ["source_hash_unchanged", "mandatory_capabilities_verified", "all_slides_rendered", "all_slides_reviewed", "all_data_validated", "all_changes_documented", "blueprint_coverage_verified", "visual_assets_verified", "contrast_verified", "icon_consistency_verified", "source_traceability_verified", "fresh_powerpoint_open"]
+          },
+          "evidence_receipts": {
+            "required": ["mandatory_capabilities_verified", "all_slides_rendered", "all_slides_reviewed", "all_data_validated", "all_changes_documented", "blueprint_coverage_verified", "visual_assets_verified", "contrast_verified", "icon_consistency_verified", "source_traceability_verified", "fresh_powerpoint_open"],
+            "not": { "anyOf": [{ "required": ["motion_verified"] }, { "required": ["static_motion_equivalent"] }] }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "PASS" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "failed_requirements": { "maxItems": 0 },
+          "blocking_requirements": { "maxItems": 0 },
+          "unverified_requirements": { "maxItems": 0 },
+          "findings": {
+            "items": {
+              "properties": {
+                "severity": { "not": { "enum": ["P0", "P1"] } }
+              }
+            }
+          },
+          "evidence_receipts": {
+            "properties": {
+              "mandatory_capabilities_verified": { "$ref": "#/$defs/pass_evidence_receipt" },
+              "all_slides_rendered": { "$ref": "#/$defs/pass_evidence_receipt" },
+              "all_slides_reviewed": { "$ref": "#/$defs/pass_evidence_receipt" },
+              "all_data_validated": { "$ref": "#/$defs/pass_evidence_receipt" },
+              "all_changes_documented": { "$ref": "#/$defs/pass_evidence_receipt" },
+              "blueprint_coverage_verified": { "$ref": "#/$defs/pass_evidence_receipt" },
+              "visual_assets_verified": { "$ref": "#/$defs/pass_visual_assets_receipt" },
+              "contrast_verified": { "$ref": "#/$defs/pass_evidence_receipt" },
+              "icon_consistency_verified": { "$ref": "#/$defs/pass_evidence_receipt" },
+              "motion_verified": { "$ref": "#/$defs/pass_evidence_receipt" },
+              "source_traceability_verified": { "$ref": "#/$defs/pass_evidence_receipt" },
+              "static_motion_equivalent": { "$ref": "#/$defs/pass_evidence_receipt" },
+              "fresh_powerpoint_open": { "$ref": "#/$defs/pass_evidence_receipt" }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": false
+}
