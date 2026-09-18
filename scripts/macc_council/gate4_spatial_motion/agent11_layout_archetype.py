@@ -34,6 +34,37 @@ class LayoutArchetypeStrategist(BaseCouncilAgent):
         "table_dense": (4, 12)
     }
 
+    VJ_TO_ARCHETYPE = {
+        "HERO_TITLE": "title_hero",
+        "BENTO": "split_comparison",
+        "BENTO_GRID": "split_comparison",
+        "EDITORIAL_HERO": "split_comparison",
+        "COMPARISON": "split_comparison",
+        "VERSUS": "split_comparison",
+        "TWO_PILLARS": "split_comparison",
+        "CARDS": "3_cards",
+        "PROCESS": "process_flow_4",
+        "ROADMAP": "process_flow_4",
+        "TIMELINE": "process_flow_4",
+        "DATA_TABLE": "table_dense",
+        "TABLE": "table_dense",
+        "METRIC": "metric_callout_3x",
+        "METRIC_HERO": "metric_callout_3x",
+    }
+
+    ARCHETYPE_TO_VJ = {
+        "title_hero": "HERO_TITLE",
+        "split_comparison": "COMPARISON",
+        "3_cards": "CARDS",
+        "grid_2x2": "CARDS",
+        "process_flow_4": "PROCESS",
+        "process_flow_5": "PROCESS",
+        "metric_callout_3x": "METRIC",
+        "quote_callout": "EDITORIAL_HERO",
+        "conclusion_cta": "EDITORIAL_HERO",
+        "table_dense": "DATA_TABLE"
+    }
+
     PROCESS_KEYWORDS = [
         "quy trình", "tiến trình", "lộ trình", "giai đoạn", "bước",
         "phase", "step", "process", "timeline", "workflow", "nối tiếp"
@@ -95,14 +126,22 @@ class LayoutArchetypeStrategist(BaseCouncilAgent):
 
         for s in slides:
             slide_id = s.get("slide_id", "unknown_slide")
-            archetype = s.get("archetype", "3_cards")
+            role = s.get("role", "CONTENT").upper()
+            if role == "COVER":
+                continue
+
+            visual_job = s.get("visual_job", "").upper()
+            raw_arch = s.get("archetype")
+            archetype = raw_arch or self.VJ_TO_ARCHETYPE.get(visual_job, "3_cards")
             item_count = self._get_item_count(s)
             slide_text = self.extract_slide_text(s)
 
             # 1. Check atom/card count fit
             if archetype in self.ARCHETYPE_ATOM_RULES:
                 min_atoms, max_atoms = self.ARCHETYPE_ATOM_RULES[archetype]
-                if item_count < min_atoms or item_count > max_atoms:
+                if visual_job in {"EDITORIAL_HERO", "BENTO", "BENTO_GRID"} and 1 <= item_count <= 3:
+                    pass
+                elif item_count < min_atoms or item_count > max_atoms:
                     rec_arch = self._recommend_archetype(item_count, slide_text)
                     findings.append(
                         AgentFinding(
@@ -168,6 +207,8 @@ class LayoutArchetypeStrategist(BaseCouncilAgent):
                 for s in slides:
                     if s.get("slide_id") == finding.slide_id:
                         s["archetype"] = finding.suggested_value
+                        if finding.suggested_value in self.ARCHETYPE_TO_VJ:
+                            s["visual_job"] = self.ARCHETYPE_TO_VJ[finding.suggested_value]
 
         if isinstance(remediated, dict):
             remediated["slides"] = slides

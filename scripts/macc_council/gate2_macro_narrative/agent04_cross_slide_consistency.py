@@ -188,7 +188,7 @@ class CrossSlideConsistencyAuditor(BaseCouncilAgent):
         start_idx = 0
 
         for idx, s in enumerate(slides):
-            arch = s.get("archetype", "default")
+            arch = s.get("archetype") or s.get("visual_job") or "default"
             if arch and arch == current_archetype:
                 consecutive_count += 1
                 if consecutive_count == 4:
