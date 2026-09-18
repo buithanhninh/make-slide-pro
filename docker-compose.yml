@@ -1,0 +1,69 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: make_slide_pro_app
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=production
+      - DATABASE_URL=postgresql://msp_admin:msp_secure_password_2026@db:5432/make_slide_pro
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET=production_jwt_super_secret_make_slide_pro_2026
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./Du_An_Outputs:/app/Du_An_Outputs
+    networks:
+      - msp_network
+
+  db:
+    image: postgres:16-alpine
+    container_name: make_slide_pro_db
+    restart: always
+    environment:
+      POSTGRES_USER: msp_admin
+      POSTGRES_PASSWORD: msp_secure_password_2026
+      POSTGRES_DB: make_slide_pro
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U msp_admin -d make_slide_pro"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - msp_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: make_slide_pro_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - msp_network
+
+networks:
+  msp_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
