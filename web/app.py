@@ -229,7 +229,7 @@ class CopilotRequest(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# REST Endpoints: Home & Auth
+# REST Endpoints: Home, Health & Auth
 # ---------------------------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
 async def serve_studio():
@@ -237,6 +237,18 @@ async def serve_studio():
     if index_path.exists():
         return HTMLResponse(content=index_path.read_text(encoding="utf-8"))
     return HTMLResponse(content="<h1>Make Slide Pro Web Studio V7.3 is running.</h1>")
+
+
+@app.get("/healthz")
+@app.get("/api/health")
+async def health_check():
+    """Liveness & Readiness probe for container orchestrators (K8s, Docker, Cloud Run)."""
+    return {
+        "status": "healthy",
+        "service": "make-slide-pro-saas",
+        "version": "7.3.0",
+        "timestamp": time.time(),
+    }
 
 
 @app.post("/api/auth/register")
@@ -350,6 +362,11 @@ async def create_project_from_file(
 
     with open(saved_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
+
+    # Security Guard: 25MB File Size Limit
+    if saved_path.stat().st_size > 25 * 1024 * 1024:
+        saved_path.unlink(missing_ok=True)
+        raise HTTPException(status_code=413, detail="Dung lượng tệp vượt quá giới hạn 25MB cho phép.")
 
     try:
         ingestor = ContentIngestor()
@@ -518,6 +535,11 @@ async def upload_file(
     
     with open(saved_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
+
+    # Security Guard: 25MB File Size Limit
+    if saved_path.stat().st_size > 25 * 1024 * 1024:
+        saved_path.unlink(missing_ok=True)
+        raise HTTPException(status_code=413, detail="Dung lượng tệp vượt quá giới hạn 25MB cho phép.")
         
     # Ingest document
     try:
@@ -568,6 +590,9 @@ async def upload_text(
     current_user: Optional[User] = Depends(get_optional_user),
     db: Session = Depends(get_db)
 ):
+    if len(payload.content) > 500000:
+        raise HTTPException(status_code=413, detail="Nội dung văn bản vượt quá giới hạn 500,000 ký tự cho phép.")
+
     session_id = str(uuid.uuid4())
     s_dir = get_session_dir(session_id)
     
