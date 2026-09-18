@@ -47,6 +47,7 @@ msoAnimTriggerOnPageClick = 1
 msoAnimTriggerWithPrevious = 2
 msoAnimEffectFade = 10
 msoAnimEffectFly = 2
+msoAnimDirectionBottom = 1
 msoAnimateLevelNone = 0
 ppTransitionFadeSmoothly = 3849
 ppEffectMorphByObject = 3954
@@ -147,10 +148,12 @@ def hex_to_bgr(hex_color: str) -> int:
 
 
 class NativeDeckAuthor:
-    def __init__(self, visible: bool = False, theme: str = "DARK"):
+    def __init__(self, visible: bool = False, theme: str = "DARK", motion_mode: str = "kinetic_cascade"):
         if win32com is None:
             raise RuntimeError("win32com is not available. Please install pywin32.")
         self.set_theme(theme)
+        self.motion_mode = motion_mode.lower()
+        self.motion_trigger = msoAnimTriggerWithPrevious if self.motion_mode == "kinetic_cascade" else msoAnimTriggerOnPageClick
         pythoncom.CoInitialize()
         self.app = win32com.client.DispatchEx("PowerPoint.Application")
         if visible:
@@ -313,7 +316,8 @@ class NativeDeckAuthor:
         return shapes
 
     def _group_and_animate(self, slide: Any, shapes: List[Any], duration: float = 0.45, 
-                           trigger: int = msoAnimTriggerOnPageClick, effect: int = msoAnimEffectFly,
+                           trigger: Optional[int] = None, effect: int = msoAnimEffectFly,
+                           delay: float = 0.0, direction: int = msoAnimDirectionBottom,
                            group_name: Optional[str] = None) -> Any:
         valid_shapes = [s for s in shapes if s is not None]
         if not valid_shapes:
@@ -330,8 +334,19 @@ class NativeDeckAuthor:
             except Exception:
                 pass
 
-        anim = slide.TimeLine.MainSequence.AddEffect(grp, effect, msoAnimateLevelNone, trigger)
+        eff_trigger = self.motion_trigger if trigger is None else trigger
+        anim = slide.TimeLine.MainSequence.AddEffect(grp, effect, msoAnimateLevelNone, eff_trigger)
         anim.Timing.Duration = duration
+        if delay > 0 and eff_trigger == msoAnimTriggerWithPrevious:
+            try:
+                anim.Timing.TriggerDelayTime = delay
+            except Exception:
+                pass
+        if effect == msoAnimEffectFly:
+            try:
+                anim.EffectParameters.Direction = direction
+            except Exception:
+                pass
         anim.Timing.SmoothStart = msoTrue
         anim.Timing.SmoothEnd = msoTrue
         return grp
@@ -401,6 +416,7 @@ class NativeDeckAuthor:
 
             # Right Editorial Illustration: Exact 16:9 native aspect ratio, direct rounded corners & brand border (0px mismatch)
             pic = slide.Shapes.AddPicture(str(ill_file.resolve()), False, True, right_left, img_top, right_w, img_h)
+            pic.Name = "!!Stage_Hero_Container!!"
             try:
                 pic.AutoShapeType = msoShapeRoundedRectangle
                 pic.Line.Visible = msoTrue
@@ -409,7 +425,7 @@ class NativeDeckAuthor:
             except Exception:
                 pass
 
-            self._group_and_animate(slide, [pic], duration=0.6, trigger=msoAnimTriggerWithPrevious, effect=msoAnimEffectFade)
+            self._group_and_animate(slide, [pic], duration=0.6, trigger=msoAnimTriggerWithPrevious, effect=msoAnimEffectFade, group_name="!!Stage_Hero_Container!!")
 
         else:
             # Full Dark Cover Layout
@@ -466,7 +482,7 @@ class NativeDeckAuthor:
 
         # Header Rail (Visual Anchors for Zero-Flicker Morph)
         kicker_box = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, MARGIN_LEFT, MARGIN_TOP, USABLE_WIDTH - 80, 20)
-        kicker_box.Name = "!!Anchor_Kicker_Rail"
+        kicker_box.Name = "!!Anchor_Kicker_Rail!!"
         kt = kicker_box.TextFrame.TextRange
         kt.Text = f"{section_text}  •  TRỌNG TÂM"
         kt.Font.Name = TOKENS["fonts"]["primary"]
@@ -475,7 +491,7 @@ class NativeDeckAuthor:
         kt.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["brand"])
 
         num_box = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, CANVAS_WIDTH - MARGIN_RIGHT - 60, MARGIN_TOP, 60, 20)
-        num_box.Name = "!!Anchor_Slide_Tracker"
+        num_box.Name = "!!Anchor_Slide_Tracker!!"
         nt = num_box.TextFrame.TextRange
         nt.Text = f"{slide_num:02d} / {total_slides:02d}"
         nt.Font.Name = TOKENS["fonts"]["numeric"]
@@ -490,7 +506,7 @@ class NativeDeckAuthor:
         title_box_height = 58.0 if is_long_title else 38.0
 
         title_box = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, MARGIN_LEFT, MARGIN_TOP + 20, USABLE_WIDTH, title_box_height)
-        title_box.Name = "!!Anchor_Assertion_Title"
+        title_box.Name = "!!Anchor_Assertion_Title!!"
         tt = title_box.TextFrame.TextRange
         tt.Text = title_text
         tt.Font.Name = TOKENS["fonts"]["primary"]
@@ -527,7 +543,7 @@ class NativeDeckAuthor:
         # Footer (Visual Anchor)
         if footer_source:
             footer_box = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, MARGIN_LEFT, CANVAS_HEIGHT - MARGIN_BOTTOM - 14, USABLE_WIDTH, 18)
-            footer_box.Name = "!!Anchor_Source_Footer"
+            footer_box.Name = "!!Anchor_Source_Footer!!"
             ft = footer_box.TextFrame.TextRange
             ft.Text = footer_source
             ft.Font.Name = TOKENS["fonts"]["primary"]
@@ -600,9 +616,9 @@ class NativeDeckAuthor:
         names = [s.Name for s in hero_shapes if s is not None]
         if len(names) > 1:
             grp = slide.Shapes.Range(names).Group()
-            grp.Name = "!!Stage_Hero_Container"
+            grp.Name = "!!Stage_Hero_Container!!"
         elif len(names) == 1:
-            hero_shapes[0].Name = "!!Stage_Hero_Container"
+            hero_shapes[0].Name = "!!Stage_Hero_Container!!"
 
         # === 2. Right Stacked Cards ===
         count = len(sub_atoms)
@@ -662,8 +678,8 @@ class NativeDeckAuthor:
             sp2.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["muted"])
             sub_shapes.append(stb)
 
-            # Animate Sub Card as Click 2, Click 3
-            self._group_and_animate(slide, sub_shapes, duration=0.45, trigger=msoAnimTriggerOnPageClick, group_name=f"!!Stage_Sub_Card_{i+1}")
+            # Animate Sub Card as Staggered Kinetic Cascade
+            self._group_and_animate(slide, sub_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Stage_Sub_Card_{i+1}!!")
 
     def _render_editorial_hero_layout(self, slide: Any, spec: Dict[str, Any], atoms: List[Any], top: float, height: float, lesson_idx: int):
         card_w = USABLE_WIDTH * 0.49
@@ -751,9 +767,9 @@ class NativeDeckAuthor:
         names = [s.Name for s in left_shapes if s is not None]
         if len(names) > 1:
             grp = slide.Shapes.Range(names).Group()
-            grp.Name = "!!Stage_Hero_Container"
+            grp.Name = "!!Stage_Hero_Container!!"
         elif len(names) == 1:
-            left_shapes[0].Name = "!!Stage_Hero_Container"
+            left_shapes[0].Name = "!!Stage_Hero_Container!!"
 
         # === 2. Right Column Insight Cards ===
         count = max(1, min(len(atoms), 3))
@@ -798,8 +814,8 @@ class NativeDeckAuthor:
             p2.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["muted"])
             card_shapes.append(tb)
 
-            # Animate each insight card sequentially as Click 2, 3, 4
-            self._group_and_animate(slide, card_shapes, duration=0.45, trigger=msoAnimTriggerOnPageClick, group_name=f"!!Stage_Sub_Card_{i+1}")
+            # Animate each insight card sequentially with staggered kinetic cascade
+            self._group_and_animate(slide, card_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Stage_Sub_Card_{i+1}!!")
 
     def _render_chart_and_insights_layout(self, slide: Any, spec: Dict[str, Any], atoms: List[Any], top: float, height: float):
         chart_type = spec.get("chart_type", "POPULATION_PYRAMID")
@@ -843,9 +859,9 @@ class NativeDeckAuthor:
         names = [s.Name for s in chart_shapes if s is not None]
         if len(names) > 1:
             grp = slide.Shapes.Range(names).Group()
-            grp.Name = "!!Stage_Hero_Container"
+            grp.Name = "!!Stage_Hero_Container!!"
         elif len(names) == 1:
-            chart_shapes[0].Name = "!!Stage_Hero_Container"
+            chart_shapes[0].Name = "!!Stage_Hero_Container!!"
 
         # === 2. Right Column: Insights Cards ===
         right_left = MARGIN_LEFT + chart_w + gutter
@@ -891,8 +907,8 @@ class NativeDeckAuthor:
             p2.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["muted"])
             card_shapes.append(tb)
 
-            # Animate each insight card sequentially as Click 2, 3, 4
-            self._group_and_animate(slide, card_shapes, duration=0.45, trigger=msoAnimTriggerOnPageClick, group_name=f"!!Stage_Sub_Card_{i+1}")
+            # Animate each insight card sequentially with staggered kinetic cascade
+            self._group_and_animate(slide, card_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Stage_Sub_Card_{i+1}!!")
 
     def _render_cards_layout(self, slide: Any, atoms: List[Any], top: float, height: float):
         count = max(1, min(len(atoms), 3))
@@ -952,11 +968,11 @@ class NativeDeckAuthor:
                 names = [s.Name for s in card_shapes if s is not None]
                 if len(names) > 1:
                     grp = slide.Shapes.Range(names).Group()
-                    grp.Name = "!!Stage_Hero_Container"
+                    grp.Name = "!!Stage_Hero_Container!!"
                 elif len(names) == 1:
-                    card_shapes[0].Name = "!!Stage_Hero_Container"
+                    card_shapes[0].Name = "!!Stage_Hero_Container!!"
             else:
-                self._group_and_animate(slide, card_shapes, duration=0.45, trigger=msoAnimTriggerOnPageClick, group_name=f"!!Stage_Sub_Card_{i}")
+                self._group_and_animate(slide, card_shapes, duration=0.45, delay=0.14 * i, group_name=f"!!Stage_Sub_Card_{i}!!")
 
     def _render_process_layout(self, slide: Any, atoms: List[Any], top: float, height: float):
         count = max(1, min(len(atoms), 4))
@@ -1019,11 +1035,11 @@ class NativeDeckAuthor:
                 names = [s.Name for s in step_shapes if s is not None]
                 if len(names) > 1:
                     grp = slide.Shapes.Range(names).Group()
-                    grp.Name = "!!Stage_Hero_Container"
+                    grp.Name = "!!Stage_Hero_Container!!"
                 elif len(names) == 1:
-                    step_shapes[0].Name = "!!Stage_Hero_Container"
+                    step_shapes[0].Name = "!!Stage_Hero_Container!!"
             else:
-                self._group_and_animate(slide, step_shapes, duration=0.45, trigger=msoAnimTriggerOnPageClick, group_name=f"!!Stage_Sub_Card_{i}")
+                self._group_and_animate(slide, step_shapes, duration=0.45, delay=0.12 * i, group_name=f"!!Stage_Sub_Card_{i}!!")
 
     def _render_comparison_layout(self, slide: Any, atoms: List[Any], top: float, height: float):
         card_w = (USABLE_WIDTH - 24.0) / 2.0
@@ -1084,11 +1100,11 @@ class NativeDeckAuthor:
                 names = [s.Name for s in pillar_shapes if s is not None]
                 if len(names) > 1:
                     grp = slide.Shapes.Range(names).Group()
-                    grp.Name = "!!Stage_Hero_Container"
+                    grp.Name = "!!Stage_Hero_Container!!"
                 elif len(names) == 1:
-                    pillar_shapes[0].Name = "!!Stage_Hero_Container"
+                    pillar_shapes[0].Name = "!!Stage_Hero_Container!!"
             else:
-                self._group_and_animate(slide, pillar_shapes, duration=0.5, trigger=msoAnimTriggerOnPageClick, group_name="!!Stage_Sub_Card_1")
+                self._group_and_animate(slide, pillar_shapes, duration=0.5, delay=0.18, group_name="!!Stage_Sub_Card_1!!")
 
     def _render_metric_layout(self, slide: Any, spec: Dict[str, Any], atoms: List[Any], top: float, height: float):
         left_w = USABLE_WIDTH * 0.42
@@ -1141,9 +1157,9 @@ class NativeDeckAuthor:
         names = [s.Name for s in hero_shapes if s is not None]
         if len(names) > 1:
             grp = slide.Shapes.Range(names).Group()
-            grp.Name = "!!Stage_Hero_Container"
+            grp.Name = "!!Stage_Hero_Container!!"
         elif len(names) == 1:
-            hero_shapes[0].Name = "!!Stage_Hero_Container"
+            hero_shapes[0].Name = "!!Stage_Hero_Container!!"
 
         # Right Stacked List Cards
         right_left = MARGIN_LEFT + left_w + gutter
@@ -1185,7 +1201,7 @@ class NativeDeckAuthor:
             sp2.Font.Name = TOKENS["fonts"]["primary"]
             sp2.Font.Size = 14
             sp2.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["muted"])
-            self._group_and_animate(slide, rcard_shapes, duration=0.45, trigger=msoAnimTriggerOnPageClick, group_name=f"!!Stage_Sub_Card_{i+1}")
+            self._group_and_animate(slide, rcard_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Stage_Sub_Card_{i+1}!!")
 
     def _render_formula_hero_layout(self, slide: Any, spec: Dict[str, Any], atoms: List[Any], top: float, height: float):
         formula_expr = spec.get("formula", "")
@@ -1237,9 +1253,9 @@ class NativeDeckAuthor:
         names = [s.Name for s in hero_shapes if s is not None]
         if len(names) > 1:
             grp = slide.Shapes.Range(names).Group()
-            grp.Name = "!!Stage_Hero_Container"
+            grp.Name = "!!Stage_Hero_Container!!"
         elif len(names) == 1:
-            hero_shapes[0].Name = "!!Stage_Hero_Container"
+            hero_shapes[0].Name = "!!Stage_Hero_Container!!"
 
         param_top = top + hero_h + 14.0
         param_height = height - hero_h - 14.0
@@ -1288,7 +1304,7 @@ class NativeDeckAuthor:
                 p2.ParagraphFormat.SpaceWithin = 1.25
                 c_shapes.append(tb)
 
-                self._group_and_animate(slide, c_shapes, duration=0.45, trigger=msoAnimTriggerOnPageClick, group_name=f"!!Stage_Sub_Card_{i+1}")
+                self._group_and_animate(slide, c_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Stage_Sub_Card_{i+1}!!")
 
         else:
             card_w = (USABLE_WIDTH - 16.0) / 2
@@ -1338,7 +1354,7 @@ class NativeDeckAuthor:
                 p2.ParagraphFormat.SpaceWithin = 1.2
                 c_shapes.append(tb)
 
-                self._group_and_animate(slide, c_shapes, duration=0.45, trigger=msoAnimTriggerOnPageClick, group_name=f"!!Stage_Sub_Card_{i+1}")
+                self._group_and_animate(slide, c_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Stage_Sub_Card_{i+1}!!")
 
     def _render_data_table_layout(self, slide: Any, spec: Dict[str, Any], atoms: List[Any], top: float, height: float):
         table_data = spec.get("table_data", {})
@@ -1361,7 +1377,7 @@ class NativeDeckAuthor:
         norm_weights = [w / total_w for w in col_weights]
 
         table_shape = slide.Shapes.AddTable(num_rows, num_cols, MARGIN_LEFT, top, USABLE_WIDTH, height)
-        table_shape.Name = "!!Stage_Hero_Container"
+        table_shape.Name = "!!Stage_Hero_Container!!"
         tbl = table_shape.Table
 
         for c_idx, w_pct in enumerate(norm_weights, start=1):
@@ -1412,10 +1428,13 @@ def main():
     parser = argparse.ArgumentParser(description="Author Native PowerPoint Presentation Deck")
     parser.add_argument("--blueprints", required=True, type=Path, help="Path to slide-blueprints.json")
     parser.add_argument("--output", required=True, type=Path, help="Output path for .pptx file")
+    parser.add_argument("--theme", default="DARK", choices=["DARK", "LIGHT"], help="Presentation theme")
+    parser.add_argument("--motion-mode", default="kinetic_cascade", choices=["kinetic_cascade", "presenter_click"],
+                        help="Motion choreography mode (default: kinetic_cascade)")
     parser.add_argument("--visible", action="store_true", help="Launch PowerPoint with visible UI")
     args = parser.parse_args()
 
-    author = NativeDeckAuthor(visible=args.visible)
+    author = NativeDeckAuthor(visible=args.visible, theme=args.theme, motion_mode=args.motion_mode)
     try:
         t0 = time.time()
         out_path = author.create_deck(args.blueprints, args.output)
