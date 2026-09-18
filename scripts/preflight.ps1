@@ -180,7 +180,7 @@ $fingerprintParts = @(
 )
 $fingerprintString = $fingerprintParts -join ';'
 $sha = [Security.Cryptography.SHA256]::Create()
-try { $fingerprint = ([Convert]::ToHexString($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($fingerprintString)))).ToLowerInvariant() }
+try { $fingerprint = ConvertTo-HexLower ($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($fingerprintString))) }
 finally { $sha.Dispose() }
 
 $payload = [ordered]@{

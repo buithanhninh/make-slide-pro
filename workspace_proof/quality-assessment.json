@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "deck_path": "workspace_proof\\Bai_1_Nhap_mon_DSH.pptx",
+  "certified_at": "2026-09-17T10:52:16Z",
+  "certification_profile": "FINAL_RELEASE_MOTION",
+  "weighted_overall_score": 98.2,
+  "status": "PASS",
+  "domain_assessments": {
+    "content_fidelity": {
+      "domain": "content_fidelity",
+      "score": 95,
+      "status": "PASS",
+      "findings": [
+        {
+          "severity": "P1",
+          "atom_id": "ATOM_015",
+          "message": "Critical P0 concept may be under-represented: Như vậy, có thể khái quát rằng Dân số học là một môn khoa họ..."
+        }
+      ]
+    },
+    "geometry_typography": {
+      "domain": "geometry_typography",
+      "score": 100,
+      "status": "PASS",
+      "findings": []
+    },
+    "motion_pacing": {
+      "domain": "motion_pacing",
+      "score": 100,
+      "status": "PASS",
+      "findings": []
+    },
+    "technical_reliability": {
+      "domain": "technical_reliability",
+      "score": 100,
+      "status": "PASS",
+      "pdf_path": "workspace_proof\\Bai_1_Nhap_mon_DSH.pdf",
+      "thumbnails_dir": "workspace_proof\\thumbnails",
+      "findings": []
+    }
+  }
+}

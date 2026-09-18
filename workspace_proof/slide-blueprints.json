@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0",
+  "deck_title": "Nhập Môn Dân Số Học",
+  "total_slides": 6,
+  "visual_system": "MODERN_REFINED",
+  "slides": [
+    {
+      "slide_id": "SLIDE_01",
+      "role": "COVER",
+      "section": "TỔNG QUAN CHUYÊN ĐỀ",
+      "assertion_title": "BÀI I. NHẬP MÔN DÂN SỐ HỌC",
+      "primary_claim": "Khung lý thuyết nền tảng về quy mô, cơ cấu, chất lượng và phương pháp luận nghiên cứu Dân số học hiện đại.",
+      "visual_job": "HERO_TITLE",
+      "visual_anchor": "BRAND_COVER",
+      "speaker_notes": "Kính chào quý học viên, hôm nay chúng ta bắt đầu chuyên đề Nhập môn Dân số học nhằm nắm vững các khái niệm và nguyên lý vận động của dân số.",
+      "source_footer": "Tài liệu đào tạo Dân số học chuẩn quốc gia"
+    },
+    {
+      "slide_id": "SLIDE_02",
+      "role": "CONTENT",
+      "section": "MỤC TIÊU BÀI HỌC",
+      "assertion_title": "Nắm Vững Khái Niệm Cốt Lõi Và Phương Pháp Nghiên Cứu Dân Số Học",
+      "primary_claim": "Chuẩn đầu ra tập trung vào 2 năng lực cốt lõi: Nhận diện cấu trúc dân số và vận dụng phương pháp phân tích nhân quả.",
+      "visual_job": "COMPARISON",
+      "visual_anchor": "TWO_PILLARS",
+      "atoms": [
+        {
+          "title": "1. Năng Lực Khái Niệm",
+          "text": "Hiểu rõ và phân biệt rành mạch giữa 'Dân cư' và 'Dân số', các chiều kích tĩnh (quy mô, cơ cấu) và động (sinh, chết, di cư)."
+        },
+        {
+          "title": "2. Năng Lực Phương Pháp",
+          "text": "Trình bày chính xác đối tượng, phạm vi và phương pháp luận nghiên cứu dân số học phục vụ dự báo và hoạch định chính sách."
+        }
+      ],
+      "speaker_notes": "Mục tiêu bài giảng yêu cầu người học phân biệt rành mạch giữa dân cư và dân số, từ đó vận dụng phương pháp nghiên cứu chính xác.",
+      "source_footer": "Khung chuẩn đầu ra chuyên đề"
+    },
+    {
+      "slide_id": "SLIDE_03",
+      "role": "CONTENT",
+      "section": "KHÁI NIỆM NỀN TẢNG",
+      "assertion_title": "Khái Niệm Dân Cư Mang Tính Toàn Diện Hơn Nội Hàm Dân Số",
+      "primary_claim": "Dân cư bao trùm toàn bộ đời sống kinh tế - văn hóa - xã hội; Dân số tập trung vào quy mô, cơ cấu, phân bố và chất lượng định lượng.",
+      "visual_job": "COMPARISON",
+      "visual_anchor": "VERSUS_CARD",
+      "atoms": [
+        {
+          "title": "Dân Cư (Khái Niệm Rộng)",
+          "text": "Gồm toàn bộ con người cùng cư trú trên một lãnh thổ; xem xét dưới đa góc độ: Văn hóa, lịch sử, kinh tế, ẩm thực, tập quán và lối sống."
+        },
+        {
+          "title": "Dân Số (Khái Niệm Định Lượng)",
+          "text": "Tập trung vào quy mô, cơ cấu giới tính - độ tuổi, phân bố lãnh thổ, chất lượng và các thành tố biến động: sinh, chết và di cư."
+        }
+      ],
+      "speaker_notes": "Cần lưu ý dân cư là khái niệm rộng hơn rất nhiều so với dân số. Dân số chỉ tập trung vào các lát cắt có thể đo lường và quản trị.",
+      "source_footer": "Giáo trình Dân số học đại cương"
+    },
+    {
+      "slide_id": "SLIDE_04",
+      "role": "CONTENT",
+      "section": "PHƯƠNG PHÁP LUẬN",
+      "assertion_title": "Dân Số Được Nghiên Cứu Song Hành Ở Trạng Thái Tĩnh Và Trạng Thái Động",
+      "primary_claim": "Trạng thái tĩnh phản ánh lát cắt tại một thời điểm; trạng thái động phản ánh dòng chảy biến động liên tục qua thời gian.",
+      "visual_job": "PROCESS",
+      "visual_anchor": "DUAL_STATE_CARDS",
+      "atoms": [
+        {
+          "title": "Trạng Thái Tĩnh (Thời Điểm)",
+          "text": "Chụp lại quy mô, phân bố và cơ cấu theo tuổi, giới tính, tình trạng hôn nhân, trình độ học vấn tại thời điểm tổng điều tra."
+        },
+        {
+          "title": "Vận Động Tự Nhiên (Động)",
+          "text": "Biến động liên tục của dân số thông qua quá trình sinh và chết; hình thành mức tăng tự nhiên của dân cư."
+        },
+        {
+          "title": "Vận Động Cơ Học (Động)",
+          "text": "Biến động thông qua các dòng di cư: Chuyển đến (nhập cư) và chuyển đi (xuất cư) giữa các vùng lãnh thổ."
+        },
+        {
+          "title": "Vận Động Xã Hội (Động)",
+          "text": "Sự chuyển dịch về trình độ học vấn, cơ cấu nghề nghiệp, mức sống và chất lượng thể chất - trí lực."
+        }
+      ],
+      "speaker_notes": "Sự kết hợp giữa điều tra tĩnh và theo dõi động giúp các nhà nhân khẩu học nắm bắt đầy đủ bức tranh biến đổi dân số.",
+      "source_footer": "Tài liệu Liên Hợp Quốc & Tổng cục Thống kê"
+    },
+    {
+      "slide_id": "SLIDE_05",
+      "role": "CONTENT",
+      "section": "BẢN CHẤT KHOA HỌC",
+      "assertion_title": "Dân Số Học Không Chỉ Mô Tả Hiện Tượng Mà Tìm Mối Quan Hệ Nhân Quả",
+      "primary_claim": "Nghiên cứu dân số học hướng tới việc giải thích 'Tại sao', dự báo tương lai và cung cấp luận cứ cho chính sách phát triển bền vững.",
+      "visual_job": "CARDS",
+      "visual_anchor": "THREE_PILLARS",
+      "atoms": [
+        {
+          "title": "1. Vượt Qua Mô Tả Đơn Thuần",
+          "text": "Không dừng ở câu hỏi 'Bao nhiêu người', mà phân tích nguyên nhân kinh tế, xã hội và công nghệ dẫn tới thay đổi mức sinh/chết."
+        },
+        {
+          "title": "2. Dự Báo Xu Hướng Tương Lai",
+          "text": "Xây dựng các kịch bản dân số nhằm chuẩn bị cơ sở hạ tầng, trường học, bệnh viện và hệ thống an sinh xã hội."
+        },
+        {
+          "title": "3. Luận Cứ Cho Chính Sách",
+          "text": "Cung cấp bằng chứng khoa học phục vụ chiến lược dân số, tận dụng cơ hội dân số vàng và thích ứng già hóa dân số."
+        }
+      ],
+      "speaker_notes": "Dân số học giữ vai trò then chốt trong việc hoạch định chính sách phát triển quốc gia dựa trên bằng chứng định lượng vững chắc.",
+      "source_footer": "Liên Hợp Quốc (UN 1958) & Chiến lược Dân số Việt Nam"
+    },
+    {
+      "slide_id": "SLIDE_06",
+      "role": "COVER",
+      "section": "TỔNG KẾT BÀI HỌC",
+      "assertion_title": "Dân Số Là Trung Tâm Của Mọi Chiến Lược Phát Triển Kinh Tế - Xã Hội",
+      "primary_claim": "Nắm vững quy luật dân số là điều kiện tiên quyết để xây dựng chính sách an sinh, lao động và tăng trưởng bền vững.",
+      "visual_job": "HERO_TITLE",
+      "visual_anchor": "BRAND_SUMMARY",
+      "speaker_notes": "Cảm ơn quý học viên đã lắng nghe. Xin mời thảo luận và đặt câu hỏi cho chuyên đề Nhập môn Dân số học.",
+      "source_footer": "Make Slide Pro V6.2 Certified • Khung chương trình chuẩn"
+    }
+  ]
+}

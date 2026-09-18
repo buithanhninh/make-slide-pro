@@ -1,7 +1,16 @@
 Set-StrictMode -Version Latest
 
 $script:MakeSlideProUtf8 = [System.Text.UTF8Encoding]::new($false)
-$script:MakeSlideProPathComparison = if ($PSVersionTable.Platform -eq 'Win32NT' -or $env:OS -eq 'Windows_NT') { [System.StringComparison]::OrdinalIgnoreCase } else { [System.StringComparison]::Ordinal }
+$isWindowsPlatform = [System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT -or $env:OS -eq 'Windows_NT'
+$script:MakeSlideProPathComparison = if ($isWindowsPlatform) { [System.StringComparison]::OrdinalIgnoreCase } else { [System.StringComparison]::Ordinal }
+
+function ConvertTo-HexLower {
+  param([byte[]]$Bytes)
+  if (-not $Bytes -or $Bytes.Length -eq 0) { return '' }
+  $builder = [System.Text.StringBuilder]::new($Bytes.Length * 2)
+  foreach ($b in $Bytes) { [void]$builder.Append($b.ToString('x2')) }
+  return $builder.ToString()
+}
 
 function Get-NormalizedFullPath {
   param([Parameter(Mandatory = $true)][string]$Path)

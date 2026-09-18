@@ -1,0 +1,83 @@
+{
+  "schema_version": "1.0",
+  "source_path": "Du An\\A Tuan Dan So\\Bai 1. Nhap mon DSH.docx",
+  "metrics": [
+    {
+      "metric_id": "MET_001",
+      "atom_id": "ATOM_001",
+      "raw_value": "5",
+      "unit": "tiết",
+      "context": "(Thời lượng: 5 tiết lý thuyết, 1 tiết thảo luận, thực hành)"
+    },
+    {
+      "metric_id": "MET_002",
+      "atom_id": "ATOM_001",
+      "raw_value": "1",
+      "unit": "tiết",
+      "context": "(Thời lượng: 5 tiết lý thuyết, 1 tiết thảo luận, thực hành)"
+    },
+    {
+      "metric_id": "MET_003",
+      "atom_id": "ATOM_004",
+      "raw_value": "1",
+      "unit": "",
+      "context": "1. Trình bày được các khái niệm về dân số và dân số học."
+    },
+    {
+      "metric_id": "MET_004",
+      "atom_id": "ATOM_005",
+      "raw_value": "2",
+      "unit": "",
+      "context": "2. Trình bày được về đối tượng, phạm vi và ý nghĩa, phương pháp nghiên cứu dân số học."
+    },
+    {
+      "metric_id": "MET_005",
+      "atom_id": "ATOM_011",
+      "raw_value": "3",
+      "unit": "",
+      "context": "- Nghiên cứu dân số ở trạng thái động: Nghiên cứu ba dạng vận động của dân số: Vận động tự nhiên thông qua sinh và chết;"
+    },
+    {
+      "metric_id": "MET_006",
+      "atom_id": "ATOM_013",
+      "raw_value": "1958",
+      "unit": "",
+      "context": "Năm 1958, Liên Hợp Quốc thống nhất khái niệm “Dân số học là khoa học nghiên cứu về dân số, về cơ bản liên quan đến quy m"
+    },
+    {
+      "metric_id": "MET_007",
+      "atom_id": "ATOM_029",
+      "raw_value": "15",
+      "unit": "",
+      "context": "Quy mô, cơ cấu, sự gia tăng dân số thường là kết tinh của các yếu tố kinh tế - xã hội, phản ánh các điều kiện xã hội. Vì"
+    },
+    {
+      "metric_id": "MET_008",
+      "atom_id": "ATOM_029",
+      "raw_value": "20",
+      "unit": "năm",
+      "context": "Quy mô, cơ cấu, sự gia tăng dân số thường là kết tinh của các yếu tố kinh tế - xã hội, phản ánh các điều kiện xã hội. Vì"
+    },
+    {
+      "metric_id": "MET_009",
+      "atom_id": "ATOM_031",
+      "raw_value": "1",
+      "unit": "",
+      "context": "1. Phân biệt khái niệm dân số và Dân số học."
+    },
+    {
+      "metric_id": "MET_010",
+      "atom_id": "ATOM_032",
+      "raw_value": "2",
+      "unit": "",
+      "context": "2. Trình bày và phân tích đối tượng và phương pháp nghiên cứu Dân số học."
+    },
+    {
+      "metric_id": "MET_011",
+      "atom_id": "ATOM_033",
+      "raw_value": "3",
+      "unit": "",
+      "context": "3. Phân tích mục đích, ý nghĩa thực tiễn việc học và nghiên cứu môn Dân số học."
+    }
+  ]
+}

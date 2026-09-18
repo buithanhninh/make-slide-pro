@@ -1,0 +1,237 @@
+{
+  "schema_version": "1.0",
+  "source_path": "Du An\\A Tuan Dan So\\Bai 1. Nhap mon DSH.docx",
+  "claims": [
+    {
+      "claim_id": "CLM_001",
+      "atom_id": "ATOM_001",
+      "priority": "P1",
+      "statement": "(Thời lượng: 5 tiết lý thuyết, 1 tiết thảo luận, thực hành)",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_002",
+      "atom_id": "ATOM_002",
+      "priority": "P0",
+      "statement": "MỤC TIÊU",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_003",
+      "atom_id": "ATOM_003",
+      "priority": "P1",
+      "statement": "Sau khi học xong bài này học viên có khả năng",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_004",
+      "atom_id": "ATOM_004",
+      "priority": "P0",
+      "statement": "1. Trình bày được các khái niệm về dân số và dân số học.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_005",
+      "atom_id": "ATOM_005",
+      "priority": "P1",
+      "statement": "2. Trình bày được về đối tượng, phạm vi và ý nghĩa, phương pháp nghiên cứu dân số học.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_006",
+      "atom_id": "ATOM_006",
+      "priority": "P2",
+      "statement": "Một hiện tượng đặc sắc trên Trái đất là có loài người sinh sống. Những người cùng cư trú trên một vùng lãnh thổ nhất định gọi là dân cư của vùng đó. Lãnh thổ ở đây có thể là xã, huyện, tỉnh, cả nước, một châu lục hay toàn bộ Trái Đất... Chẳng hạn: Dân cư phường Ngọc Hà, dân cư huyện Bát Xát, dân cư thành phố Hà Nội, ... Dân cư của một vùng lãnh thổ có thể được xem xét trên nhiều góc độ, như: số dân, sức khỏe, lịch sử, kinh tế, ngôn ngữ, thời trang, ẩm thực, phong tục, tập quán,...",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_007",
+      "atom_id": "ATOM_007",
+      "priority": "P0",
+      "statement": "Đối với Dân số thì thông tin được tìm hiểu đầu tiên là quy mô của dân cư, tức là tổng số người hay là tổng số dân. Để hiểu biết chi tiết hơn, người ta phân chia tổng số dân thành nhóm nam và nhóm nữ hoặc các nhóm khác nhau về độ tuổi, tức là nghiên cứu cơ cấu theo giới tính, độ tuổi… Do lịch sử hình thành và điều kiện sinh sống khác nhau nên con người cư trú trên các địa phương, các vùng cũng rất khác nhau, theo nghĩa: nơi đông đúc, chỗ lại thưa thớt. Sự phân chia tổng số dân theo từng địa phương, từng vùng gọi là phân bố dân số theo lãnh thổ. Ở Việt Nam, bước sang thế kỷ XXI,  trong các văn bản chính sách và pháp luật đã đề cập khái niệm chất lượng dân số.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_008",
+      "atom_id": "ATOM_008",
+      "priority": "P2",
+      "statement": "Quy mô, cơ cấu dân số trên một lãnh thổ không ngừng biến động do có người được sinh ra, có người bị chết, có người di cư đến và có người di cư đi, hoặc đơn giản chỉ là theo năm tháng, bất cứ ai cũng chuyển từ nhóm tuổi này sang nhóm tuổi khác. Như vậy, nói đến dân số là nói đến quy mô, cơ cấu, phân bố, chất lượng và những thành tố gây nên sự biến động của chúng như: sinh, chết, di cư. Do đó, dân số thường được nghiên cứu cả ở trạng thái tĩnh (tại một thời điểm), trạng thái động (trong một thời kỳ).",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_009",
+      "atom_id": "ATOM_009",
+      "priority": "P1",
+      "statement": "Vì vậy, dân số thường được nghiên cứu cả ở trạng thái tĩnh lẫn trạng thái động.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_010",
+      "atom_id": "ATOM_010",
+      "priority": "P2",
+      "statement": "- Nghiên cứu dân số ở trạng thái tĩnh: Nghiên cứu trạng thái dân số tại một thời điểm (thời điểm điều tra, hoặc tổng điều tra dân số): Số lượng, phân bố, cơ cấu dân số theo một hay nhiều tiêu thức như: Tuổi, giới tính, tình trạng hôn nhân, trình độ học vấn, nghề nghiệp, …",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_011",
+      "atom_id": "ATOM_011",
+      "priority": "P1",
+      "statement": "- Nghiên cứu dân số ở trạng thái động: Nghiên cứu ba dạng vận động của dân số: Vận động tự nhiên thông qua sinh và chết; vận động cơ học tức là đi và đến; vận động xã hội bao gồm những thay đổi về học vấn, nghề nghiệp, mức sống, hôn nhân… Kết quả của 3 dạng vận động nêu trên là tập hợp thay đổi liên tục, hay nói một cách khác là xảy ra quá trình biến động dân số theo nghĩa rộng.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_012",
+      "atom_id": "ATOM_012",
+      "priority": "P0",
+      "statement": "Nội hàm của khái niệm Dân cư không chỉ bao gồm số người, cơ cấu theo độ tuổi và giới tính,… mà còn gồm cả các vấn đề kinh tế, văn hoá, sức khoẻ, ngôn ngữ. Xã hội, phong tục, tâp quán,.... tức là rộng hơn rất nhiều so với nội hàm của khái niệm Dân số.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_013",
+      "atom_id": "ATOM_013",
+      "priority": "P0",
+      "statement": "Năm 1958, Liên Hợp Quốc thống nhất khái niệm “Dân số học là khoa học nghiên cứu về dân số, về cơ bản liên quan đến quy mô, cơ cấu và sự phát triển dân số”.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_014",
+      "atom_id": "ATOM_014",
+      "priority": "P1",
+      "statement": "Nhiều nhà khoa học cho rằng tái sản xuất dân số chỉ là đổi mới dân số thông qua sinh và chết, tức là biến động tự nhiên hay còn gọi là tái sản xuất dân số theo nghĩa hẹp. Họ cho rằng Dân số học chỉ trả lời câu hỏi: Quy mô dân số bao nhiêu, cơ cấu dân số thể hiện thế nào và phân bố dân số ra sao mà không trả lời câu hỏi tại sao lại như vậy. Tuy nhiên, chúng ta thấy rằng, vận động tự nhiên dân số giữ một vị trí trung tâm của quá trình dân số, song nếu chỉ dừng lại ở việc mô tả là chưa đủ, cần tìm được mối liên hệ vốn có giữa chúng với các điều kiện kinh tế, xã hội, kỹ thuật-công nghệ và môi trường phát sinh. Tức là tìm được mối quan hệ nhân quả giữa các quá trình dân số cũng như bản chất của quá trình này và từ đó dự báo dân số và xây dựng các chính sách dân số, kinh tế-xã hội đúng đắn và khoa học.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_015",
+      "atom_id": "ATOM_015",
+      "priority": "P0",
+      "statement": "Như vậy, có thể khái quát rằng Dân số học là một môn khoa học nghiên cứu quy mô, cơ cấu. phân bố và chất lượng dân số trong trạng thái tĩnh (tại một thời điểm điều tra hoặc tổng điều tra dân số nhất định) và trong trạng thái động (nghiên cứu biến động dân số qua thời gian bao gồm các loại biến động: Biến động tự nhiên (dưới tác động của sinh và chết), biến động cơ học (dưới tác động của di chuyển đi và đến), biến động xã hội (trình độ học vấn, nghề nghiệp…) và biến động chất lượng dân số (về thể chất: Chiều cao, cân nặng, sức khỏe thể hiện thông qua tuổi thọ bình quân của dân số; về trí lực: Chỉ số IQ, trình độ học vấn, trình độ chuyên môn nghề nghiệp của dân số thể hiện thông qua chất lượng lao động, kỷ luật lao động và kỹ năng sống…).",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_016",
+      "atom_id": "ATOM_016",
+      "priority": "P0",
+      "statement": "Đối tượng nghiên cứu của Dân số học: Từ các khái niệm đã nêu, đối tượng nghiên cứu của Dân số học là con người và các đặc trưng của chủ thể đó.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_017",
+      "atom_id": "ATOM_017",
+      "priority": "P0",
+      "statement": "Tái sản xuất dân số theo nghĩa hẹp là quá trình thay thế không ngừng các thế hệ dân số kế tiếp nhau thông qua các sự kiện sinh và chết. Tuy nhiên, sự biến động thuần tuý mang tính tự nhiên chỉ có được trên quy mô toàn thế giới (hoặc quy mô từng quốc gia nếu coi dân số của mỗi nước là một dân số đóng). Ở các vùng lãnh thổ nhỏ hơn thường xảy ra tình trạng di cư, sự dịch chuyển dân cư từ vùng lãnh thổ này đến vùng lãnh thổ khác. Theo nghĩa hẹp, sự di chuyển này không làm thay đổi số lượng, cơ cấu dân số của cả nước nhưng thực tế nó làm thay đổi cấu trúc dân số của các vùng đó, thay đổi điều kiện sống của những người dân di cư cũng như những người dân không di cư. Thậm chí làm thay đổi tập quán dân cư ở những vùng có người đi và vùng có người đến… Vì vậy sẽ làm thay đổi hành vi dân số ở các vùng. Như vậy, xét theo nghĩa rộng, di cư cũng là một yếu tố làm thay đổi quá trình dân số. Trên cơ sở này, khái niệm tái sản xuất dân số theo nghĩa rộng được hình thành.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_018",
+      "atom_id": "ATOM_018",
+      "priority": "P1",
+      "statement": "Tái sản xuất dân số theo nghĩa rộng là quá trình thay thế không ngừng các thế hệ dân số kế tiếp nhau thông qua các sự kiện sinh, chết và di cư. Quan điểm này cho rằng tái sản suất dân số theo nghĩa rộng mới chính là đối tượng của Dân số học.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_019",
+      "atom_id": "ATOM_019",
+      "priority": "P1",
+      "statement": "Tuy nhiên, các quá trình dân số vận động liên tục, không ngừng thay đổi về lượng và chất, thế hệ sau kế tiếp thế hệ trước ở mức độ phát triển cao hơn. Tập hợp những thay đổi dân số như vậy gọi là quá trình tái sản xuất dân số. Xét về lượng, nếu dân số của kỳ sau lớn hơn dân số của kỳ trước thì ta có kiểu tái sản xuất dân số mở rộng, nếu dân số kỳ sau nhỏ hơn dân số kỳ trước là tái sản xuất dân số thu hẹp. Mặt khác, Dân số học cũng hết sức chú ý đến nghiên cứu về chất lượng dân số như biến động về thể lực, về trí lực và sự tham gia hoạt động xã hội của con người.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_020",
+      "atom_id": "ATOM_020",
+      "priority": "P2",
+      "statement": "Dân số học không chỉ hạn chế ở nghiên cứu quy mô, cơ cấu, phân bố, chất lượng dân số trong trạng thái tĩnh mà nghiên cứu cả ở trạng thái động. Vì vậy, cần nghiên cứu những thành tố trực tiếp gây nên trạng thái động này, như: sinh sản, tử vong và di cư. Các thành tố này diễn ra trong những bối cảnh kinh tế, xã hội, môi trường  nhất định và chịu tác động của bối cảnh này. Vì vậy, trong nghiên cứu dân số, các yếu tố kinh tế, xã hội, môi trường luôn được đề cập để giải thích các hiện tượng và quá trình dân số.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_021",
+      "atom_id": "ATOM_021",
+      "priority": "P1",
+      "statement": "Con người, ngoài những yếu tố tự nhiên, sinh học còn tồn tại trong những điều kiện kinh tế-xã hội nhất định và chịu sự tác động của chính những điều kiện kinh tế-xã hội xung quanh. Cao hơn nữa, con người là tổng hoà các mối quan hệ xã hội. Do đó, khi nghiên cứu bất kỳ một hiện tượng hoặc một quá trình dân số nào cũng cần đặt trong những điều kiện lịch sử cụ thể. Cần phải nghiên cứu bằng quan điểm toàn diện, quan điểm phát triển… của phép duy vật biện chứng.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_022",
+      "atom_id": "ATOM_022",
+      "priority": "P1",
+      "statement": "Các phương pháp thống kê cũng được sử dụng rất rộng rãi trong Dân số học, từ việc thu thập số liệu, xử lý thông tin đến việc trình bày, phân tích các số liệu về dân số. Các nhà dân số học cho rằng thống kê là công cụ không thể thiếu được trong quá trình nghiên cứu dân số.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_023",
+      "atom_id": "ATOM_023",
+      "priority": "P1",
+      "statement": "Ngoài ra, toán học cũng được sử dụng nhiều trong dân số học để mô hình hoá các quá trình dân số, để biểu diễn quá trình tăng trưởng dân số, hoặc các mối liên hệ giữa các biến dân số với các biến khác bằng các hàm số toán học.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_024",
+      "atom_id": "ATOM_024",
+      "priority": "P2",
+      "statement": "Dân số học còn sử dụng các công cụ khác như: Lịch sử dân số học; Kinh tế  dân số, nhân chủng học, ứng dụng các bảng tính dân số.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_025",
+      "atom_id": "ATOM_025",
+      "priority": "P1",
+      "statement": "Để nghiên cứu \"con người xã hội\" phải sử dụng các phương pháp điều tra, thu thập, xử lý thông tin xã hội học.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_026",
+      "atom_id": "ATOM_026",
+      "priority": "P1",
+      "statement": "Ngoài ra, Dân số học còn sử dụng các phương pháp về dự báo dân số, phương pháp tâm lý học xã hội và những cơ sở học thuyết, lý thuyết hình thành chính sách dân số.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_027",
+      "atom_id": "ATOM_027",
+      "priority": "P1",
+      "statement": "Bất kỳ một hình thái kinh tế xã hội nào, muốn tồn tại và phát triển đều phải duy trì hai dòng sản xuất: Sản xuất ra của cải vật chất (tư liệu sản xuất và tư liệu tiêu dùng) và sản xuất ra chính bản thân con người. Hai dòng sản xuất này luôn tồn tại đồng thời và có mối liên hệ, tác động lẫn nhau. Vì vậy, nghiên cứu tái sản xuất dân số mang ý nghĩa dân số học liên quan trực tiếp và quyết định đến sự tồn tại và phát triển xã hội.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_028",
+      "atom_id": "ATOM_028",
+      "priority": "P1",
+      "statement": "Trong mối liên hệ với nền sản xuất xã hội, con người vừa là chủ thể quyết định sự tồn tại và phát triển kinh tế-xã hội, vừa là khách thể, là lực lượng tiêu dùng những của cải xã hội do mình tạo ra. Vì vậy, các dự báo kinh tế-xã hội, ngay cả các kế hoạch sản xuất, dịch vụ không thể thiếu được các nhân tố về quy mô, cơ cấu dân số, phân bổ dân số, chất lượng nguồn nhân lực. Việc nghiên cứu các vấn đề kinh tế-xã hội cần bắt đầu bằng việc mô tả thực trạng tình hình dân số, là mẫu số của mọi bài toán phát triển.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_029",
+      "atom_id": "ATOM_029",
+      "priority": "P2",
+      "statement": "Quy mô, cơ cấu, sự gia tăng dân số thường là kết tinh của các yếu tố kinh tế - xã hội, phản ánh các điều kiện xã hội. Vì vậy, xuất phát từ các đặc trưng của dân số, từ các yếu tố dân số, có thể tìm hiểu, phát hiện dự báo các vấn đề kinh tế - xã hội khác. Chẳng hạn, nghiên cứu luồng di dân giữa nông thôn và thành thị cho phép đánh giá tình hình phát triển kinh tế của đất nước, \"sự bùng nổ trẻ em\" hôm nay sẽ giúp ta dự báo sự bùng nổ nhu cầu việc làm trong khoảng 15 - 20 năm sau.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_030",
+      "atom_id": "ATOM_030",
+      "priority": "P1",
+      "statement": "Nếu xét riêng trong lĩnh vực dân số, các thông tin chính xác về các yếu tố dân số cho phép thấy được bức tranh toàn cảnh về dân số. Đó chính là một nền tảng vật chất quan trọng của xã hội, mà dựa vào đó người ta có thể thực hiện việc quản lý có hiệu quả sự phát triển dân số của đất nước cũng như từng khu vực. Đó cũng chính là cơ sở để hoạch định chính sách dân số quốc gia một cách hợp lý. Có thể thấy rằng, Dân số học cho phép hiểu biết một trong những cơ sở vật chất của xã hội, qua đó hiểu biết đời sống xã hội và góp phần thúc đẩy xã hội phát triển.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_031",
+      "atom_id": "ATOM_031",
+      "priority": "P0",
+      "statement": "1. Phân biệt khái niệm dân số và Dân số học.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_032",
+      "atom_id": "ATOM_032",
+      "priority": "P1",
+      "statement": "2. Trình bày và phân tích đối tượng và phương pháp nghiên cứu Dân số học.",
+      "verified": true
+    },
+    {
+      "claim_id": "CLM_033",
+      "atom_id": "ATOM_033",
+      "priority": "P1",
+      "statement": "3. Phân tích mục đích, ý nghĩa thực tiễn việc học và nghiên cứu môn Dân số học.",
+      "verified": true
+    }
+  ]
+}

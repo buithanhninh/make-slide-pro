@@ -1,15 +1,18 @@
-# Modern Refined Visual System
+# Modern Refined Visual System (Make Slide Pro Definitive V7.0)
 
 ## Intent
 
-Modern refined nghĩa là hierarchy rõ, whitespace rộng, geometry chính xác, contrast cao, màu tiết chế và một visual anchor đáng nhớ. Không đồng nghĩa neon, gradient ồn, dashboard card grid hoặc decoration dày đặc.
+Hệ thống Make Slide Pro V7.0 xác lập chuẩn thị giác cao nhất là **Cinematic Spatial Keynote** (Dark Luxury Obsidian) theo quy chuẩn tại `references/cinematic-spatial-keynote-architecture.md`. 
+Đặc trưng cốt lõi: Nền tối nguyên khối (`#060B14`), thẻ kính mờ midnight (`#0B132B`), viền neon phát quang tinh tế (`#06B6D4`, `#10B981`, `#F59E0B`), tranh minh họa không gian 3D AI độc bản, hierarchy rõ, whitespace rộng, geometry chuẩn mực và tương phản WCAG AAA vượt trội.
 
-Load tokens từ `assets/style-presets/modern-refined.tokens.json`. Brand rules luôn ưu tiên hơn preset. Không tạo visual language thứ hai giữa deck.
+### Invariant: Zero Information Noise (Tối Giản Thông Tin Tuyệt Đối)
+- **Tuyệt đối CẤM chèn Watermark hệ thống**: Không thêm các dòng chữ meta như `Make Slide Pro Certified...` hay bản quyền tool vào slide.
+- **Tuyệt đối CẤM chèn nhãn đè lên tranh 3D**: Không dán badge tiếng Anh nhân tạo (`SPATIAL DEMOGRAPHIC NEXUS`...) đè lên artwork. Tác phẩm 3D phải đứng độc lập, khoáng đạt và thanh khiết.
 
 ## Composition
 
 - Dùng canvas 16:9 và 8-point grid.
-- Giữ safe inset, title rail và footer rail nhất quán.
+- Giữ safe inset, title rail nhất quán; loại bỏ footer meta thừa.
 - Chọn một reading path chính: trái sang phải, trên xuống dưới hoặc focal-to-proof.
 - Dùng 1–2 columns cho evidence; card chỉ dùng khi grouping có semantic purpose.
 - Giữ alignment edges, gutters và baseline rhythm ổn định.
@@ -17,7 +20,12 @@ Load tokens từ `assets/style-presets/modern-refined.tokens.json`. Brand rules 
 
 ## Color
 
-Dùng base, surface, ink, muted, brand, accent và semantic colors từ tokens. Brand color dành cho action/emphasis, không tô mọi object. Red/green không được là phân biệt duy nhất. Danger/warning/success chỉ dùng theo meaning. Chạy contrast audit trước release.
+Dùng hệ màu Dark Luxury Obsidian:
+- Base: `#060B14` (Obsidian Canvas)
+- Card: `#0B132B` (Midnight Slate)
+- Text: `#FFFFFF` (Heading 100%), `#CBD5E1` (Body text), `#94A3B8` (Muted)
+- Accents: `#06B6D4` (Cyan), `#10B981` (Emerald), `#F59E0B` (Amber), `#8B5CF6` (Violet)
+Tất cả các thành phần phải vượt qua audit tương phản WCAG AAA (>12:1).
 
 ## Typography
 

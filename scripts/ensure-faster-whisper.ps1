@@ -39,10 +39,11 @@ function Write-Receipt {
 }
 
 function Get-PlatformLockStatus {
-  $platformIsWindows = $PSVersionTable.Platform -eq 'Win32NT' -or $env:OS -eq 'Windows_NT'
+  $platformIsWindows = [System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT -or $env:OS -eq 'Windows_NT'
   $architecture = if ($env:PROCESSOR_ARCHITEW6432) { $env:PROCESSOR_ARCHITEW6432 } else { $env:PROCESSOR_ARCHITECTURE }
   $isAmd64 = $architecture -in @('AMD64', 'x86_64')
-  return [ordered]@{ supported = $platformIsWindows -and [Environment]::Is64BitOperatingSystem -and $isAmd64; os = if ($platformIsWindows) { 'Windows' } else { [string]$PSVersionTable.OS }; architecture = $architecture; is_64_bit = [Environment]::Is64BitOperatingSystem }
+  $osName = if ($platformIsWindows) { 'Windows' } elseif ($PSVersionTable.PSObject.Properties['OS']) { [string]$PSVersionTable.OS } else { 'Unix' }
+  return [ordered]@{ supported = $platformIsWindows -and [Environment]::Is64BitOperatingSystem -and $isAmd64; os = $osName; architecture = $architecture; is_64_bit = [Environment]::Is64BitOperatingSystem }
 }
 
 function Assert-SafeCacheRoot {
@@ -74,7 +75,7 @@ function Get-AsrMutexName {
   $bytes = [System.Text.Encoding]::UTF8.GetBytes($normalized)
   $sha = [System.Security.Cryptography.SHA256]::Create()
   try {
-    $hash = [System.Convert]::ToHexString($sha.ComputeHash($bytes)).ToLowerInvariant()
+    $hash = ConvertTo-HexLower ($sha.ComputeHash($bytes))
   } finally {
     $sha.Dispose()
   }

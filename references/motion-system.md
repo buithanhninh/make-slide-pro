@@ -33,13 +33,20 @@ Storyboard dùng `schema_version=1.0`, `replace_existing=true` và không có pr
 
 Không animate quanh static defect. Không dùng hidden animation che caveat, source, label hoặc material data. Không để transition imply causality không có trong nguồn.
 
-## Morph safety
+## Morph safety & Spatial Stage Continuity (Invariant)
 
-Dùng Morph chỉ khi object identity stable và continuity thật. Không dựa vào accidental name matching. Tránh Morph giữa unrelated charts, changed data hoặc missing objects. Nếu native result không chắc, dùng Fade/Wipe và ghi limitation.
+- **Persistent Stage Anchor (`!!Stage_Hero_Container`)**: 
+  Thực thể sân khấu hình ảnh 3D AI phải giữ nguyên định danh `!!Stage_Hero_Container` qua các slide để PowerPoint Morph (`ppEffectMorphByObject = 3954`, Duration = 0.85s - 0.9s) tự động nội suy tọa độ, kích thước và góc bo mà không làm chớp giật nền.
+- **Anti-Flicker Invariant**:
+  Đối tượng đích `!!Stage_Hero_Container` trên slide mới **tuyệt đối KHÔNG gán entrance animation**. Nếu gán entrance animation, PowerPoint sẽ ẩn hình ảnh trong lúc morph, gây ra lỗi chớp tắt màn hình hoặc biến mất đột ngột.
 
-## Click and timing safety
+## Click and timing safety (In-Slide Click Sequencing)
 
-Set `AdvanceOnClick=true` và `AdvanceOnTime=false` trên mọi final slide. Audit `AdvanceTime`, trigger type, sequence order và shape existence. Auto-advance là P0 vì có thể skip material content.
+- **Sequential Reveal (`AdvanceOnClick=true`, `msoAnimTriggerOnPageClick`)**:
+  - Mọi slide nội dung (Content Slide) bắt buộc phải cấu hình xuất hiện tuần tự theo từng click chuột của diễn giả.
+  - Khi chuyển slide: Morph hoàn thành việc định hình cấu trúc và mỏ neo thị giác; các thẻ nội dung chi tiết (`Card 1`, `Card 2`,...) vẫn ở trạng thái ẩn.
+  - Mỗi lần click chuột: Từng khối thẻ xuất hiện độc lập (`msoAnimTriggerOnPageClick` trên group shape), giúp người thuyết trình hoàn toàn kiểm soát nhịp giảng.
+  - Auto-advance là P0 defect vì có thể skip material content và gây ức chế cho người nghe.
 
 ## Preview review
 

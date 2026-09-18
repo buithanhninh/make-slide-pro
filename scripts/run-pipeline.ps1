@@ -124,7 +124,7 @@ function Get-SourceSnapshotHash {
   $canonical = [string]::Join("`n", @($records | Sort-Object -CaseSensitive))
   $sha = [Security.Cryptography.SHA256]::Create()
   try {
-    return ([Convert]::ToHexString($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($canonical)))).ToLowerInvariant()
+    return ConvertTo-HexLower ($sha.ComputeHash([Text.Encoding]::UTF8.GetBytes($canonical)))
   } finally {
     $sha.Dispose()
   }
