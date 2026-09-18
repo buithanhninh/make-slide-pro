@@ -31,6 +31,7 @@ from blueprint_generator import generate_blueprints_from_canonical
 from author_native_com import NativeDeckAuthor
 from multi_agent_qa import MultiAgentQABoard
 from demographic_visualizer import render_all_demographic_charts
+from macc_council import MultiRoundCouncilOrchestrator
 
 
 def slugify(text: str) -> str:
@@ -93,6 +94,33 @@ def run_batch_pipeline(input_dir: Path, output_root: Path) -> Dict[str, Any]:
             json.dump(blueprints, f, ensure_ascii=False, indent=2)
 
         print(f"      ✔ Blueprints: {blueprints['total_slides']} slides created ('{blueprints['deck_title']}')")
+
+        # Step 2.5: MACC-QA V8.0 16-Agent Omniscient Council Dialectical Review & Auto-Remediation
+        orchestrator = MultiRoundCouncilOrchestrator()
+        canonical_text = " ".join(
+            sec.get("title", "") + " " + " ".join(sec.get("paragraphs", []))
+            for sec in canonical.get("sections", [])
+        )
+        council_context = {
+            "canonical_text": canonical_text,
+            "source_text": canonical_text,
+            "deck_title": blueprints.get("deck_title", "")
+        }
+        council_report = orchestrator.run_convergence_loop(
+            target=blueprints,
+            context=council_context,
+            max_rounds=5
+        )
+        if council_report.remediated_slides:
+            blueprints["slides"] = council_report.remediated_slides
+            blueprints["total_slides"] = len(council_report.remediated_slides)
+            with open(bp_path, "w", encoding="utf-8") as f:
+                json.dump(blueprints, f, ensure_ascii=False, indent=2)
+
+        with open(lesson_out_dir / "macc-council-report.json", "w", encoding="utf-8") as f:
+            json.dump(council_report.model_dump(), f, ensure_ascii=False, indent=2)
+
+        print(f"      ✔ MACC-QA V8.0 Council: Converged Score = {council_report.final_score:.1f}/100 in {council_report.total_rounds} rounds | P0={council_report.p0_count}, P1={council_report.p1_count}, P2={council_report.p2_count}")
 
         # Step 3: Native PowerPoint Authoring (Dual-Theme: DARK & LIGHT)
         import shutil

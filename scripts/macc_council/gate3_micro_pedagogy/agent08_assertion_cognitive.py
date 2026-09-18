@@ -92,7 +92,7 @@ class AssertionCognitiveArbiter(BaseCouncilAgent):
             archetype = s.get("archetype", "")
 
             # Exclude cover / title hero slides
-            if idx == 0 and archetype in ("title_hero", "cover", "hero_cover"):
+            if s.get("role", "").upper() == "COVER" or s.get("visual_job", "").upper() == "HERO_TITLE" or (idx == 0 and archetype in ("title_hero", "cover", "hero_cover")):
                 pass
             else:
                 clean_title = title.lower().strip()

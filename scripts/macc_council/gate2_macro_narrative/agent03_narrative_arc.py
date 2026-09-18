@@ -29,7 +29,8 @@ class NarrativeArcDirector(BaseCouncilAgent):
 
     AGENDA_KEYWORDS = [
         "mục lục", "nội dung", "chương trình", "tổng quan", "agenda",
-        "khung nội dung", "outline", "các phần chính", "cấu trúc bài"
+        "khung nội dung", "outline", "các phần chính", "cấu trúc bài",
+        "mục tiêu", "mục tiêu bài học", "chuẩn đầu ra", "trọng tâm bài học", "nội dung cốt lõi"
     ]
 
     PROBLEM_KEYWORDS = [
@@ -91,7 +92,7 @@ class NarrativeArcDirector(BaseCouncilAgent):
             has_agenda = False
             for s in slides[:3]:
                 stext = self.extract_slide_text(s).lower()
-                sarchetype = s.get("archetype", "")
+                sarchetype = s.get("archetype") or s.get("visual_job", "")
                 if sarchetype in ["agenda_list", "timeline_horizontal"] or any(k in stext for k in self.AGENDA_KEYWORDS):
                     has_agenda = True
                     break

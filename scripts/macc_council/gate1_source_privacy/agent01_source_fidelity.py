@@ -147,19 +147,36 @@ class SourceFidelityFactChecker(BaseCouncilAgent):
                         exists = self._is_number_in_text(val_float, unit_str, clean_canonical)
 
                     if not exists:
-                        findings.append(
-                            AgentFinding(
-                                agent=self.name,
-                                gate=self.gate,
-                                slide_id=slide_id,
-                                severity=Severity.P0,
-                                issue=f"Số liệu định lượng '{raw_metric}' không có trong tài liệu gốc (Ảo giác / Hallucination)",
-                                rationale="Mọi số liệu tài chính, %, sản lượng trên slide bắt buộc phải bắt nguồn trực tiếp từ văn bản gốc.",
-                                suggestion=f"Xóa bỏ số liệu '{raw_metric}' hoặc thay bằng số liệu thực chứng từ tài liệu nguồn.",
-                                evidence=f"Clause: '{clause}'",
-                                original_value=raw_metric
+                        footer = s.get("source_footer", "").strip()
+                        is_strict = context.get("strict_canonical_only", False)
+                        if footer and not is_strict:
+                            findings.append(
+                                AgentFinding(
+                                    agent=self.name,
+                                    gate=self.gate,
+                                    slide_id=slide_id,
+                                    severity=Severity.P2,
+                                    issue=f"Số liệu định lượng '{raw_metric}' trích từ nguồn mở rộng: '{footer}'",
+                                    rationale="Số liệu này có trích dẫn nguồn ở footer nhưng không xuất hiện trong tài liệu gốc.",
+                                    suggestion="Xác thực nguồn mở rộng hoặc đối chiếu với tài liệu gốc.",
+                                    evidence=f"Clause: '{clause}', Footer: '{footer}'",
+                                    original_value=raw_metric
+                                )
                             )
-                        )
+                        else:
+                            findings.append(
+                                AgentFinding(
+                                    agent=self.name,
+                                    gate=self.gate,
+                                    slide_id=slide_id,
+                                    severity=Severity.P0,
+                                    issue=f"Số liệu định lượng '{raw_metric}' không có trong tài liệu gốc (Ảo giác / Hallucination)",
+                                    rationale="Mọi số liệu tài chính, %, sản lượng trên slide bắt buộc phải bắt nguồn trực tiếp từ văn bản gốc.",
+                                    suggestion=f"Xóa bỏ số liệu '{raw_metric}' hoặc thay bằng số liệu thực chứng từ tài liệu nguồn.",
+                                    evidence=f"Clause: '{clause}'",
+                                    original_value=raw_metric
+                                )
+                            )
                         continue
 
                     # Find matching canonical clauses for this value
