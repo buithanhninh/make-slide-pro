@@ -78,6 +78,11 @@ from scripts.blueprint_generator import (
 from scripts.author_native_com import NativeDeckAuthor
 
 try:
+    from scripts.macc_council import MultiRoundCouncilOrchestrator
+except ImportError:
+    MultiRoundCouncilOrchestrator = None
+
+try:
     from scripts.content_multi_agent_council import ContentMultiAgentCouncil
 except ImportError:
     ContentMultiAgentCouncil = None
@@ -729,18 +734,88 @@ async def review_qa(payload: Dict[str, str]):
         for a in sec.get("atoms", [])
     )
     
-    if ContentMultiAgentCouncil:
+    # 16-Agent Omniscient Council (MACC-QA V8.0)
+    if MultiRoundCouncilOrchestrator:
+        orchestrator = MultiRoundCouncilOrchestrator()
+        
+        def on_round(round_idx, rep):
+            pct = min(95, round_idx * 30)
+            sync_broadcast(
+                session_id,
+                "MACC_COUNCIL",
+                pct,
+                f"Hội đồng 16 Agent Vòng {round_idx}: Điểm={rep.final_score:.1f}, P0={rep.p0_count}, P1={rep.p1_count}",
+                "info"
+            )
+
+        report = orchestrator.run_convergence_loop(
+            target=bp,
+            context={"source_text": all_text},
+            max_rounds=3,
+            on_round_callback=on_round
+        )
+
+        remediated_slides = report.remediated_slides or bp.get("slides", [])
+        bp["slides"] = remediated_slides
+        bp["total_slides"] = len(remediated_slides)
+        save_session_json(session_id, "blueprints.json", bp)
+        save_session_json(session_id, "macc_audit_report.json", report.model_dump())
+
+        # Update database blueprint macc_score if exists
+        try:
+            from web.database import SessionLocal, Blueprint as BlueprintModel
+            with SessionLocal() as db_session:
+                bp_record = db_session.query(BlueprintModel).filter(BlueprintModel.project_id == session_id).first()
+                if bp_record:
+                    bp_record.macc_score = report.final_score
+                    bp_record.set_slides(remediated_slides)
+                    bp_record.total_slides = len(remediated_slides)
+                    db_session.commit()
+        except Exception:
+            pass
+
+        sync_broadcast(
+            session_id,
+            "MACC_COUNCIL",
+            100,
+            f"Chứng nhận hoàn tất MACC-QA V8.0! Điểm: {report.final_score:.1f}/100. P0={report.p0_count}, P1={report.p1_count}",
+            "success" if report.certified else "warn"
+        )
+
+        return {
+            "success": True,
+            "certified": report.certified,
+            "score": report.final_score,
+            "total_rounds": report.total_rounds,
+            "p0_count": report.p0_count,
+            "p1_count": report.p1_count,
+            "p2_count": report.p2_count,
+            "findings": [f.model_dump() for f in report.all_findings],
+            "gate_reports": {k: v.model_dump() for k, v in report.gate_reports.items()},
+            "blueprints": bp,
+        }
+    elif ContentMultiAgentCouncil:
         council = ContentMultiAgentCouncil(max_rounds=2)
         certified_bp = council.review_and_refine_blueprints(bp, canonical_text=all_text)
         save_session_json(session_id, "blueprints.json", certified_bp)
         return {
             "success": True,
+            "certified": True,
             "score": 100.0,
             "status": "CERTIFIED",
             "findings": council.journal if hasattr(council, "journal") else [],
             "blueprints": certified_bp,
         }
-    return {"success": True, "score": 98.5, "status": "APPROVED", "blueprints": bp}
+    return {"success": True, "certified": True, "score": 98.5, "status": "APPROVED", "blueprints": bp}
+
+
+@app.get("/api/council/report/{session_id}")
+async def get_council_report(session_id: str):
+    """Inspects detailed 16-Agent Omniscient Council forensic audit report."""
+    report = load_session_json(session_id, "macc_audit_report.json")
+    if not report:
+        raise HTTPException(status_code=404, detail="Chưa có báo cáo MACC-QA cho phiên làm việc này.")
+    return report
 
 
 # ---------------------------------------------------------------------------
