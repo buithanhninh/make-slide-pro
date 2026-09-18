@@ -29,10 +29,15 @@ pip install -r requirements.txt
 
 ## 3. Cách Sử Dụng
 
+### Cách 0: Web Studio Trực Quan (Khuyến Nghị)
+Khởi chạy ứng dụng Web Studio trên trình duyệt qua 1-click script:
+- Nhấp đúp **`run_web_studio.bat`** (hoặc chạy `python run_web_studio.py`).
+- Tự động mở trình duyệt tại `http://localhost:8000`: Kéo thả tài liệu, chỉnh sửa kịch bản storyboard trực quan, tương tác cùng trợ lý **AI Slide Copilot**, theo dõi tiến trình thời gian thực và trình chiếu toàn màn hình trực tiếp trên web!
+
 ### Cách 1: Kéo thả 1-Click
 Kéo bất kỳ file `.docx`, `.pdf`, `.txt`, hoặc `.md` thả trực tiếp vào tệp `run_make_slide_pro.bat`.
 
-### Cách 2: Giao diện tương tác
+### Cách 2: Giao diện dòng lệnh tương tác (Console Menu)
 Nhấp đúp `run_make_slide_pro.bat` hoặc chạy:
 ```powershell
 python make_slide_pro.py

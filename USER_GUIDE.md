@@ -34,14 +34,24 @@ pip install -r requirements.txt
 
 ---
 
-## 3. Ba Cách Khởi Chạy Make Slide Pro
+## 3. Các Cách Khởi Chạy Make Slide Pro
 
-### Cách 1: Kéo Thả 1-Click (Dễ Nhất)
+### Cách 0: Trải Nghiệm Make Slide Pro Web Studio (Giao Diện Web Trực Quan - KHUYẾN NGHỊ)
+1. Nhấp đúp chuột vào tệp **`run_web_studio.bat`** (hoặc chạy lệnh `python run_web_studio.py`).
+2. Trình duyệt sẽ tự động mở giao diện Web Studio tại địa chỉ `http://localhost:8000`.
+3. Bạn có thể:
+   - **Kéo thả tài liệu** hoặc dán nội dung văn bản trực tiếp.
+   - **Biên tập kịch bản Storyboard trực quan**: Đổi dạng bố cục từng slide (Thẻ, Bento, Công thức, Bảng, Biểu đồ, Minh họa AI), sửa tiêu đề, di chuyển vị trí slide.
+   - **Tương tác với AI Slide Copilot**: Ra lệnh bằng tiếng Việt (ví dụ: *"Đổi slide 2 thành dạng SO SÁNH"*, *"Thêm slide kết luận"*).
+   - **Bấm "Biên Dịch PowerPoint"**: Xem thanh tiến trình thời gian thực qua WebSocket.
+   - **Xem thư viện slide 1080p và Trình chiếu toàn màn hình (Web Presenter)** trực tiếp trên trình duyệt, hoặc tải về file `.pptx` Nền Tối & Nền Sáng.
+
+### Cách 1: Kéo Thả 1-Click (Nhanh Nhất)
 1. Mở thư mục `Make Slide PPT`.
 2. Kéo tệp tài liệu của bạn (ví dụ: `Tai_Lieu.docx` hoặc `Bao_Cao.pdf`) và **thả trực tiếp vào tệp `run_make_slide_pro.bat`**.
 3. Phần mềm sẽ tự động nạp liệu, dựng slide, kiểm định QA và tự động mở file PowerPoint hoàn tất lên cho bạn!
 
-### Cách 2: Chế Độ Menu Tương Tác (Interactive Mode)
+### Cách 2: Chế Độ Menu Tương Tác (Console Menu)
 Chỉ cần nhấp đúp vào `run_make_slide_pro.bat` hoặc gõ:
 ```powershell
 python make_slide_pro.py
