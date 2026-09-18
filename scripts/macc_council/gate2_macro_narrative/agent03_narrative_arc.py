@@ -1,8 +1,8 @@
 """
 scripts/macc_council/gate2_macro_narrative/agent03_narrative_arc.py
-Agent 3: NarrativeArcDirector (Macro-Narrative Arc & Storyline Flow).
+Agent 3: NarrativeArcDirector (Macro-Narrative Arc & Storyline Flow V8.0).
 Ensures presentations adhere to Minto Pyramid structure, clear situation-complication-resolution flow,
-and non-abrupt endings with robust Call-to-Actions (CTA).
+non-abrupt endings with robust Call-to-Actions (CTA), and executive agendas for deep decks.
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from ..models import AgentFinding, Severity
 class NarrativeArcDirector(BaseCouncilAgent):
     """
     Agent 03: Narrative Arc Director.
-    Validates presentation narrative spine, Minto Pyramid hierarchy,
+    Validates presentation narrative spine, Minto Pyramid hierarchy (SCQA),
     logical section progression, and Call-To-Action (CTA) closure.
     """
 
@@ -30,6 +30,16 @@ class NarrativeArcDirector(BaseCouncilAgent):
     AGENDA_KEYWORDS = [
         "mục lục", "nội dung", "chương trình", "tổng quan", "agenda",
         "khung nội dung", "outline", "các phần chính", "cấu trúc bài"
+    ]
+
+    PROBLEM_KEYWORDS = [
+        "thực trạng", "bối cảnh", "thách thức", "khủng hoảng", "khó khăn",
+        "vấn đề", "điểm nghẽn", "rủi ro", "hạn chế", "tồn tại", "nguyên nhân"
+    ]
+
+    SOLUTION_KEYWORDS = [
+        "giải pháp", "đề xuất", "phương án", "chiến lược", "hành động",
+        "triển khai", "ứng dụng", "công nghệ", "kiến trúc", "mô hình"
     ]
 
     def __init__(self):
@@ -51,30 +61,32 @@ class NarrativeArcDirector(BaseCouncilAgent):
 
         total_slides = len(slides)
 
-        # 1. Deck Length & Opening Verification (Title / Thesis / Agenda)
-        if total_slides >= 1:
-            first_slide = slides[0]
-            first_text = self.extract_slide_text(first_slide).lower()
-            first_archetype = first_slide.get("archetype", "")
+        # ----------------------------------------------------
+        # 1. Deck Opening & Title Verification
+        # ----------------------------------------------------
+        first_slide = slides[0]
+        first_text = self.extract_slide_text(first_slide).lower()
+        first_archetype = first_slide.get("archetype", "")
 
-            # If the first slide is an analytical data table or complex comparison without title context
-            if first_archetype in ["table_dense", "data_matrix", "quadrant_matrix"] and not any(
-                k in first_text for k in ["báo cáo", "tổng quan", "nghiên cứu", "chiến lược", "kế hoạch"]
-            ):
-                findings.append(
-                    AgentFinding(
-                        agent=self.name,
-                        gate=self.gate,
-                        slide_id=first_slide.get("slide_id", "slide_1"),
-                        severity=Severity.P1,
-                        issue="Thiếu slide Mở đầu / Bối cảnh chuẩn Minto Pyramid",
-                        rationale="Bài thuyết trình mở đầu đột ngột bằng ma trận dữ liệu phức tạp mà chưa nêu rõ luận điểm trung tâm.",
-                        suggestion="Bổ sung slide Mở đầu / Bối cảnh (Title / Context / Thesis) định hướng người xem trước khi đi vào chi tiết.",
-                        evidence=f"Slide 1 archetype='{first_archetype}'"
-                    )
+        if first_archetype in ["table_dense", "data_matrix", "quadrant_matrix"] and not any(
+            k in first_text for k in ["báo cáo", "tổng quan", "nghiên cứu", "chiến lược", "kế hoạch"]
+        ):
+            findings.append(
+                AgentFinding(
+                    agent=self.name,
+                    gate=self.gate,
+                    slide_id=first_slide.get("slide_id", "slide_1"),
+                    severity=Severity.P1,
+                    issue="Thiếu slide Mở đầu / Bối cảnh chuẩn Minto Pyramid",
+                    rationale="Bài thuyết trình mở đầu đột ngột bằng ma trận dữ liệu phức tạp mà chưa nêu rõ luận điểm trung tâm.",
+                    suggestion="Bổ sung slide Mở đầu / Bối cảnh (Title / Context / Thesis) định hướng người xem trước khi đi vào chi tiết.",
+                    evidence=f"Slide 1 archetype='{first_archetype}'"
                 )
+            )
 
-        # For long decks (>= 6 slides), check if Agenda / Executive Summary exists in the first 3 slides
+        # ----------------------------------------------------
+        # 2. Executive Agenda Verification for Long Decks (>= 6 slides)
+        # ----------------------------------------------------
         if total_slides >= 6:
             has_agenda = False
             for s in slides[:3]:
@@ -98,8 +110,57 @@ class NarrativeArcDirector(BaseCouncilAgent):
                     )
                 )
 
-        # 2. Conclusion & Call to Action (CTA) Verification
-        if total_slides >= 3:
+        # ----------------------------------------------------
+        # 3. SCQA Balance (Situation - Complication - Question - Answer)
+        # ----------------------------------------------------
+        if total_slides >= 4:
+            has_problem_context = False
+            has_solution_resolution = False
+
+            for s in slides[1:-1]:
+                stext = self.extract_slide_text(s).lower()
+                s_sec = (s.get("section") or "").lower()
+                full_s_context = f"{stext} {s_sec}"
+
+                if any(p in full_s_context for p in self.PROBLEM_KEYWORDS):
+                    has_problem_context = True
+                if any(sol in full_s_context for sol in self.SOLUTION_KEYWORDS):
+                    has_solution_resolution = True
+
+            # If presentation describes solutions with zero problem context
+            if has_solution_resolution and not has_problem_context:
+                findings.append(
+                    AgentFinding(
+                        agent=self.name,
+                        gate=self.gate,
+                        slide_id=slides[1].get("slide_id", "slide_2"),
+                        severity=Severity.P1,
+                        issue="Thiếu bối cảnh / vấn đề cần giải quyết (Minto SCQA: Missing Problem/Context)",
+                        rationale="Bài thuyết trình đi thẳng vào giải pháp kỹ thuật mà không thiết lập bối cảnh thực trạng và lý do vì sao cần hành động.",
+                        suggestion="Bổ sung 1 slide Bối cảnh / Thách thức trước khi bước vào chi tiết các giải pháp.",
+                        evidence="Slides 2..N-1 contain solutions but 0 problem context."
+                    )
+                )
+
+            # If presentation describes only problems with zero solution
+            if has_problem_context and not has_solution_resolution:
+                findings.append(
+                    AgentFinding(
+                        agent=self.name,
+                        gate=self.gate,
+                        slide_id=slides[-1].get("slide_id", f"slide_{total_slides}"),
+                        severity=Severity.P1,
+                        issue="Thiếu giải pháp giải quyết vấn đề (Minto SCQA: Missing Resolution)",
+                        rationale="Bài thuyết trình chỉ liệt kê các khó khăn/thách thức mà không đưa ra hướng giải quyết.",
+                        suggestion="Bổ sung các giải pháp và đề xuất hành động cụ thể.",
+                        evidence="Presentation is problem-heavy with zero resolution."
+                    )
+                )
+
+        # ----------------------------------------------------
+        # 4. Conclusion & Call to Action (CTA) Closure
+        # ----------------------------------------------------
+        if total_slides >= 2:
             last_slide = slides[-1]
             last_text = self.extract_slide_text(last_slide).lower()
             last_archetype = last_slide.get("archetype", "")
@@ -123,14 +184,15 @@ class NarrativeArcDirector(BaseCouncilAgent):
                     )
                 )
 
-        # 3. Section Progression & MECE Consistency (No bouncing between disjointed sections)
+        # ----------------------------------------------------
+        # 5. Section Progression & MECE Consistency
+        # ----------------------------------------------------
         sections_order: List[str] = []
         for idx, s in enumerate(slides):
             sec = (s.get("section") or "").strip()
             if sec:
                 if not sections_order or sections_order[-1] != sec:
                     if sec in sections_order:
-                        # Re-entering an old section that was already closed!
                         findings.append(
                             AgentFinding(
                                 agent=self.name,
@@ -148,16 +210,41 @@ class NarrativeArcDirector(BaseCouncilAgent):
         return findings
 
     def auto_remediate(self, target: Any, findings: List[AgentFinding], context: Optional[Dict[str, Any]] = None) -> Any:
-        """
-        Auto-remediates missing conclusion by creating a structured conclusion slide if requested.
-        """
         remediated = copy.deepcopy(target)
         slides = self._get_slides(remediated)
 
-        # Check if missing conclusion finding exists
-        needs_conclusion = any(f.issue.startswith("Thiếu slide Kết luận") for f in findings)
+        # 1. Remediate missing agenda in long decks (>= 6 slides)
+        needs_agenda = any("Mục lục" in f.issue or "Agenda" in f.issue for f in findings)
+        if needs_agenda and len(slides) >= 6:
+            # Extract unique sections for agenda atoms
+            unique_sections = []
+            for s in slides:
+                sec = s.get("section")
+                if sec and sec not in unique_sections and sec.lower() not in ["mở đầu", "giới thiệu"]:
+                    unique_sections.append(sec)
+            
+            if not unique_sections:
+                unique_sections = ["Bối cảnh & Thực trạng", "Phân tích Chuyên sâu", "Giải pháp Trọng tâm", "Lộ trình Thực thi"]
+
+            agenda_atoms = [
+                {"kicker": f"PHẦN {i+1:02d}", "title": sec, "text": f"Nội dung trọng điểm phần {sec.lower()}."}
+                for i, sec in enumerate(unique_sections[:4])
+            ]
+
+            agenda_slide = {
+                "slide_id": "slide_02_agenda",
+                "section": "Mục lục",
+                "assertion_title": "Khung nội dung và lộ trình phân tích chiến lược",
+                "primary_claim": "Tổng quan cấu trúc 4 phần định hình bức tranh toàn diện.",
+                "archetype": "agenda_list",
+                "atoms": agenda_atoms,
+                "speaker_notes": "Giới thiệu tổng quan cấu trúc bài thuyết trình trước hội đồng."
+            }
+            slides.insert(1, agenda_slide)
+
+        # 2. Remediate missing conclusion
+        needs_conclusion = any("Kết luận" in f.issue or "Call to Action" in f.issue for f in findings)
         if needs_conclusion and slides:
-            # Synthesize a clean conclusion slide
             last_num = len(slides) + 1
             conclusion_slide = {
                 "slide_id": f"slide_{last_num:02d}",
