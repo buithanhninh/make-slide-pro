@@ -1,14 +1,15 @@
 """
 scripts/macc_council/gate3_micro_pedagogy/agent07_natural_language.py
 Agent 7: NaturalLanguagePurist (AI Cliché Blacklist & Business Tone Purist).
-Purges generic AI boilerplate, filler rhetoric, lazy ellipsis, and conversational sludge.
+Purges generic AI boilerplate, filler rhetoric, lazy ellipsis, and conversational sludge across Vietnamese & English.
+Hardened with comprehensive multi-lingual cliché catalogs, math shielding, and schema-agnostic auto-remediation.
 """
 
 from __future__ import annotations
 
 import copy
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from ..base_agent import BaseCouncilAgent
 from ..models import AgentFinding, Severity
 
@@ -17,17 +18,90 @@ class NaturalLanguagePurist(BaseCouncilAgent):
     """
     Agent 07: Natural Language Purist.
     Identifies and eliminates generic AI clichés, wordy passive voice,
-    trailing ellipsis (... / v.v...), and uninformative filler phrases.
+    trailing ellipsis (... / v.v...), and uninformative filler phrases in Vietnamese and English.
     """
 
-    AI_CLICHE_PATTERNS = [
-        (re.compile(r"\b(trong\s+kỷ\s+nguyên\s+số(?:\s+ngày\s+nay)?)\b", re.IGNORECASE), "Sáo rỗng AI cliché (kỷ nguyên số)"),
-        (re.compile(r"\b(trong\s+thời\s+đại\s+4\.0)\b", re.IGNORECASE), "Sáo rỗng AI cliché (thời đại 4.0)"),
-        (re.compile(r"\b(không\s+thể\s+phủ\s+nhận\s+rằng)\b", re.IGNORECASE), "Khẩu ngữ dài dòng thừa thãi"),
-        (re.compile(r"\b(như\s+chúng\s+ta\s+đã\s+biết)\b", re.IGNORECASE), "Khẩu ngữ thừa thãi"),
-        (re.compile(r"\b(đóng\s+vai\s+trò\s+(?:vô\s+cùng|hết\s+sức|rất)\s+quan\s+trọng)\b", re.IGNORECASE), "Sáo rỗng thụ động"),
-        (re.compile(r"\b(hành\s+trình\s+vươn\s+mình)\b", re.IGNORECASE), "Văn phong hoa mỹ quá đà"),
-        (re.compile(r"\b(v\.v\.\.\.|vân\s+vân\.\.\.|\.\.\.)\b", re.IGNORECASE), "Dấu chấm lửng cẩu thả / thiếu dứt khoát")
+    MATH_BLOCK_REGEX = re.compile(
+        r"(\$\$[\s\S]+?\$\$|\$[^\$\n]+?\$|\\\[[\s\S]+?\\\]|\\\(.+?\\\))"
+    )
+
+    # Multi-lingual cliché definitions: (regex, description, default_replacement)
+    AI_CLICHE_RULES = [
+        # --- Vietnamese Clichés ---
+        (
+            re.compile(r"\b(trong\s+kỷ\s+nguyên\s+số(?:\s+ngày\s+nay)?)\b", re.IGNORECASE),
+            "Sáo rỗng AI cliché tiếng Việt (kỷ nguyên số)",
+            ""
+        ),
+        (
+            re.compile(r"\b(thời\s+đại\s+4\.0|trong\s+thời\s+đại\s+4\.0)\b", re.IGNORECASE),
+            "Sáo rỗng AI cliché tiếng Việt (thời đại 4.0)",
+            ""
+        ),
+        (
+            re.compile(r"\b(không\s+thể\s+phủ\s+nhận\s+rằng)\b", re.IGNORECASE),
+            "Khẩu ngữ dài dòng thừa thãi tiếng Việt",
+            ""
+        ),
+        (
+            re.compile(r"\b(như\s+chúng\s+ta\s+đã\s+biết|ai\s+cũng\s+biết\s+rằng)\b", re.IGNORECASE),
+            "Khẩu ngữ thuyết trình thừa thãi",
+            ""
+        ),
+        (
+            re.compile(r"\b(đóng\s+vai\s+trò\s+(?:vô\s+cùng|hết\s+sức|rất)\s+quan\s+trọng(?:\s+trong\s+việc)?)\b", re.IGNORECASE),
+            "Sáo rỗng thụ động tiếng Việt",
+            "trọng tâm trong "
+        ),
+        (
+            re.compile(r"\b(hành\s+trình\s+vươn\s+mình|bứt\s+phá\s+mọi\s+giới\s+hạn)\b", re.IGNORECASE),
+            "Văn phong hoa mỹ quá đà tiếng Việt",
+            "chiến lược phát triển"
+        ),
+        (
+            re.compile(r"\b(chìa\s+khóa\s+vạn\s+năng|viên\s+đạn\s+bạc)\b", re.IGNORECASE),
+            "Biểu tượng sáo rỗng phi khoa học",
+            "giải pháp then chốt"
+        ),
+
+        # --- English Clichés ---
+        (
+            re.compile(r"\b(in\s+today's\s+(?:rapidly\s+changing|fast-paced|dynamic|digital)\s+(?:world|era|landscape))\b", re.IGNORECASE),
+            "English AI Boilerplate (in today's world/era)",
+            ""
+        ),
+        (
+            re.compile(r"\b((?:let's\s+)?delve(?:\s+deeply)?\s+into)\b", re.IGNORECASE),
+            "English AI Cliché (delve into)",
+            "examine"
+        ),
+        (
+            re.compile(r"\b(game\s*changer|game-changing)\b", re.IGNORECASE),
+            "English Overused Buzzword (game changer)",
+            "breakthrough"
+        ),
+        (
+            re.compile(r"\b(testament\s+to)\b", re.IGNORECASE),
+            "English AI Cliché (testament to)",
+            "evidence of"
+        ),
+        (
+            re.compile(r"\b(paradigm\s+shift)\b", re.IGNORECASE),
+            "English Buzzword (paradigm shift)",
+            "fundamental change"
+        ),
+        (
+            re.compile(r"\b(tapestry\s+of|beacon\s+of\s+hope)\b", re.IGNORECASE),
+            "English Metaphorical AI Sludge",
+            ""
+        ),
+
+        # --- Lazy Inconclusive Ellipsis ---
+        (
+            re.compile(r"(\bv\.v\.\.\.|\bvân\s+vân\.\.\.|(?<!\.)\.\.\.(?!\.))", re.IGNORECASE),
+            "Dấu chấm lửng cẩu thả / thiếu dứt khoát",
+            "."
+        )
     ]
 
     def __init__(self):
@@ -40,6 +114,15 @@ class NaturalLanguagePurist(BaseCouncilAgent):
             return target.get("slides", [target])
         return []
 
+    def _shield_math(self, text: str) -> Tuple[str, List[Tuple[str, str]]]:
+        shields: List[Tuple[str, str]] = []
+        def _repl(m: re.Match) -> str:
+            tok = f"__MATH_SHIELD_{len(shields)}__"
+            shields.append((tok, m.group(0)))
+            return tok
+        shielded = self.MATH_BLOCK_REGEX.sub(_repl, text)
+        return shielded, shields
+
     def audit(self, target: Any, context: Optional[Dict[str, Any]] = None) -> List[AgentFinding]:
         findings: List[AgentFinding] = []
         slides = self._get_slides(target)
@@ -48,9 +131,22 @@ class NaturalLanguagePurist(BaseCouncilAgent):
             slide_id = s.get("slide_id", "unknown_slide")
             slide_text = self.extract_slide_text(s)
 
-            for pattern, label in self.AI_CLICHE_PATTERNS:
-                for match in pattern.finditer(slide_text):
+            # Shield math blocks so math ellipsis (\dots, ...) won't trigger lazy ellipsis rule
+            shielded_text, _ = self._shield_math(slide_text)
+
+            for pattern, label, replacement in self.AI_CLICHE_RULES:
+                for match in pattern.finditer(shielded_text):
                     phrase = match.group(0)
+
+                    # Guard against false positives:
+                    # e.g., "Cách mạng công nghiệp lần thứ tư" or official resolution references
+                    if "4.0" in phrase and "cách mạng công nghiệp" in slide_text.lower():
+                        # If the phrase itself is part of official title, skip
+                        start_pos = max(0, match.start() - 30)
+                        pre_ctx = shielded_text[start_pos:match.start()].lower()
+                        if "nghị quyết" in pre_ctx or "quyết định" in pre_ctx or "đề án" in pre_ctx:
+                            continue
+
                     findings.append(
                         AgentFinding(
                             agent=self.name,
@@ -62,7 +158,7 @@ class NaturalLanguagePurist(BaseCouncilAgent):
                             suggestion=f"Loại bỏ hoặc thay thế cụm từ '{phrase}' bằng động từ hành động hoặc dữ liệu trực tiếp.",
                             evidence=phrase,
                             original_value=phrase,
-                            suggested_value=""
+                            suggested_value=replacement
                         )
                     )
 
@@ -72,27 +168,57 @@ class NaturalLanguagePurist(BaseCouncilAgent):
         remediated = copy.deepcopy(target)
         slides = self._get_slides(remediated)
 
-        replacements = [
-            (re.compile(r"\btrong\s+kỷ\s+nguyên\s+số(?:\s+ngày\s+nay)?\s*,?\s*", re.IGNORECASE), ""),
-            (re.compile(r"\btrong\s+thời\s+đại\s+4\.0\s*,?\s*", re.IGNORECASE), ""),
-            (re.compile(r"\bkhông\s+thể\s+phủ\s+nhận\s+rằng\s*,?\s*", re.IGNORECASE), ""),
-            (re.compile(r"\bnhư\s+chúng\s+ta\s+đã\s+biết\s*,?\s*", re.IGNORECASE), ""),
-            (re.compile(r"\bđóng\s+vai\s+trò\s+(?:vô\s+cùng|hết\s+sức|rất)\s+quan\s+trọng\s+trong\s+việc\s*", re.IGNORECASE), "trực tiếp "),
-            (re.compile(r"\bđóng\s+vai\s+trò\s+(?:vô\s+cùng|hết\s+sức|rất)\s+quan\s+trọng\b", re.IGNORECASE), "trọng tâm"),
-            (re.compile(r"\s*(?:v\.v\.\.\.|vân\s+vân\.\.\.|\.\.\.)", re.IGNORECASE), ".")
-        ]
-
+        # Build replacement map: pattern -> replacement
         for s in slides:
-            for k in ["assertion_title", "primary_claim", "speaker_notes"]:
-                if k in s and isinstance(s[k], str):
-                    for pat, rep in replacements:
-                        s[k] = pat.sub(rep, s[k]).strip()
+            def _clean_str(text: str) -> str:
+                if not isinstance(text, str):
+                    return text
+                clean = text
+                # Shield math blocks
+                shielded, shields = self._shield_math(clean)
+
+                for pattern, _, rep in self.AI_CLICHE_RULES:
+                    # Clean punctuation around removal
+                    if rep == "":
+                        # Also clean leading/trailing commas or spaces
+                        pat_with_comma = re.compile(pattern.pattern + r"\s*,\s*", pattern.flags)
+                        shielded = pat_with_comma.sub("", shielded)
+                        shielded = pattern.sub("", shielded)
+                    elif rep == ".":
+                        shielded = re.sub(pattern.pattern + r"\s*", ". ", shielded)
+                    else:
+                        shielded = pattern.sub(rep, shielded)
+
+                # Clean multiple spaces and double periods
+                shielded = re.sub(r"\s+", " ", shielded)
+                shielded = re.sub(r"\.\s*\.", ".", shielded)
+                shielded = re.sub(r"^\s*,\s*", "", shielded).strip()
+
+                # Capitalize first letter of sentences if needed
+                if shielded and shielded[0].islower():
+                    shielded = shielded[0].upper() + shielded[1:]
+
+                # Restore math shields
+                for tok, orig in shields:
+                    shielded = shielded.replace(tok, orig)
+
+                return shielded
+
+            for k in ["assertion_title", "title", "headline", "primary_claim", "subtitle", "speaker_notes"]:
+                if k in s:
+                    s[k] = _clean_str(s[k])
+
             for atom in s.get("atoms", []):
                 if isinstance(atom, dict):
-                    for ak in ["title", "text", "mechanism", "kicker"]:
-                        if ak in atom and isinstance(atom[ak], str):
-                            for pat, rep in replacements:
-                                atom[ak] = pat.sub(rep, atom[ak]).strip()
+                    for ak in ["title", "text", "body", "mechanism", "kicker"]:
+                        if ak in atom:
+                            atom[ak] = _clean_str(atom[ak])
+
+            for item in s.get("content_items", []) + s.get("cards", []) + s.get("boxes", []):
+                if isinstance(item, dict):
+                    for ik in ["title", "text", "body", "headline", "description"]:
+                        if ik in item:
+                            item[ik] = _clean_str(item[ik])
 
         if isinstance(remediated, dict):
             remediated["slides"] = slides
