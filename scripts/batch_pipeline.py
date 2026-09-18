@@ -39,13 +39,15 @@ def slugify(text: str) -> str:
     return "_".join(cleaned.split())
 
 
-def run_batch_pipeline(input_dir: Path, output_root: Path) -> Dict[str, Any]:
+def run_batch_pipeline(input_dir: Path, output_root: Path, pattern: Optional[str] = None) -> Dict[str, Any]:
     output_root.mkdir(parents=True, exist_ok=True)
     ingestor = ContentIngestor()
 
-    docx_files = sorted(list(input_dir.glob("*.docx")))
+    glob_pattern = pattern if pattern else "*.docx"
+    all_matched = sorted(list(input_dir.glob(glob_pattern)))
+    docx_files = [f for f in all_matched if f.suffix.lower() == ".docx" and not f.name.startswith("~$")]
     if not docx_files:
-        raise FileNotFoundError(f"No docx files found in {input_dir}")
+        raise FileNotFoundError(f"No valid docx files found matching '{glob_pattern}' in {input_dir}")
 
     master_results = {
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -231,9 +233,10 @@ def main():
     parser = argparse.ArgumentParser(description="Batch Pipeline for Make Slide Pro V6.2")
     parser.add_argument("--input-dir", default=Path("Du An/A Tuan Dan So"), type=Path, help="Input directory containing DOCX files")
     parser.add_argument("--output-dir", default=Path("Du_An_Outputs"), type=Path, help="Output root directory")
+    parser.add_argument("--pattern", default="*.docx", type=str, help="Glob pattern for filtering docx files (e.g. '*Bai 1*')")
     args = parser.parse_args()
 
-    run_batch_pipeline(args.input_dir, args.output_dir)
+    run_batch_pipeline(args.input_dir, args.output_dir, pattern=args.pattern)
 
 
 if __name__ == "__main__":
