@@ -148,12 +148,12 @@ def hex_to_bgr(hex_color: str) -> int:
 
 
 class NativeDeckAuthor:
-    def __init__(self, visible: bool = False, theme: str = "DARK", motion_mode: str = "kinetic_cascade"):
+    def __init__(self, visible: bool = False, theme: str = "DARK", motion_mode: str = "presenter_click"):
         if win32com is None:
             raise RuntimeError("win32com is not available. Please install pywin32.")
         self.set_theme(theme)
         self.motion_mode = motion_mode.lower()
-        self.motion_trigger = msoAnimTriggerWithPrevious if self.motion_mode == "kinetic_cascade" else msoAnimTriggerOnPageClick
+        self.motion_trigger = msoAnimTriggerOnPageClick if self.motion_mode == "presenter_click" else msoAnimTriggerWithPrevious
         pythoncom.CoInitialize()
         self.app = win32com.client.DispatchEx("PowerPoint.Application")
         if visible:
@@ -1429,8 +1429,8 @@ def main():
     parser.add_argument("--blueprints", required=True, type=Path, help="Path to slide-blueprints.json")
     parser.add_argument("--output", required=True, type=Path, help="Output path for .pptx file")
     parser.add_argument("--theme", default="DARK", choices=["DARK", "LIGHT"], help="Presentation theme")
-    parser.add_argument("--motion-mode", default="kinetic_cascade", choices=["kinetic_cascade", "presenter_click"],
-                        help="Motion choreography mode (default: kinetic_cascade)")
+    parser.add_argument("--motion-mode", default="presenter_click", choices=["presenter_click", "kinetic_cascade"],
+                        help="Motion choreography mode (default: presenter_click)")
     parser.add_argument("--visible", action="store_true", help="Launch PowerPoint with visible UI")
     args = parser.parse_args()
 
