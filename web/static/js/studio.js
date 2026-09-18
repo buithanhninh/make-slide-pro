@@ -99,6 +99,36 @@ class SlideStudioApp {
     this.modalProjects = document.getElementById("modal-projects");
     this.btnCloseProjectsModal = document.getElementById("btn-close-projects-modal");
     this.projectsListContainer = document.getElementById("projects-list-container");
+
+    // Demo Documents 1-Click
+    this.demoDocBtns = document.querySelectorAll(".demo-doc-btn");
+
+    // Filmstrip Carousel
+    this.filmstripTrack = document.getElementById("filmstrip-track");
+    this.filmstripCountText = document.getElementById("filmstrip-count-text");
+
+    // Timeline Stepper & Timer
+    this.renderTimeline = document.getElementById("render-timeline");
+    this.renderElapsedTime = document.getElementById("render-elapsed-time");
+    this.timelineSteps = [1, 2, 3, 4, 5].map(i => document.getElementById(`tstep-${i}`));
+    this.renderTimerInterval = null;
+    this.renderStartTime = null;
+
+    // Copilot Quick Prompt Chips
+    this.copilotChips = document.querySelectorAll(".copilot-chip");
+
+    // Pricing & VietQR Modal
+    this.modalPricing = document.getElementById("modal-pricing");
+    this.btnGuestPricing = document.getElementById("btn-guest-pricing");
+    this.btnOpenPricing = document.getElementById("btn-open-pricing");
+    this.btnClosePricingModal = document.getElementById("btn-close-pricing-modal");
+    this.pricingCards = document.querySelectorAll(".pricing-card");
+    this.vietqrPaymentBox = document.getElementById("vietqr-payment-box");
+    this.vietqrImage = document.getElementById("vietqr-image");
+    this.qrAmount = document.getElementById("qr-amount");
+    this.qrMemo = document.getElementById("qr-memo");
+    this.btnSimulatePaid = document.getElementById("btn-simulate-paid");
+    this.selectedTier = { tier: "PRO", price: 199000, credits: 100 };
   }
 
   bindEvents() {
@@ -207,6 +237,46 @@ class SlideStudioApp {
     this.copilotInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") this.sendCopilotCommand();
     });
+
+    // Demo documents 1-click
+    if (this.demoDocBtns) {
+      this.demoDocBtns.forEach(btn => {
+        btn.addEventListener("click", () => this.loadDemoDocument(btn.dataset.demo));
+      });
+    }
+
+    // Copilot prompt chips
+    if (this.copilotChips) {
+      this.copilotChips.forEach(chip => {
+        chip.addEventListener("click", () => this.handleCopilotChip(chip.dataset.cmd));
+      });
+    }
+
+    // Pricing & VietQR Listeners
+    if (this.btnGuestPricing) {
+      this.btnGuestPricing.addEventListener("click", () => this.openPricingModal());
+    }
+    if (this.btnOpenPricing) {
+      this.btnOpenPricing.addEventListener("click", () => this.openPricingModal());
+    }
+    if (this.btnClosePricingModal) {
+      this.btnClosePricingModal.addEventListener("click", () => this.closePricingModal());
+    }
+    if (this.pricingCards) {
+      this.pricingCards.forEach(card => {
+        card.addEventListener("click", () => {
+          const tier = card.dataset.tier;
+          const price = parseInt(card.dataset.price);
+          const credits = parseInt(card.dataset.credits);
+          this.selectPricingTier(tier, price, credits);
+        });
+      });
+    }
+    if (this.btnSimulatePaid) {
+      this.btnSimulatePaid.addEventListener("click", () => this.handleSimulatePaid());
+    }
+  }
+
   // -------------------------------------------------------------------------
   // SaaS Multi-Tenant & Auth Methods
   // -------------------------------------------------------------------------
@@ -426,6 +496,7 @@ class SlideStudioApp {
         this.btnDownloadDark.href = `/api/download/${projectId}/Presentation_Dark.pptx`;
         this.btnDownloadLight.href = `/api/download/${projectId}/Presentation_Light.pptx`;
         this.updateSlideDisplay();
+        this.renderFilmstrip();
         this.setStep(4);
       } else {
         this.setStep(2);
@@ -433,6 +504,160 @@ class SlideStudioApp {
     } catch (err) {
       alert("Lỗi tải dự án: " + err.message);
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // Pricing & VietQR Top-Up Flow
+  // -------------------------------------------------------------------------
+  openPricingModal() {
+    if (this.modalPricing) {
+      this.modalPricing.style.display = "flex";
+      this.selectPricingTier(this.selectedTier.tier, this.selectedTier.price, this.selectedTier.credits);
+    }
+  }
+
+  closePricingModal() {
+    if (this.modalPricing) {
+      this.modalPricing.style.display = "none";
+    }
+  }
+
+  selectPricingTier(tier, price, credits) {
+    this.selectedTier = { tier, price, credits };
+
+    if (this.pricingCards) {
+      this.pricingCards.forEach(card => {
+        if (card.dataset.tier === tier) {
+          card.style.borderColor = "var(--accent-cyan)";
+          card.style.boxShadow = "0 0 20px rgba(6, 182, 212, 0.35)";
+        } else {
+          card.style.borderColor = "";
+          card.style.boxShadow = "";
+        }
+      });
+    }
+
+    if (this.vietqrPaymentBox) {
+      this.vietqrPaymentBox.style.display = "block";
+    }
+
+    const memo = `MSP ${this.currentUser ? this.currentUser.id.substring(0, 8).toUpperCase() : 'DEMO'}`;
+    const formattedPrice = price.toLocaleString("vi-VN") + " đ";
+
+    if (this.qrAmount) this.qrAmount.innerText = formattedPrice;
+    if (this.qrMemo) this.qrMemo.innerText = memo;
+
+    const qrUrl = `https://api.vietqr.io/image/970422-999988886666-compact.jpg?amount=${price}&addInfo=${encodeURIComponent(memo)}&accountName=MAKE%20SLIDE%20PRO`;
+    if (this.vietqrImage) this.vietqrImage.src = qrUrl;
+  }
+
+  async handleSimulatePaid() {
+    if (!this.token || !this.currentUser) {
+      alert("Vui lòng đăng nhập hoặc đăng ký tài khoản để lưu trữ Credits sau khi nạp!");
+      this.closePricingModal();
+      this.openAuthModal();
+      return;
+    }
+
+    if (this.btnSimulatePaid) {
+      this.btnSimulatePaid.innerText = "⏳ Đang xác nhận giao dịch...";
+      this.btnSimulatePaid.disabled = true;
+    }
+
+    try {
+      const res = await fetch("/api/payments/topup", {
+        method: "POST",
+        headers: this.getAuthHeaders(true),
+        body: JSON.stringify({
+          tier: this.selectedTier.tier,
+          amount: this.selectedTier.price,
+          credits: this.selectedTier.credits
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Không thể thực hiện nạp credits.");
+
+      if (this.currentUser) {
+        this.currentUser.credits = data.new_credits;
+      }
+      this.renderUserUI();
+      alert(`🎉 Chúc mừng! ${data.message}\nSố dư hiện tại: ${data.new_credits} Credits.`);
+      this.closePricingModal();
+    } catch (err) {
+      alert("Lỗi nạp tiền: " + err.message);
+    } finally {
+      if (this.btnSimulatePaid) {
+        this.btnSimulatePaid.innerText = "⚡ Xác Nhận Nạp Tiền (Mô phỏng Sandbox)";
+        this.btnSimulatePaid.disabled = false;
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // 1-Click Demo Documents & AI Copilot Chips
+  // -------------------------------------------------------------------------
+  loadDemoDocument(type) {
+    const rawTitle = document.getElementById("raw-text-title");
+    const rawContent = document.getElementById("raw-text-content");
+    if (!rawTitle || !rawContent) return;
+
+    if (type === "population") {
+      rawTitle.value = "Thực Trạng Dân Số và Cơ Cấu Lao Động Việt Nam 2025-2030";
+      rawContent.value = `CHUYÊN ĐỀ DÂN SỐ VÀ PHÁT TRIỂN BỀN VỮNG VIỆT NAM
+Phần 1: Chỉ Số Tử Vong & Tỷ Suất Chết Thô (CDR)
+Tỷ suất chết thô (Crude Death Rate - CDR) là chỉ số đo lường số lượng tử vong trên 1.000 dân số bình quân trong một năm xác định.
+Công thức tính toán chuẩn mực:
+CDR = (D / P) * 1000 (đơn vị: ‰)
+Trong đó: D là tổng số ca tử vong trong năm, P là dân số bình quân giữa năm.
+Xu hướng CDR tại Việt Nam duy trì ổn định phản ánh chất lượng y tế cộng đồng được củng cố.
+
+Phần 2: Bảng Phân Tích Di Dân & Tăng Trưởng Lao Động Theo Vùng
+Dưới đây là bảng số liệu phân bố luồng di dân thuần và tốc độ tăng trưởng lực lượng lao động:
+| Vùng Kinh Tế | Tỷ Lệ Tăng Trưởng Lao Động | Di Dân Thuần (Người/Năm) | Tỷ Trọng GDP Đóng Góp |
+| Đông Nam Bộ | 2.8% | +185,000 | 31.5% |
+| Đồng Bằng Sông Hồng | 1.6% | +72,000 | 26.2% |
+| Đồng Bằng Sông Cửu Long | 0.4% | -54,000 | 12.1% |
+| Duyên Hải Miền Trung | 0.9% | -28,000 | 14.8% |
+
+Phần 3: Thách Thức Già Hóa Dân Số & Cơ Hội Dân Số Vàng
+Việt Nam đang trải qua giai đoạn chuyển giao nhân khẩu học nhanh nhất khu vực Đông Nam Á. Tỷ lệ người cao tuổi (trên 60 tuổi) dự báo sẽ vượt 20% vào năm 2038, chính thức bước vào thời kỳ dân số già.
+Cần nhanh chóng tối ưu hóa năng suất lao động giai đoạn dân số vàng còn lại, thiết lập mạng lưới an sinh xã hội đa tầng và đầu tư vào kinh tế bạc (Silver Economy).`;
+    } else if (type === "energy") {
+      rawTitle.value = "Chiến Lược Chuyển Dịch Năng Lượng Tái Tạo & Lộ Trình Net-Zero 2050";
+      rawContent.value = `QUY HOẠCH NĂNG LƯỢNG TÁI TẠO QUỐC GIA 2030 - TẦM NHÌN 2050
+Phần 1: Mục Tiêu Phát Triển Theo Quy Hoạch Điện VIII
+Việt Nam cam kết mạnh mẽ đạt mức phát thải ròng bằng '0' (Net Zero) vào năm 2050 tại COP26. Đến năm 2030, tỷ trọng năng lượng tái tạo (điện gió ngoài khơi, điện mặt trời, sinh khối) dự kiến chiếm từ 30.9% đến 39.2% tổng công suất nguồn điện toàn quốc.
+
+Phần 2: Bảng So Sánh Suất Đầu Tư & Hiệu Suất Nguồn Điện
+| Loại Hình Năng Lượng | Suất Đầu Tư (USD/kW) | Chi Phí Bình Quân LCOE (USD/MWh) | Hệ Số Công Suất (CF) |
+| Điện Gió Ngoài Khơi | 2,200 - 2,800 | 78 - 95 | 42% - 48% |
+| Điện Gió Trên Bờ | 1,300 - 1,600 | 55 - 68 | 28% - 35% |
+| Điện Mặt Trời Mặt Đất | 700 - 950 | 45 - 58 | 18% - 22% |
+| Thủy Điện Vừa & Nhỏ | 1,400 - 1,800 | 48 - 62 | 45% - 55% |
+
+Phần 3: Cơ Chế Tài Chính Xanh & Trái Phiếu Chuyển Dịch
+Việc phát triển lưới điện thông minh (Smart Grid) và các trạm lưu trữ năng lượng pin (BESS) đòi hỏi dòng vốn đầu tư hơn 135 tỷ USD đến 2030. Nguồn vốn này sẽ được huy động qua Khung Phân loại Tài chính Xanh (Green Taxonomy), trái phiếu bền vững và cơ chế JETP.`;
+    } else if (type === "health") {
+      rawTitle.value = "Chuyển Đổi Số Y Tế Toàn Diện: Bệnh Án Điện Tử & AI Lâm Sàng";
+      rawContent.value = `CHIẾN LƯỢC CHUYỂN ĐỔI SỐ NGÀNH Y TẾ VIỆT NAM GIAI ĐOẠN 2025-2030
+Phần 1: Số Hóa Bệnh Án Điện Tử (EMR) Không Giấy Tờ
+Toàn bộ các bệnh viện hạng I và bệnh viện đặc biệt hoàn thành triển khai Hệ thống Bệnh án Điện tử (EMR), hướng tới mô hình bệnh viện thông minh không giấy tờ (Paperless Hospital), kết nối liên thông kết quả xét nghiệm và chẩn đoán hình ảnh trên toàn quốc.
+
+Phần 2: Ứng Dụng Trí Tuệ Nhân Tạo (AI) Trong Chẩn Đoán Sớm
+Tích hợp mạng nơ-ron tích chập (CNN) và các mô hình thị giác AI trong phân tích ảnh X-quang phổi, cắt lớp vi tính (CT) và cộng hưởng từ (MRI).
+Độ chính xác sàng lọc tổn thương đạt trên 94.5%, hỗ trợ đắc lực cho các bác sĩ tuyến cơ sở phát hiện sớm ung thư phổi, đột quỵ não và bệnh lý võng mạc đái tháo đường.
+
+Phần 3: Mạng Lưới Telehealth Chăm Sóc Sức Khỏe Từ Xa
+Triển khai hệ thống khám chữa bệnh từ xa Telehealth tới 100% trạm y tế xã, vùng sâu, vùng xa và hải đảo. Giảm tỷ lệ chuyển tuyến không cần thiết xuống dưới 15%, tiết kiệm hàng nghìn tỷ đồng chi phí xã hội và nâng cao năng lực cho đội ngũ y bác sĩ cơ sở.`;
+    }
+
+    this.handleRawTextSubmit();
+  }
+
+  handleCopilotChip(cmd) {
+    if (!this.copilotInput) return;
+    this.copilotInput.value = cmd;
+    this.sendCopilotCommand();
   }
 
   setStep(stepNum) {
@@ -614,6 +839,7 @@ class SlideStudioApp {
         <div class="slide-card-footer">
           <span style="font-size: 0.75rem; color: var(--text-muted);">${slide.section || 'NỘI DUNG'}</span>
           <div style="display: flex; gap: 6px;">
+            <button class="btn btn-icon btn-dup-slide" title="Nhân bản slide (Duplicate)">📋</button>
             <button class="btn btn-icon btn-move-up" title="Di chuyển lên">▲</button>
             <button class="btn btn-icon btn-move-down" title="Di chuyển xuống">▼</button>
             <button class="btn btn-icon btn-del-slide" style="color: var(--accent-rose);" title="Xóa slide">✕</button>
@@ -637,6 +863,11 @@ class SlideStudioApp {
         slide.visual_job = e.target.value;
         this.renderStoryboard();
       });
+
+      const btnDup = card.querySelector(".btn-dup-slide");
+      if (btnDup) {
+        btnDup.addEventListener("click", () => this.duplicateSlide(idx));
+      }
 
       const btnUp = card.querySelector(".btn-move-up");
       btnUp.addEventListener("click", () => this.moveSlide(idx, -1));
@@ -683,6 +914,16 @@ class SlideStudioApp {
     }
   }
 
+  duplicateSlide(idx) {
+    if (!this.blueprints || !this.blueprints.slides || !this.blueprints.slides[idx]) return;
+    const orig = this.blueprints.slides[idx];
+    const clone = JSON.parse(JSON.stringify(orig));
+    clone.slide_id = `SLIDE_${Date.now().toString().slice(-4)}`;
+    clone.assertion_title = `${clone.assertion_title || 'Slide'} (Bản sao)`;
+    this.blueprints.slides.splice(idx + 1, 0, clone);
+    this.renderStoryboard();
+  }
+
   addNewSlide() {
     const newSlide = {
       slide_id: `SLIDE_${(this.blueprints.slides.length + 1).toString().padStart(2, '0')}`,
@@ -725,11 +966,48 @@ class SlideStudioApp {
     }
   }
 
+  // -------------------------------------------------------------------------
+  // High-Precision Rendering Timer & 5-Stage Stepper
+  // -------------------------------------------------------------------------
+  startRenderTimer() {
+    this.stopRenderTimer();
+    this.renderStartTime = Date.now();
+    if (this.renderElapsedTime) this.renderElapsedTime.innerText = "00:00";
+    this.renderTimerInterval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - this.renderStartTime) / 1000);
+      const m = Math.floor(elapsed / 60).toString().padStart(2, "0");
+      const s = (elapsed % 60).toString().padStart(2, "0");
+      if (this.renderElapsedTime) this.renderElapsedTime.innerText = `${m}:${s}`;
+    }, 1000);
+  }
+
+  stopRenderTimer() {
+    if (this.renderTimerInterval) {
+      clearInterval(this.renderTimerInterval);
+      this.renderTimerInterval = null;
+    }
+  }
+
+  updateTimelineStep(stageIndex) {
+    if (!this.timelineSteps) return;
+    this.timelineSteps.forEach((el, i) => {
+      if (!el) return;
+      const stepNum = i + 1;
+      el.classList.remove("active", "completed");
+      if (stepNum < stageIndex) {
+        el.classList.add("completed");
+      } else if (stepNum === stageIndex) {
+        el.classList.add("active");
+      }
+    });
+  }
+
   async startRendering() {
     if (!this.sessionId) return;
 
     if (this.token && this.currentUser && this.currentUser.credits < 1) {
       alert("Tài khoản của bạn đã hết Credits (cần 1 credit/lần render). Vui lòng nạp thêm để tiếp tục xuất bản PowerPoint!");
+      this.openPricingModal();
       return;
     }
 
@@ -745,6 +1023,9 @@ class SlideStudioApp {
     });
 
     this.setStep(3);
+    this.startRenderTimer();
+    this.updateTimelineStep(1);
+    if (this.btnViewResults) this.btnViewResults.style.display = "none";
     this.initWebSocket();
 
     // Trigger render
@@ -791,8 +1072,22 @@ class SlideStudioApp {
     this.progressStageName.innerText = data.stage;
     this.appendConsoleLog(`[${data.stage}] ${data.message}`);
 
-    if (data.stage === "COMPLETED") {
-      this.btnViewResults.style.display = "inline-block";
+    // Update 5-stage timeline stepper
+    let currentStep = 1;
+    if (data.stage === "COMPLETED" || data.percent >= 100) {
+      currentStep = 5;
+      if (this.timelineSteps) {
+        this.timelineSteps.forEach(el => el && el.classList.add("completed"));
+      }
+      this.stopRenderTimer();
+      if (this.btnViewResults) this.btnViewResults.style.display = "inline-block";
+    } else {
+      if (data.percent < 20) currentStep = 1;
+      else if (data.percent < 40) currentStep = 2;
+      else if (data.percent < 60) currentStep = 3;
+      else if (data.percent < 85) currentStep = 4;
+      else currentStep = 5;
+      this.updateTimelineStep(currentStep);
     }
   }
 
@@ -804,6 +1099,9 @@ class SlideStudioApp {
     this.consoleOutput.scrollTop = this.consoleOutput.scrollHeight;
   }
 
+  // -------------------------------------------------------------------------
+  // Gallery, Dual-Theme & Filmstrip Carousel
+  // -------------------------------------------------------------------------
   async loadSlideGallery() {
     try {
       const res = await fetch(`/api/slides/${this.sessionId}`);
@@ -811,6 +1109,7 @@ class SlideStudioApp {
       if (data.success) {
         this.previews = data.slides;
         this.currentSlideIdx = 0;
+        this.renderFilmstrip();
         this.updateSlideDisplay();
       }
 
@@ -831,6 +1130,41 @@ class SlideStudioApp {
       this.btnThemeLight.classList.add("active");
       this.btnThemeDark.classList.remove("active");
     }
+    this.renderFilmstrip();
+    this.updateSlideDisplay();
+  }
+
+  renderFilmstrip() {
+    if (!this.filmstripTrack) return;
+    const slides = this.previews ? this.previews[this.activeDeckTheme] : [];
+    if (!slides || !slides.length) {
+      this.filmstripTrack.innerHTML = `<span style="color: var(--text-muted); font-size: 0.8rem; padding: 1rem;">Chưa có ảnh slide preview</span>`;
+      return;
+    }
+
+    if (this.filmstripCountText) {
+      this.filmstripCountText.innerText = `${slides.length} slides (${this.activeDeckTheme === 'DARK' ? 'Nền Tối' : 'Nền Sáng'}) • Nhấp vào ảnh để chuyển slide`;
+    }
+
+    this.filmstripTrack.innerHTML = slides.map((url, i) => `
+      <div class="filmstrip-thumb ${i === this.currentSlideIdx ? 'active' : ''}" data-idx="${i}">
+        <span class="thumb-badge">${(i + 1).toString().padStart(2, '0')}</span>
+        <img src="${url}" alt="Slide ${i + 1}" loading="lazy">
+      </div>
+    `).join("");
+
+    this.filmstripTrack.querySelectorAll(".filmstrip-thumb").forEach(thumb => {
+      thumb.addEventListener("click", () => {
+        const idx = parseInt(thumb.dataset.idx);
+        this.selectSlide(idx);
+      });
+    });
+  }
+
+  selectSlide(idx) {
+    const slides = this.previews ? this.previews[this.activeDeckTheme] : [];
+    if (!slides || idx < 0 || idx >= slides.length) return;
+    this.currentSlideIdx = idx;
     this.updateSlideDisplay();
   }
 
@@ -854,6 +1188,19 @@ class SlideStudioApp {
     if (this.blueprints && this.blueprints.slides && this.blueprints.slides[this.currentSlideIdx]) {
       const s = this.blueprints.slides[this.currentSlideIdx];
       this.speakerNotesDisplay.innerText = s.speaker_notes || "Không có ghi chú diễn giả.";
+    }
+
+    // Update filmstrip active state & scroll into view
+    if (this.filmstripTrack) {
+      const thumbs = this.filmstripTrack.querySelectorAll(".filmstrip-thumb");
+      thumbs.forEach((t, i) => {
+        if (i === this.currentSlideIdx) {
+          t.classList.add("active");
+          t.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+        } else {
+          t.classList.remove("active");
+        }
+      });
     }
   }
 

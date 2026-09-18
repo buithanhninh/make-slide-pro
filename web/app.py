@@ -228,6 +228,13 @@ class CopilotRequest(BaseModel):
     command: str
 
 
+class TopupRequest(BaseModel):
+    tier: str  # STARTER | PRO | ENTERPRISE
+    amount: int
+    credits: int
+    payment_ref: Optional[str] = None
+
+
 # ---------------------------------------------------------------------------
 # REST Endpoints: Home, Health & Auth
 # ---------------------------------------------------------------------------
@@ -518,6 +525,33 @@ async def get_project_render_status(
         "has_previews": bool(previews),
     }
 
+
+@app.post("/api/payments/topup")
+async def topup_credits(
+    payload: TopupRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    payment_ref = payload.payment_ref or f"PAY_{uuid.uuid4().hex[:12].upper()}"
+    tx = Transaction(
+        user_id=current_user.id,
+        payment_ref=payment_ref,
+        amount=payload.amount,
+        credits_added=payload.credits,
+        status="SUCCESS"
+    )
+    db.add(tx)
+    current_user.credits += payload.credits
+    db.commit()
+    db.refresh(current_user)
+
+    return {
+        "success": True,
+        "new_credits": current_user.credits,
+        "added": payload.credits,
+        "payment_ref": payment_ref,
+        "message": f"Nạp thành công {payload.credits} credits vào tài khoản!"
+    }
 
 
 @app.post("/api/upload/file")

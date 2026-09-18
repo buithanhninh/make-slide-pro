@@ -28,23 +28,27 @@
 
       <!-- SaaS Guest Auth Control -->
       <div id="auth-guest-controls" style="display: flex; gap: 8px; align-items: center;">
-        <button id="btn-open-auth" class="btn btn-primary" style="padding: 6px 14px; font-size: 0.85rem;">
+        <button id="btn-guest-pricing" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" type="button">
+          💎 Bảng Giá
+        </button>
+        <button id="btn-open-auth" class="btn btn-primary" style="padding: 6px 14px; font-size: 0.85rem;" type="button">
           👤 Đăng Nhập / Đăng Ký
         </button>
       </div>
 
       <!-- SaaS Logged-in User Controls -->
       <div id="auth-user-controls" style="display: none; gap: 10px; align-items: center;">
-        <button id="btn-open-projects" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;">
+        <button id="btn-open-projects" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.85rem;" type="button">
           📁 Dự Án (<span id="user-project-count">0</span>)
         </button>
-        <div class="badge" style="background: rgba(234, 179, 8, 0.15); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.3);">
+        <div class="badge" style="background: rgba(234, 179, 8, 0.15); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.3); display: flex; align-items: center; gap: 6px; padding: 4px 10px;">
           🪙 <span id="user-credits-badge">5</span> Credits
+          <button id="btn-open-pricing" class="btn btn-primary" style="padding: 2px 8px; font-size: 0.72rem; border-radius: 999px; height: auto;" type="button">+ Nạp Thêm</button>
         </div>
         <span id="user-email-badge" style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
           user@example.com
         </span>
-        <button id="btn-logout" class="btn btn-icon" title="Đăng Xuất" style="padding: 4px 8px; font-size: 0.85rem;">
+        <button id="btn-logout" class="btn btn-icon" title="Đăng Xuất" style="padding: 4px 8px; font-size: 0.85rem;" type="button">
           🚪
         </button>
       </div>
@@ -118,6 +122,39 @@
             <button id="btn-submit-raw-text" class="btn btn-secondary" style="width: 100%;">
               Bóc Tách Nội Dung Này
             </button>
+          </div>
+
+          <!-- 1-Click Demo Documents -->
+          <div class="card" style="margin-top: 1.25rem; background: rgba(6, 182, 212, 0.04); border: 1px dashed rgba(6, 182, 212, 0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+              <h4 style="font-size: 0.9rem; color: var(--accent-cyan); display: flex; align-items: center; gap: 6px; margin: 0;">
+                ✨ Trải Nghiệm 1-Click Với Tài Liệu Mẫu
+              </h4>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Không cần tải tệp</span>
+            </div>
+            <div class="demo-docs-grid">
+              <button class="demo-doc-btn" data-demo="population" type="button">
+                <span class="demo-icon">📈</span>
+                <div class="demo-content">
+                  <div class="demo-title">Chuyên Đề Dân Số Học</div>
+                  <div class="demo-desc">Công thức CDR, Tháp tuổi, Di dân & Bảng thống kê</div>
+                </div>
+              </button>
+              <button class="demo-doc-btn" data-demo="energy" type="button">
+                <span class="demo-icon">⚡</span>
+                <div class="demo-content">
+                  <div class="demo-title">Năng Lượng Tái Tạo 2030</div>
+                  <div class="demo-desc">Chiến lược Điện gió, Điện mặt trời & Vốn xanh</div>
+                </div>
+              </button>
+              <button class="demo-doc-btn" data-demo="health" type="button">
+                <span class="demo-icon">🏥</span>
+                <div class="demo-content">
+                  <div class="demo-title">Chuyển Đổi Số Y Tế</div>
+                  <div class="demo-desc">Hồ sơ bệnh án điện tử, Telehealth & AI Y tế</div>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -214,13 +251,47 @@
           Tự động sinh đồng bộ cả hai bản Nền Tối (Dark Obsidian) & Nền Sáng (Clean Pearl)
         </p>
 
-        <div class="progress-track">
+        <!-- 5-Stage Rendering Timeline -->
+        <div class="render-timeline" id="render-timeline">
+          <div class="timeline-step active" id="tstep-1">
+            <div class="timeline-icon">📄</div>
+            <div class="timeline-label">1. Xác thực</div>
+          </div>
+          <div class="timeline-line"></div>
+          <div class="timeline-step" id="tstep-2">
+            <div class="timeline-icon">🧠</div>
+            <div class="timeline-label">2. Phân rã</div>
+          </div>
+          <div class="timeline-line"></div>
+          <div class="timeline-step" id="tstep-3">
+            <div class="timeline-icon">🛡️</div>
+            <div class="timeline-label">3. Thẩm định MACC</div>
+          </div>
+          <div class="timeline-line"></div>
+          <div class="timeline-step" id="tstep-4">
+            <div class="timeline-icon">📊</div>
+            <div class="timeline-label">4. Vẽ COM PPTX</div>
+          </div>
+          <div class="timeline-line"></div>
+          <div class="timeline-step" id="tstep-5">
+            <div class="timeline-icon">✨</div>
+            <div class="timeline-label">5. Xuất ảnh 1080p</div>
+          </div>
+        </div>
+
+        <div class="progress-track" style="margin-bottom: 0.75rem;">
           <div id="render-progress-bar" class="progress-fill"></div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
-          <span id="progress-stage-name">Khởi tạo tiến trình...</span>
-          <span id="progress-percent">0%</span>
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="live-pulse-dot"></span>
+            <span id="progress-stage-name" style="font-weight: 600; color: var(--accent-cyan);">Khởi tạo tiến trình...</span>
+          </div>
+          <div style="display: flex; gap: 14px; align-items: center;">
+            <span style="font-family: monospace;">⏱️ <span id="render-elapsed-time">00:00</span></span>
+            <strong id="progress-percent" style="font-weight: 700; color: var(--text-primary); font-size: 1rem;">0%</strong>
+          </div>
         </div>
 
         <div class="console-box" id="render-console-output">
@@ -278,6 +349,17 @@
           <button id="btn-next-slide" class="btn btn-secondary">Slide Tiếp ▶</button>
         </div>
 
+        <!-- Slide Filmstrip Thumbnail Carousel -->
+        <div class="filmstrip-container">
+          <div class="filmstrip-header">
+            <span>🎞️ Dải Phim Slide (Filmstrip Carousel)</span>
+            <span id="filmstrip-count-text" style="font-size: 0.75rem; color: var(--text-muted);">Nhấp chuột vào ảnh để chuyển slide nhanh</span>
+          </div>
+          <div class="filmstrip-track" id="filmstrip-track">
+            <!-- Rendered dynamically by studio.js -->
+          </div>
+        </div>
+
         <!-- Speaker Notes Drawer -->
         <div class="notes-drawer">
           <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase; margin-bottom: 6px;">
@@ -300,8 +382,14 @@
     </div>
     <div class="copilot-body" id="copilot-history">
       <div class="copilot-msg-system">
-        Xin chào! Tôi là trợ lý AI của bạn. Bạn có thể yêu cầu tôi đổi dạng slide, thêm slide kết luận hoặc tinh chỉnh tiêu đề bằng câu lệnh tự nhiên.
+        Xin chào! Tôi là trợ lý AI của bạn. Bạn có thể yêu cầu tôi đổi dạng slide, thêm slide kết luận hoặc bấm các gợi ý nhanh bên dưới.
       </div>
+    </div>
+    <div class="copilot-chips" id="copilot-chips">
+      <button class="copilot-chip" type="button" data-cmd="Đổi slide 2 thành dạng SO SÁNH">⚖️ Đổi slide 2: SO SÁNH</button>
+      <button class="copilot-chip" type="button" data-cmd="Đổi slide 3 thành dạng BENTO_GRID">🍱 Đổi slide 3: BENTO</button>
+      <button class="copilot-chip" type="button" data-cmd="Rút ngắn tiêu đề slide 1">✂️ Rút ngắn tiêu đề</button>
+      <button class="copilot-chip" type="button" data-cmd="Thêm slide tổng kết và cam kết hành động">🎯 Thêm slide kết luận</button>
     </div>
     <div class="copilot-input-box">
       <input type="text" id="copilot-input" class="form-input" style="padding: 6px 10px; font-size: 0.85rem;" placeholder="Ví dụ: Đổi slide 2 thành dạng SO SÁNH...">
@@ -380,6 +468,101 @@
       <div class="modal-body" style="padding-top: 1.25rem; max-height: 480px; overflow-y: auto;">
         <div id="projects-list-container">
           <div style="text-align: center; color: var(--text-muted); padding: 2rem;">Đang tải danh sách bài thuyết trình...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================
+       MODAL: PRICING & VIETQR TOP-UP (NẠP CREDITS)
+       =================================================================== -->
+  <div id="modal-pricing" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 860px;">
+      <div class="modal-header">
+        <div>
+          <h3 class="card-title" style="margin: 0; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+            💎 Bảng Giá Gói Dịch Vụ & Nạp Credits
+          </h3>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">
+            1 Credit = 1 Lượt Biên Dịch Bài Thuyết Trình Hoàn Chỉnh Nền Tối + Nền Sáng
+          </p>
+        </div>
+        <button id="btn-close-pricing-modal" class="btn btn-icon" type="button" style="font-size: 1.2rem; cursor: pointer;">&times;</button>
+      </div>
+
+      <div class="modal-body" style="padding-top: 1.25rem;">
+        <div class="pricing-grid">
+          <!-- Tier 1: Starter -->
+          <div class="pricing-card" data-tier="STARTER" data-price="50000" data-credits="20">
+            <div class="pricing-badge">TIẾT KIỆM</div>
+            <h4 class="pricing-title">Khởi Nghiệp</h4>
+            <div class="pricing-price">50.000 đ</div>
+            <div class="pricing-credits">20 Credits</div>
+            <ul class="pricing-features">
+              <li>✔ 20 lần render PowerPoint</li>
+              <li>✔ Dual-theme Nền Tối & Nền Sáng</li>
+              <li>✔ Xuất ảnh 1080p sắc nét</li>
+              <li>✔ Thẩm định MACC-QA tự động</li>
+            </ul>
+            <button class="btn btn-secondary btn-select-tier" style="width: 100%;" type="button">Chọn Gói Này</button>
+          </div>
+
+          <!-- Tier 2: Professional (Popular) -->
+          <div class="pricing-card featured" data-tier="PRO" data-price="199000" data-credits="100">
+            <div class="pricing-badge popular">PHỔ BIẾN NHẤT</div>
+            <h4 class="pricing-title">Chuyên Nghiệp (Pro)</h4>
+            <div class="pricing-price">199.000 đ</div>
+            <div class="pricing-credits">100 Credits</div>
+            <ul class="pricing-features">
+              <li>✔ 100 lần render không giới hạn</li>
+              <li>✔ Đầy đủ 21 tác phẩm minh họa AI 16:9</li>
+              <li>✔ Đầy đủ 22 biểu đồ học thuật</li>
+              <li>✔ Ưu tiên hàng đợi render siêu tốc</li>
+              <li>✔ Trợ lý AI Copilot không giới hạn</li>
+            </ul>
+            <button class="btn btn-primary btn-select-tier" style="width: 100%;" type="button">Nạp Gói Pro Ngay</button>
+          </div>
+
+          <!-- Tier 3: Enterprise -->
+          <div class="pricing-card" data-tier="ENTERPRISE" data-price="799000" data-credits="500">
+            <div class="pricing-badge">DOANH NGHIỆP</div>
+            <h4 class="pricing-title">Doanh Nghiệp</h4>
+            <div class="pricing-price">799.000 đ</div>
+            <div class="pricing-credits">500 Credits</div>
+            <ul class="pricing-features">
+              <li>✔ 500 lần render cao cấp</li>
+              <li>✔ Tùy chỉnh màu sắc thương hiệu Brand</li>
+              <li>✔ Hỗ trợ xuất hóa đơn VAT công ty</li>
+              <li>✔ Hỗ trợ kỹ thuật 24/7 riêng biệt</li>
+            </ul>
+            <button class="btn btn-secondary btn-select-tier" style="width: 100%;" type="button">Chọn Doanh Nghiệp</button>
+          </div>
+        </div>
+
+        <!-- Simulated VietQR Payment Box (Shown when tier selected) -->
+        <div id="vietqr-payment-box" style="display: none; margin-top: 1.5rem; background: var(--bg-card); border: 1px solid var(--accent-cyan); border-radius: var(--radius-md); padding: 1.25rem;">
+          <div style="display: flex; gap: 1.5rem; align-items: center; flex-wrap: wrap;">
+            <div style="text-align: center; background: white; padding: 12px; border-radius: var(--radius-sm);">
+              <img id="vietqr-image" src="" alt="Mã VietQR" style="width: 170px; height: 170px; display: block; object-fit: contain;">
+              <span style="font-size: 0.72rem; color: #1e293b; font-weight: 700; margin-top: 6px; display: block;">QUÉT MÃ BẰNG APP NGÂN HÀNG</span>
+            </div>
+            <div style="flex: 1; min-width: 250px;">
+              <h4 style="color: var(--accent-cyan); font-size: 1.05rem; margin-bottom: 8px;">Thông Tin Chuyển Khoản Ngân Hàng</h4>
+              <div style="font-size: 0.85rem; line-height: 1.8; color: var(--text-secondary);">
+                <div>Ngân hàng: <strong>MBBank (Ngân hàng Quân Đội)</strong></div>
+                <div>Số tài khoản: <strong style="color: var(--text-primary); font-family: monospace; font-size: 1.05rem;">999988886666</strong></div>
+                <div>Chủ tài khoản: <strong>MAKE SLIDE PRO SAAS</strong></div>
+                <div>Số tiền: <strong id="qr-amount" style="color: var(--accent-emerald); font-size: 1.15rem;">199.000 đ</strong></div>
+                <div>Nội dung CK: <strong id="qr-memo" style="color: var(--accent-amber); font-family: monospace; font-size: 1rem;">MSP TOPUP</strong></div>
+              </div>
+              <div style="margin-top: 14px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <button id="btn-simulate-paid" class="btn btn-success" style="padding: 8px 16px; font-size: 0.85rem;" type="button">
+                  ⚡ Xác Nhận Nạp Tiền (Mô phỏng Sandbox)
+                </button>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Hệ thống tự động cộng Credits sau khi nhận tiền</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -30,8 +30,14 @@ def test_saas_end_to_end():
     html_content = r_home.text
     assert "modal-auth" in html_content, "Auth modal missing from index.html"
     assert "modal-projects" in html_content, "Projects modal missing from index.html"
+    assert "modal-pricing" in html_content, "Pricing modal missing from index.html"
+    assert "vietqr-payment-box" in html_content, "VietQR payment box missing from index.html"
+    assert "filmstrip-track" in html_content, "Filmstrip track missing from index.html"
+    assert "render-timeline" in html_content, "Rendering timeline missing from index.html"
+    assert "copilot-chips" in html_content, "Copilot prompt chips missing from index.html"
+    assert "demo-doc-btn" in html_content, "1-Click demo buttons missing from index.html"
     assert "user-credits-badge" in html_content, "User credits badge missing from index.html"
-    print("✔ Web Studio HTML delivers all SaaS components and modals properly.")
+    print("✔ Web Studio HTML delivers all UI/UX components (Filmstrip, VietQR, Timeline, Copilot chips, Demo docs) properly.")
 
     print("\n--- [Step 2] Testing User Registration & Credit Allocation ---")
     test_email = "architect_master@saas.com"
@@ -117,6 +123,30 @@ def test_saas_end_to_end():
     assert me["email"] == test_email
     assert me["project_count"] >= 1
     print(f"✔ Profile verified: {me['email']} | Credits: {me['credits']} | Projects: {me['project_count']}")
+
+    print("\n--- [Step 8] Testing VietQR Banking Credit Top-Up Simulation ---")
+    initial_credits = me["credits"]
+    r_topup = client.post(
+        "/api/payments/topup",
+        json={"tier": "PRO", "amount": 199000, "credits": 100},
+        headers=headers
+    )
+    assert r_topup.status_code == 200, f"Expected 200, got {r_topup.status_code}"
+    topup_data = r_topup.json()
+    assert topup_data["success"] is True
+    assert topup_data["added"] == 100
+    assert topup_data["new_credits"] == initial_credits + 100
+    assert "PAY_" in topup_data["payment_ref"]
+    print(f"✔ VietQR Top-Up successful: Added 100 credits, New Balance = {topup_data['new_credits']}")
+
+    print("\n--- [Step 9] Testing Health Check Probes (/healthz & /api/health) ---")
+    r_h1 = client.get("/healthz")
+    assert r_h1.status_code == 200
+    assert r_h1.json()["status"] == "healthy"
+    r_h2 = client.get("/api/health")
+    assert r_h2.status_code == 200
+    assert r_h2.json()["version"] == "7.3.0"
+    print("✔ Container Liveness & Readiness health check probes verified.")
 
     print("\n🎉 ALL FULL E2E SAAS TESTS COMPLETED SUCCESSFULLY WITH 100% PASS RATE!\n")
 
