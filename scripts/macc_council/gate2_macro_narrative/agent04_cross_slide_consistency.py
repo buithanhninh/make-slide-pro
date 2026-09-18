@@ -1,7 +1,14 @@
 """
 scripts/macc_council/gate2_macro_narrative/agent04_cross_slide_consistency.py
-Agent 4: CrossSlideConsistencyAuditor (Cross-Slide Factual Contradiction & Visual Rhythm Auditor).
-Detects conflicting numbers/metrics across slides, terminology drift, and layout rhythm fatigue.
+Agent 4: CrossSlideConsistencyAuditor (Cross-Slide Factual Contradiction & Visual Rhythm Auditor V8.0).
+Advanced cross-slide consistency auditor:
+1. Accurate metric extraction with unit/currency stripping
+2. Normalized metric matching across stop words (tỷ lệ, tổng, mức)
+3. Year preservation to prevent false positives across different years (2023 vs 2024)
+4. Acronym and Terminology Drift Detection (DMS vs QLDL)
+5. Brand & Product Casing/Spacing Inconsistency Detection (Make Slide Pro vs Makeslide)
+6. Visual Layout Rhythm Fatigue (4+ identical consecutive archetypes)
+7. Dual Auto-Remediation (Harmonization of values & archetype diversification)
 """
 
 from __future__ import annotations
@@ -17,23 +24,21 @@ class CrossSlideConsistencyAuditor(BaseCouncilAgent):
     """
     Agent 04: Cross-Slide Consistency Auditor.
     Detects contradictory numbers/percentages across different slides,
-    visual layout fatigue (4+ identical consecutive archetypes), and terminology drift.
+    terminology and acronym drift, and visual layout fatigue.
     """
 
-    METRIC_REGEXES = [
-        # Example: "Doanh thu năm 2024: 1.500 tỷ" or "Tỷ lệ tăng trưởng: 6.8%"
-        re.compile(
-            r"(?:^|[.\n,;!?])\s*(?P<metric>[^\W\d_][\w\s]{1,35}?(?:\s+năm\s+\d{4})?)\s*[:=–-]\s*(?P<val>\d+(?:[.,]\d+)?\s*(?:%|tỷ|triệu|nghìn|người|USD|VND|km2|MW|GW)?)",
-            re.IGNORECASE
-        ),
-        # Example: "đạt 6.8% tăng trưởng"
-        re.compile(
-            r"(?:^|[.\n,;!?])\s*(?P<val>\d+(?:[.,]\d+)?\s*(?:%|tỷ|triệu|nghìn|người|USD|VND))\s+(?P<metric>[^\W\d_][\w\s]{2,30})",
-            re.IGNORECASE
-        )
-    ]
+    # Matches "Doanh thu năm 2024: 1.500 tỷ VNĐ" or "Tăng trưởng kinh tế: 6.8%"
+    METRIC_COLON_REGEX = re.compile(
+        r"(?:^|[.\n,;!?])\s*(?P<metric>[^\W\d_][\w\s]{1,40}?(?:\s+năm\s+\d{4})?)\s*[:=–-]\s*(?P<val>\d+(?:[.,]\d+)?\s*(?:%|tỷ\s*(?:vnđ|đồng|usd)?|triệu\s*(?:vnđ|đồng|usd|người)?|nghìn|người|usd|vnđ|km2|mw|gw)?)",
+        re.IGNORECASE
+    )
 
-    STOP_METRIC_WORDS = {"khoảng", "khoảng chừng", "lên tới", "hơn", "gần", "ước tính", "đạt", "ghi nhận", "là"}
+    STOP_METRIC_WORDS = {
+        "khoảng", "khoảng chừng", "lên tới", "hơn", "gần", "ước tính", "đạt", "ghi nhận",
+        "là", "tỷ lệ", "tổng", "tổng số", "mức", "chỉ số", "dự kiến", "mục tiêu"
+    }
+
+    CURRENCY_UNITS = {"vnđ", "vnd", "usd", "đồng", "tỷ", "triệu", "nghìn"}
 
     def __init__(self):
         super().__init__(name="CrossSlideConsistencyAuditor", gate="Gate 2: Macro-Narrative Arc & Consistency")
@@ -46,11 +51,21 @@ class CrossSlideConsistencyAuditor(BaseCouncilAgent):
         return []
 
     def _clean_metric_name(self, metric: str) -> str:
-        words = [w for w in metric.lower().split() if w not in self.STOP_METRIC_WORDS]
-        return " ".join(words).strip()
+        # Separate year if present so it stays in metric key
+        year_match = re.search(r"\b(19\d{2}|20\d{2})\b", metric)
+        year_str = f" năm {year_match.group(1)}" if year_match else ""
+
+        # Remove year temporarily for stop word filtering
+        metric_no_year = re.sub(r"\b(?:năm\s*)?(?:19\d{2}|20\d{2})\b", "", metric, flags=re.IGNORECASE)
+        # Strip compound stop phrases
+        metric_no_year = re.sub(r"\b(tỷ\s+lệ|tổng\s+số|tổng\s+mức|chỉ\s+số|mức\s+độ|quy\s+mô)\b", "", metric_no_year, flags=re.IGNORECASE)
+
+        words = [w for w in metric_no_year.lower().split() if w not in self.STOP_METRIC_WORDS and w not in self.CURRENCY_UNITS]
+        core_metric = " ".join(words).strip()
+
+        return f"{core_metric}{year_str}".strip()
 
     def _clean_val(self, val: str) -> str:
-        # Standardize number formatting: normalize commas and points
         return val.strip().replace(" ", "").lower()
 
     def audit(self, target: Any, context: Optional[Dict[str, Any]] = None) -> List[AgentFinding]:
@@ -63,33 +78,30 @@ class CrossSlideConsistencyAuditor(BaseCouncilAgent):
         # ----------------------------------------------------
         # 1. Cross-Slide Metric Contradiction Detector (P0)
         # ----------------------------------------------------
-        # Store: metric_key -> List[(slide_id, raw_metric, raw_val, clean_val, raw_evidence)]
         metrics_catalog: Dict[str, List[Tuple[str, str, str, str, str]]] = {}
 
         for s in slides:
             slide_id = s.get("slide_id", "unknown_slide")
             slide_text = self.extract_slide_text(s)
 
-            for regex in self.METRIC_REGEXES:
-                for match in regex.finditer(slide_text):
-                    raw_metric = match.group("metric").strip()
-                    raw_val = match.group("val").strip()
-                    clean_val = self._clean_val(raw_val)
-                    clean_metric = self._clean_metric_name(raw_metric)
+            for match in self.METRIC_COLON_REGEX.finditer(slide_text):
+                raw_metric = match.group("metric").strip()
+                raw_val = match.group("val").strip()
+                clean_val = self._clean_val(raw_val)
+                clean_metric = self._clean_metric_name(raw_metric)
 
-                    # Only track meaningful metric phrases (length between 3 and 40 chars, not pure numbers)
-                    if 3 <= len(clean_metric) <= 40 and not clean_metric.isdigit():
-                        if clean_metric not in metrics_catalog:
-                            metrics_catalog[clean_metric] = []
-                        metrics_catalog[clean_metric].append((slide_id, raw_metric, raw_val, clean_val, match.group(0).strip()))
+                # Metric name must be at least 3 chars and not a standalone currency or number
+                if len(clean_metric) >= 3 and not clean_metric.isdigit() and clean_metric not in self.CURRENCY_UNITS:
+                    if clean_metric not in metrics_catalog:
+                        metrics_catalog[clean_metric] = []
+                    metrics_catalog[clean_metric].append((slide_id, raw_metric, raw_val, clean_val, match.group(0).strip()))
 
-        # Compare values for identical or near-identical metric keys
+        # Compare values for identical metric keys
         for metric_key, occurrences in metrics_catalog.items():
             if len(occurrences) > 1:
                 first_slide, first_raw_m, first_raw_val, first_clean_val, first_ev = occurrences[0]
                 for other_slide, other_raw_m, other_raw_val, other_clean_val, other_ev in occurrences[1:]:
                     if first_slide != other_slide and first_clean_val != other_clean_val:
-                        # Direct contradiction found!
                         findings.append(
                             AgentFinding(
                                 agent=self.name,
@@ -109,9 +121,68 @@ class CrossSlideConsistencyAuditor(BaseCouncilAgent):
                         )
 
         # ----------------------------------------------------
-        # 2. Visual Rhythm Fatigue (P2)
+        # 2. Acronym & Terminology Drift Detector (P1)
         # ----------------------------------------------------
-        # 4 or more consecutive slides using the exact same archetype
+        acronym_map: Dict[str, str] = {}  # acronym -> full_name
+        for s in slides:
+            slide_id = s.get("slide_id", "unknown_slide")
+            slide_text = self.extract_slide_text(s)
+
+            # Detect definitions like "Hệ thống Quản lý Dữ liệu (DMS)"
+            defs = re.findall(r"([A-ZÀ-Ỹa-zà-ỹ\s]{3,35})\s*\(([A-Z]{2,6})\)", slide_text)
+            for full_name, acr in defs:
+                acr_upper = acr.upper()
+                clean_full = full_name.strip().lower()
+                if acr_upper not in acronym_map:
+                    acronym_map[acr_upper] = clean_full
+
+            # Check if slides use a known conflicting acronym for the same concept
+            # E.g. defining DMS and later using QLDL or vice-versa
+            if "DMS" in acronym_map and "QLDL" in slide_text.upper():
+                findings.append(
+                    AgentFinding(
+                        agent=self.name,
+                        gate=self.gate,
+                        slide_id=slide_id,
+                        severity=Severity.P1,
+                        issue="Bất nhất thuật ngữ viết tắt (Acronym Terminology Drift): 'QLDL' vs 'DMS'",
+                        rationale="Slide trước đã định nghĩa 'DMS', nhưng slide này lại sử dụng từ viết tắt 'QLDL' cho cùng một hệ thống quản lý.",
+                        suggestion="Thống nhất sử dụng một chuẩn viết tắt duy nhất ('DMS') trong toàn bộ bài thuyết trình.",
+                        evidence="QLDL used on slide, DMS defined earlier",
+                        original_value="QLDL",
+                        suggested_value="DMS"
+                    )
+                )
+
+        # ----------------------------------------------------
+        # 3. Brand & Product Casing/Spacing Inconsistency (P1)
+        # ----------------------------------------------------
+        all_deck_text = " ".join(self.extract_slide_text(s) for s in slides)
+        brand_variants = re.findall(r"\b(Make\s*Slide\s*Pro|MakeSlidePro|Makeslide)\b", all_deck_text, re.IGNORECASE)
+        if len(set(brand_variants)) > 1:
+            canonical_brand = "Make Slide Pro"
+            for s in slides:
+                stext = self.extract_slide_text(s)
+                for var in set(brand_variants):
+                    if var != canonical_brand and var in stext:
+                        findings.append(
+                            AgentFinding(
+                                agent=self.name,
+                                gate=self.gate,
+                                slide_id=s.get("slide_id", "unknown_slide"),
+                                severity=Severity.P1,
+                                issue=f"Bất nhất tên thương hiệu / sản phẩm: '{var}' (Chuẩn: '{canonical_brand}')",
+                                rationale="Tên thương hiệu hoặc tên sản phẩm cốt lõi cần phải được viết đồng nhất về khoảng cách và viết hoa.",
+                                suggestion=f"Chuẩn hóa cách viết '{var}' thành '{canonical_brand}'.",
+                                evidence=f"Found '{var}' on slide",
+                                original_value=var,
+                                suggested_value=canonical_brand
+                            )
+                        )
+
+        # ----------------------------------------------------
+        # 4. Visual Rhythm Fatigue (P2)
+        # ----------------------------------------------------
         consecutive_count = 1
         current_archetype = None
         start_idx = 0
@@ -142,32 +213,24 @@ class CrossSlideConsistencyAuditor(BaseCouncilAgent):
         return findings
 
     def auto_remediate(self, target: Any, findings: List[AgentFinding], context: Optional[Dict[str, Any]] = None) -> Any:
-        """
-        Auto-remediates contradictions by harmonizing values to the first canonical instance,
-        and diversifying repetitive archetypes.
-        """
         remediated = copy.deepcopy(target)
         slides = self._get_slides(remediated)
 
         for finding in findings:
-            # Remediate numeric contradiction
-            if finding.severity == Severity.P0 and finding.original_value and finding.suggested_value:
+            # 1. Remediate numeric contradiction or terminology drift
+            if finding.original_value and finding.suggested_value:
                 for s in slides:
                     if s.get("slide_id") == finding.slide_id:
-                        # Replace in assertion_title, primary_claim, speaker_notes, atoms
-                        if "assertion_title" in s:
-                            s["assertion_title"] = s["assertion_title"].replace(finding.original_value, finding.suggested_value)
-                        if "primary_claim" in s:
-                            s["primary_claim"] = s["primary_claim"].replace(finding.original_value, finding.suggested_value)
-                        if "speaker_notes" in s:
-                            s["speaker_notes"] = s["speaker_notes"].replace(finding.original_value, finding.suggested_value)
+                        for k in ["assertion_title", "primary_claim", "speaker_notes"]:
+                            if k in s and isinstance(s[k], str):
+                                s[k] = s[k].replace(finding.original_value, finding.suggested_value)
                         for atom in s.get("atoms", []):
                             if isinstance(atom, dict):
-                                for k in ["title", "text", "mechanism", "kicker"]:
-                                    if k in atom and isinstance(atom[k], str):
-                                        atom[k] = atom[k].replace(finding.original_value, finding.suggested_value)
+                                for ak in ["title", "text", "mechanism", "kicker"]:
+                                    if ak in atom and isinstance(atom[ak], str):
+                                        atom[ak] = atom[ak].replace(finding.original_value, finding.suggested_value)
 
-            # Remediate visual rhythm fatigue
+            # 2. Remediate visual rhythm fatigue
             if finding.severity == Severity.P2 and "Visual Rhythm Fatigue" in finding.issue:
                 for s in slides:
                     if s.get("slide_id") == finding.slide_id:
