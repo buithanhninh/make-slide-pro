@@ -42,6 +42,7 @@ from author_native_com import NativeDeckAuthor
 from multi_agent_qa import MultiAgentQABoard
 from demographic_visualizer import render_all_demographic_charts
 from forensic_compliance_audit import audit_all_pptx
+from macc_council import MultiRoundCouncilOrchestrator
 
 
 def slugify(text: str) -> str:
@@ -52,8 +53,8 @@ def slugify(text: str) -> str:
 def print_banner():
     banner = """
 ================================================================================
-           ★ MAKE SLIDE PRO V7.3 - PRODUCTION SUITE ★
-     Universal Document-to-PowerPoint Publishing & Quality Certification
+           ★ MAKE SLIDE PRO V8.2 - PRODUCTION SUITE ★
+   Universal Document-to-PowerPoint Publishing & 16-Agent Quality Council
 ================================================================================
 """
     print(banner)
@@ -63,6 +64,7 @@ def process_single_document(
     input_file: Path,
     output_dir: Path,
     theme: str = "ALL",
+    motion_mode: str = "presenter_click",
     run_qa: bool = True,
     open_pptx: bool = False
 ) -> Dict[str, Any]:
@@ -112,15 +114,34 @@ def process_single_document(
     deck_title = blueprints.get("deck_title", file_stem)
     print(f"    ✔ Blueprints generated: {total_slides} slides ('{deck_title}').")
 
+    # Step 2.5: Omniscient 16-Agent MACC-QA Council
+    print("\n[Step 2.5/4] Omniscient 16-Agent MACC-QA Council Dialectical Convergence...")
+    council = MultiRoundCouncilOrchestrator(max_rounds=5, target_score=90.0)
+    council_report = council.run_council(
+        blueprints=blueprints,
+        canonical_source=canonical,
+        doc_metadata={"file_stem": file_stem}
+    )
+    if council_report.remediated_slides:
+        blueprints["slides"] = council_report.remediated_slides
+        blueprints["total_slides"] = len(council_report.remediated_slides)
+        with open(bp_path, "w", encoding="utf-8") as f:
+            json.dump(blueprints, f, ensure_ascii=False, indent=2)
+
+    with open(dest_dir / "macc-council-report.json", "w", encoding="utf-8") as f:
+        json.dump(council_report.model_dump(), f, ensure_ascii=False, indent=2)
+
+    print(f"    ✔ MACC-QA V8.2 Council: Converged Score = {council_report.final_score:.1f}/100 in {council_report.total_rounds} rounds | P0={council_report.p0_count}, P1={council_report.p1_count}, P2={council_report.p2_count}")
+
     # Step 3: Native PowerPoint COM Authoring
-    print("\n[Step 3/4] Native PowerPoint COM Authoring...")
+    print("\n[Step 3/4] Native PowerPoint COM Authoring (Kinetic Motion Engine)...")
     target_themes = ["DARK", "LIGHT"] if theme.upper() == "ALL" else [theme.upper()]
     created_decks = {}
 
     for th in target_themes:
         pptx_name = f"{doc_slug}_{th.title()}.pptx"
         pptx_path = dest_dir / pptx_name
-        author = NativeDeckAuthor(visible=False, theme=th)
+        author = NativeDeckAuthor(visible=False, theme=th, motion_mode=motion_mode)
         try:
             author.create_deck(bp_path, pptx_path)
             created_decks[th] = pptx_path
@@ -235,10 +256,12 @@ def run_interactive():
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Make Slide Pro V7.3 - Production Suite")
+    parser = argparse.ArgumentParser(description="Make Slide Pro V8.2 - Production Suite (16-Agent & Kinetic Motion)")
     parser.add_argument("--input", "-i", type=Path, help="Path to input document (.docx, .pdf, .txt, .md) or folder")
     parser.add_argument("--output", "-o", default=Path("Du_An_Outputs"), type=Path, help="Output root directory")
     parser.add_argument("--theme", "-t", default="ALL", choices=["DARK", "LIGHT", "ALL"], help="Slide color theme")
+    parser.add_argument("--motion-mode", "-m", default="presenter_click", choices=["presenter_click", "kinetic_cascade"],
+                        help="Motion choreography mode (default: presenter_click)")
     parser.add_argument("--no-qa", action="store_true", help="Skip multi-agent QA certification audit")
     parser.add_argument("--open", action="store_true", help="Automatically open generated PowerPoint deck")
     args = parser.parse_args()
@@ -261,9 +284,9 @@ def main():
         print(f"Phát hiện {len(docs)} tài liệu trong thư mục {input_path}. Bắt đầu xử lý hàng loạt...")
         for idx, doc in enumerate(docs, start=1):
             print(f"\n[{idx}/{len(docs)}] Xử lý: {doc.name}")
-            process_single_document(doc, args.output, theme=args.theme, run_qa=not args.no_qa, open_pptx=False)
+            process_single_document(doc, args.output, theme=args.theme, motion_mode=args.motion_mode, run_qa=not args.no_qa, open_pptx=False)
     else:
-        process_single_document(input_path, args.output, theme=args.theme, run_qa=not args.no_qa, open_pptx=args.open)
+        process_single_document(input_path, args.output, theme=args.theme, motion_mode=args.motion_mode, run_qa=not args.no_qa, open_pptx=args.open)
 
 
 if __name__ == "__main__":

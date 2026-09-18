@@ -1,10 +1,10 @@
 @echo off
 chcp 65001 > nul
-title Make Slide Pro Web Studio V7.3
+title Make Slide Pro Web Studio V8.2
 cls
 
 echo ================================================================================
-echo           ★ MAKE SLIDE PRO V7.3 - WEB STUDIO LAUNCHER ★
+echo           ★ MAKE SLIDE PRO V8.2 - WEB STUDIO LAUNCHER ★
 echo     Universal Document-to-PowerPoint Web Publishing & Presentation Suite
 echo ================================================================================
 echo.

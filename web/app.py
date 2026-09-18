@@ -1,6 +1,6 @@
 """
 web/app.py
-Make Slide Pro Web Studio V7.3 - Production FastAPI Application
+Make Slide Pro Web Studio V8.2 - Production FastAPI Application
 Provides RESTful APIs and real-time WebSockets for universal document ingestion,
 interactive pedagogical storyboard editing, MACC-QA review, PowerPoint COM rendering,
 and dual-theme slide presentation.
@@ -93,9 +93,9 @@ except ImportError:
     MultiAgentQABoard = None
 
 app = FastAPI(
-    title="Make Slide Pro Web Studio V7.3",
-    description="Universal Document-to-PowerPoint Publishing & Pedagogical Studio",
-    version="7.3.0",
+    title="Make Slide Pro Web Studio V8.2",
+    description="Universal Document-to-PowerPoint Publishing & 16-Agent Quality Council Studio",
+    version="8.2.0",
 )
 
 app.add_middleware(
@@ -248,7 +248,7 @@ async def serve_studio():
     index_path = STATIC_DIR / "index.html"
     if index_path.exists():
         return HTMLResponse(content=index_path.read_text(encoding="utf-8"))
-    return HTMLResponse(content="<h1>Make Slide Pro Web Studio V7.3 is running.</h1>")
+    return HTMLResponse(content="<h1>Make Slide Pro Web Studio V8.2 is running.</h1>")
 
 
 @app.get("/healthz")

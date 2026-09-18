@@ -1,10 +1,10 @@
 @echo off
 chcp 65001 >nul
-title Make Slide Pro V7.3 - Trình Biên Tập Slide Tự Động
+title Make Slide Pro V8.2 - Trình Biên Tập Slide Tự Động (16-Agent & Kinetic Motion)
 
 echo ================================================================================
-echo           ★ MAKE SLIDE PRO V7.3 - PRODUCTION SUITE ★
-echo     Universal Document-to-PowerPoint Publishing & Quality Certification
+echo           ★ MAKE SLIDE PRO V8.2 - PRODUCTION SUITE ★
+echo     Universal Document-to-PowerPoint Publishing & 16-Agent Quality Council
 echo ================================================================================
 echo.
 

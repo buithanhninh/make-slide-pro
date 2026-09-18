@@ -1,6 +1,6 @@
 """
 run_web_studio.py
-Make Slide Pro Web Studio V7.3 - Launcher & Server Host
+Make Slide Pro Web Studio V8.2 - Launcher & Server Host
 Starts the FastAPI server with Uvicorn and automatically launches the web browser.
 """
 
@@ -34,7 +34,7 @@ def open_browser():
 
 def main():
     print("=" * 80)
-    print("       * MAKE SLIDE PRO V7.3 - WEB STUDIO LAUNCHER *")
+    print("       * MAKE SLIDE PRO V8.2 - WEB STUDIO LAUNCHER *")
     print("   Universal Document-to-PowerPoint Web Publishing & Presentation Suite")
     print("=" * 80)
     print(f"[*] Thư mục dự án: {PROJECT_ROOT}")

@@ -51,14 +51,14 @@ def run_batch_pipeline(input_dir: Path, output_root: Path, pattern: Optional[str
 
     master_results = {
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "pipeline_version": "Make Slide Pro V7.3.0 (Multi-Media Rich Visual & Dual-Theme Architecture)",
+        "pipeline_version": "Make Slide Pro V8.2.0 (Omniscient 16-Agent MACC-QA Council & Kinetic Motion Architecture)",
         "total_lessons": len(docx_files),
         "lessons": []
     }
 
     # Pre-render demographic charts for visual anchor injection
     print("================================================================================")
-    print("   MAKE SLIDE PRO V7.3 - MULTI-MEDIA RICH & DUAL-THEME PIPELINE (DARK & LIGHT) ")
+    print("   MAKE SLIDE PRO V8.2 - 16-AGENT COUNCIL & KINETIC MOTION PIPELINE (DARK & LIGHT) ")
     print("================================================================================")
     print("Generating high-resolution demographic infographic charts...")
     render_all_demographic_charts(Path("assets/charts"))
