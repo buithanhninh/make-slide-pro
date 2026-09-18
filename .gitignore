@@ -12,3 +12,5 @@ node_modules/
 Du_An_Outputs/
 output/
 scratch/
+*.db
+*.sqlite*

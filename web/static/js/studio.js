@@ -12,9 +12,15 @@ class SlideStudioApp {
     this.currentSlideIdx = 0;
     this.activeDeckTheme = "DARK";
     this.ws = null;
+
+    // SaaS Multi-Tenant State
+    this.token = localStorage.getItem("make_slide_pro_token") || null;
+    this.currentUser = null;
+    this.myProjects = [];
     
     this.initElements();
     this.bindEvents();
+    this.checkAuth();
   }
 
   initElements() {
@@ -67,13 +73,64 @@ class SlideStudioApp {
     this.btnSendCopilot = document.getElementById("btn-send-copilot");
     this.copilotHistory = document.getElementById("copilot-history");
 
-    // Header
+    // Header & SaaS Controls
     this.sessionPill = document.getElementById("session-pill");
     this.sessionIdText = document.getElementById("session-id-text");
     this.btnToggleTheme = document.getElementById("btn-toggle-theme");
+    this.authGuestControls = document.getElementById("auth-guest-controls");
+    this.authUserControls = document.getElementById("auth-user-controls");
+    this.btnOpenAuth = document.getElementById("btn-open-auth");
+    this.btnOpenProjects = document.getElementById("btn-open-projects");
+    this.userProjectCount = document.getElementById("user-project-count");
+    this.userCreditsBadge = document.getElementById("user-credits-badge");
+    this.userEmailBadge = document.getElementById("user-email-badge");
+    this.btnLogout = document.getElementById("btn-logout");
+
+    // Modals
+    this.modalAuth = document.getElementById("modal-auth");
+    this.btnCloseAuthModal = document.getElementById("btn-close-auth-modal");
+    this.tabLogin = document.getElementById("tab-login");
+    this.tabRegister = document.getElementById("tab-register");
+    this.formLogin = document.getElementById("form-login");
+    this.formRegister = document.getElementById("form-register");
+    this.authErrorMsg = document.getElementById("auth-error-msg");
+    this.authSuccessMsg = document.getElementById("auth-success-msg");
+
+    this.modalProjects = document.getElementById("modal-projects");
+    this.btnCloseProjectsModal = document.getElementById("btn-close-projects-modal");
+    this.projectsListContainer = document.getElementById("projects-list-container");
   }
 
   bindEvents() {
+    // SaaS Auth Listeners
+    if (this.btnOpenAuth) {
+      this.btnOpenAuth.addEventListener("click", () => this.openAuthModal());
+    }
+    if (this.btnCloseAuthModal) {
+      this.btnCloseAuthModal.addEventListener("click", () => this.closeAuthModal());
+    }
+    if (this.tabLogin) {
+      this.tabLogin.addEventListener("click", () => this.switchAuthTab("login"));
+    }
+    if (this.tabRegister) {
+      this.tabRegister.addEventListener("click", () => this.switchAuthTab("register"));
+    }
+    if (this.formLogin) {
+      this.formLogin.addEventListener("submit", (e) => this.handleLoginSubmit(e));
+    }
+    if (this.formRegister) {
+      this.formRegister.addEventListener("submit", (e) => this.handleRegisterSubmit(e));
+    }
+    if (this.btnLogout) {
+      this.btnLogout.addEventListener("click", () => this.handleLogout());
+    }
+    if (this.btnOpenProjects) {
+      this.btnOpenProjects.addEventListener("click", () => this.openProjectsModal());
+    }
+    if (this.btnCloseProjectsModal) {
+      this.btnCloseProjectsModal.addEventListener("click", () => this.modalProjects.style.display = "none");
+    }
+
     // Stepper navigation
     this.stepNavs.forEach(item => {
       item.addEventListener("click", () => {
@@ -150,6 +207,232 @@ class SlideStudioApp {
     this.copilotInput.addEventListener("keydown", (e) => {
       if (e.key === "Enter") this.sendCopilotCommand();
     });
+  // -------------------------------------------------------------------------
+  // SaaS Multi-Tenant & Auth Methods
+  // -------------------------------------------------------------------------
+  getAuthHeaders(includeJson = true) {
+    const headers = {};
+    if (includeJson) headers["Content-Type"] = "application/json";
+    if (this.token) headers["Authorization"] = `Bearer ${this.token}`;
+    return headers;
+  }
+
+  async checkAuth() {
+    if (!this.token) {
+      this.renderGuestUI();
+      return;
+    }
+    try {
+      const res = await fetch("/api/auth/me", {
+        headers: this.getAuthHeaders(false)
+      });
+      if (res.ok) {
+        const user = await res.json();
+        this.currentUser = user;
+        this.renderUserUI();
+      } else {
+        this.token = null;
+        localStorage.removeItem("make_slide_pro_token");
+        this.renderGuestUI();
+      }
+    } catch (e) {
+      this.renderGuestUI();
+    }
+  }
+
+  renderUserUI() {
+    if (this.authGuestControls) this.authGuestControls.style.display = "none";
+    if (this.authUserControls) this.authUserControls.style.display = "flex";
+    if (this.userCreditsBadge) this.userCreditsBadge.innerText = this.currentUser.credits;
+    if (this.userEmailBadge) this.userEmailBadge.innerText = this.currentUser.email;
+    if (this.userProjectCount) this.userProjectCount.innerText = this.currentUser.project_count || 0;
+  }
+
+  renderGuestUI() {
+    if (this.authGuestControls) this.authGuestControls.style.display = "flex";
+    if (this.authUserControls) this.authUserControls.style.display = "none";
+  }
+
+  openAuthModal() {
+    if (this.authErrorMsg) this.authErrorMsg.style.display = "none";
+    if (this.authSuccessMsg) this.authSuccessMsg.style.display = "none";
+    if (this.modalAuth) this.modalAuth.style.display = "flex";
+  }
+
+  closeAuthModal() {
+    if (this.modalAuth) this.modalAuth.style.display = "none";
+  }
+
+  switchAuthTab(tab) {
+    if (this.authErrorMsg) this.authErrorMsg.style.display = "none";
+    if (this.authSuccessMsg) this.authSuccessMsg.style.display = "none";
+    if (tab === "login") {
+      this.tabLogin.classList.add("btn-primary");
+      this.tabLogin.classList.remove("btn-secondary");
+      this.tabRegister.classList.add("btn-secondary");
+      this.tabRegister.classList.remove("btn-primary");
+      this.formLogin.style.display = "block";
+      this.formRegister.style.display = "none";
+    } else {
+      this.tabRegister.classList.add("btn-primary");
+      this.tabRegister.classList.remove("btn-secondary");
+      this.tabLogin.classList.add("btn-secondary");
+      this.tabLogin.classList.remove("btn-primary");
+      this.formRegister.style.display = "block";
+      this.formLogin.style.display = "none";
+    }
+  }
+
+  async handleLoginSubmit(e) {
+    e.preventDefault();
+    if (this.authErrorMsg) this.authErrorMsg.style.display = "none";
+    const email = document.getElementById("login-email").value.trim();
+    const password = document.getElementById("login-password").value;
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Đăng nhập không thành công.");
+
+      this.token = data.access_token;
+      localStorage.setItem("make_slide_pro_token", this.token);
+      this.currentUser = data.user;
+      this.renderUserUI();
+      this.closeAuthModal();
+      this.checkAuth();
+    } catch (err) {
+      if (this.authErrorMsg) {
+        this.authErrorMsg.innerText = err.message;
+        this.authErrorMsg.style.display = "block";
+      }
+    }
+  }
+
+  async handleRegisterSubmit(e) {
+    e.preventDefault();
+    if (this.authErrorMsg) this.authErrorMsg.style.display = "none";
+    const fullName = document.getElementById("reg-fullname").value.trim();
+    const email = document.getElementById("reg-email").value.trim();
+    const password = document.getElementById("reg-password").value;
+
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ full_name: fullName, email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Đăng ký không thành công.");
+
+      this.token = data.access_token;
+      localStorage.setItem("make_slide_pro_token", this.token);
+      this.currentUser = data.user;
+      this.renderUserUI();
+      if (this.authSuccessMsg) {
+        this.authSuccessMsg.innerText = "Đăng ký thành công! Bạn được tặng 5 Credits miễn phí.";
+        this.authSuccessMsg.style.display = "block";
+      }
+      setTimeout(() => {
+        this.closeAuthModal();
+        this.checkAuth();
+      }, 1200);
+    } catch (err) {
+      if (this.authErrorMsg) {
+        this.authErrorMsg.innerText = err.message;
+        this.authErrorMsg.style.display = "block";
+      }
+    }
+  }
+
+  handleLogout() {
+    this.token = null;
+    this.currentUser = null;
+    localStorage.removeItem("make_slide_pro_token");
+    this.renderGuestUI();
+  }
+
+  async openProjectsModal() {
+    if (this.modalProjects) this.modalProjects.style.display = "flex";
+    if (this.projectsListContainer) {
+      this.projectsListContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 2rem;">Đang tải danh sách bài thuyết trình...</div>`;
+    }
+
+    try {
+      const res = await fetch("/api/projects", {
+        headers: this.getAuthHeaders(false)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Không thể tải danh sách dự án.");
+
+      this.myProjects = data;
+      if (!data.length) {
+        this.projectsListContainer.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 2rem;">Bạn chưa có bài thuyết trình nào. Hãy nạp tài liệu để bắt đầu!</div>`;
+        return;
+      }
+
+      this.projectsListContainer.innerHTML = data.map(p => `
+        <div class="project-item-card">
+          <div class="project-info">
+            <h4>${p.title || 'Bài Thuyết Trình Không Tên'}</h4>
+            <p>📄 ${p.source_filename || 'Tài liệu'} • 📊 ${p.total_slides} slides • Trạng thái: <strong style="color: var(--accent-cyan);">${p.status}</strong></p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-secondary" onclick="window.app.loadProject('${p.id}')" style="padding: 6px 12px; font-size: 0.8rem;">
+              Mở Dự Án
+            </button>
+            ${p.status === "COMPLETED" ? `
+              <a href="/api/download/${p.id}/Presentation_Dark.pptx" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem;">
+                Tải PPTX
+              </a>
+            ` : ''}
+          </div>
+        </div>
+      `).join("");
+    } catch (err) {
+      if (this.projectsListContainer) {
+        this.projectsListContainer.innerHTML = `<div style="color: var(--accent-rose); padding: 1rem;">Lỗi: ${err.message}</div>`;
+      }
+    }
+  }
+
+  async loadProject(projectId) {
+    if (this.modalProjects) this.modalProjects.style.display = "none";
+    try {
+      const res = await fetch(`/api/projects/${projectId}`, {
+        headers: this.getAuthHeaders(false)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Không thể tải dự án.");
+
+      this.sessionId = data.id;
+      this.blueprints = data.blueprints;
+      this.sessionPill.style.display = "inline-flex";
+      this.sessionIdText.innerText = this.sessionId;
+      this.deckTitleInput.value = data.title;
+      this.renderStoryboard();
+
+      // Check if rendered
+      const statusRes = await fetch(`/api/projects/${projectId}/status`, {
+        headers: this.getAuthHeaders(false)
+      });
+      const statusData = await statusRes.json();
+      if (statusData.has_previews) {
+        this.previews = statusData.previews;
+        this.currentSlideIdx = 0;
+        this.btnDownloadDark.href = `/api/download/${projectId}/Presentation_Dark.pptx`;
+        this.btnDownloadLight.href = `/api/download/${projectId}/Presentation_Light.pptx`;
+        this.updateSlideDisplay();
+        this.setStep(4);
+      } else {
+        this.setStep(2);
+      }
+    } catch (err) {
+      alert("Lỗi tải dự án: " + err.message);
+    }
   }
 
   setStep(stepNum) {
@@ -183,10 +466,13 @@ class SlideStudioApp {
     `;
 
     try {
-      const res = await fetch("/api/upload/file", { method: "POST", body: formData });
+      const uploadUrl = this.token ? "/api/projects/upload" : "/api/upload/file";
+      const headers = this.token ? { "Authorization": `Bearer ${this.token}` } : {};
+      const res = await fetch(uploadUrl, { method: "POST", headers, body: formData });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Lỗi tải tệp");
       this.onIngestionSuccess(data);
+      if (this.token) this.checkAuth();
     } catch (err) {
       alert("Lỗi: " + err.message);
       this.resetDropzone();
@@ -204,12 +490,13 @@ class SlideStudioApp {
     try {
       const res = await fetch("/api/upload/text", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: this.getAuthHeaders(true),
         body: JSON.stringify({ title, content })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || "Lỗi bóc tách văn bản");
       this.onIngestionSuccess(data);
+      if (this.token) this.checkAuth();
     } catch (err) {
       alert("Lỗi: " + err.message);
     }
@@ -441,6 +728,11 @@ class SlideStudioApp {
   async startRendering() {
     if (!this.sessionId) return;
 
+    if (this.token && this.currentUser && this.currentUser.credits < 1) {
+      alert("Tài khoản của bạn đã hết Credits (cần 1 credit/lần render). Vui lòng nạp thêm để tiếp tục xuất bản PowerPoint!");
+      return;
+    }
+
     // Save blueprint state first
     await fetch("/api/blueprint/update", {
       method: "POST",
@@ -457,13 +749,19 @@ class SlideStudioApp {
 
     // Trigger render
     try {
-      const res = await fetch("/api/render", {
+      const renderUrl = this.token ? `/api/projects/${this.sessionId}/render` : "/api/render";
+      const res = await fetch(renderUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: this.getAuthHeaders(true),
         body: JSON.stringify({ session_id: this.sessionId, theme: "ALL" })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail);
+
+      if (this.token && data.remaining_credits !== undefined) {
+        if (this.currentUser) this.currentUser.credits = data.remaining_credits;
+        if (this.userCreditsBadge) this.userCreditsBadge.innerText = data.remaining_credits;
+      }
     } catch (err) {
       this.appendConsoleLog(`[ERROR] ${err.message}`);
     }

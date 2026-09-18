@@ -14,12 +14,14 @@ import os
 import re
 import shutil
 import sys
+import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from fastapi import (
+    Depends,
     FastAPI,
     File,
     Form,
@@ -32,6 +34,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
 
 # Ensure project root and scripts directory are in sys.path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -43,6 +46,27 @@ STATIC_DIR = Path(__file__).resolve().parent / "static"
 for p in [str(PROJECT_ROOT), str(SCRIPTS_DIR)]:
     if p not in sys.path:
         sys.path.insert(0, p)
+
+# Import Database and Auth Models
+from web.database import (
+    init_db,
+    get_db,
+    User,
+    Project,
+    Blueprint as BlueprintModel,
+    RenderJob,
+    Transaction,
+)
+from web.auth import (
+    hash_password,
+    verify_password,
+    create_access_token,
+    get_current_user,
+    get_optional_user,
+)
+
+# Initialize Database Schema
+init_db()
 
 # Import Core Engine Modules
 from scripts.ingest_content import ContentIngestor, clean_source_text
@@ -83,8 +107,20 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 app.mount("/assets", StaticFiles(directory=str(ASSETS_DIR)), name="assets")
 app.mount("/sessions", StaticFiles(directory=str(SESSIONS_DIR)), name="sessions")
 
+
 # Thread pool for non-blocking PowerPoint COM operations
 executor = ThreadPoolExecutor(max_workers=2)
+
+MAIN_LOOP: Optional[asyncio.AbstractEventLoop] = None
+
+
+@app.on_event("startup")
+async def startup_event():
+    global MAIN_LOOP
+    try:
+        MAIN_LOOP = asyncio.get_running_loop()
+    except RuntimeError:
+        MAIN_LOOP = asyncio.get_event_loop()
 
 
 # ---------------------------------------------------------------------------
@@ -121,14 +157,14 @@ ws_manager = ConnectionManager()
 
 def sync_broadcast(session_id: str, stage: str, percent: int, message: str, level: str = "info"):
     """Helper to broadcast WebSocket events from synchronous threads."""
-    loop = asyncio.get_event_loop()
-    if loop.is_running():
+    global MAIN_LOOP
+    if MAIN_LOOP and MAIN_LOOP.is_running():
         asyncio.run_coroutine_threadsafe(
             ws_manager.broadcast(
                 session_id,
                 {"stage": stage, "percent": percent, "message": message, "level": level},
             ),
-            loop,
+            MAIN_LOOP,
         )
 
 
@@ -159,6 +195,17 @@ def save_session_json(session_id: str, filename: str, data: Any):
 # ---------------------------------------------------------------------------
 # Pydantic Request Models
 # ---------------------------------------------------------------------------
+class RegisterRequest(BaseModel):
+    email: str
+    password: str
+    full_name: Optional[str] = ""
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
 class TextUploadRequest(BaseModel):
     title: str
     content: str
@@ -182,7 +229,7 @@ class CopilotRequest(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# REST Endpoints
+# REST Endpoints: Home & Auth
 # ---------------------------------------------------------------------------
 @app.get("/", response_class=HTMLResponse)
 async def serve_studio():
@@ -190,6 +237,270 @@ async def serve_studio():
     if index_path.exists():
         return HTMLResponse(content=index_path.read_text(encoding="utf-8"))
     return HTMLResponse(content="<h1>Make Slide Pro Web Studio V7.3 is running.</h1>")
+
+
+@app.post("/api/auth/register")
+async def register_user(payload: RegisterRequest, db: Session = Depends(get_db)):
+    email = payload.email.strip().lower()
+    if "@" not in email or "." not in email:
+        raise HTTPException(status_code=400, detail="Định dạng email không hợp lệ.")
+    if len(payload.password) < 6:
+        raise HTTPException(status_code=400, detail="Mật khẩu phải có ít nhất 6 ký tự.")
+
+    existing = db.query(User).filter(User.email == email).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Email này đã được đăng ký.")
+
+    hashed = hash_password(payload.password)
+    user = User(
+        email=email,
+        hashed_password=hashed,
+        full_name=payload.full_name.strip() or email.split("@")[0].title(),
+        credits=5,
+        tier="FREE",
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    token = create_access_token({"sub": user.id, "email": user.email})
+    return {
+        "success": True,
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "full_name": user.full_name,
+            "tier": user.tier,
+            "credits": user.credits,
+        },
+    }
+
+
+@app.post("/api/auth/login")
+async def login_user(payload: LoginRequest, db: Session = Depends(get_db)):
+    email = payload.email.strip().lower()
+    user = db.query(User).filter(User.email == email).first()
+    if not user or not verify_password(payload.password, user.hashed_password):
+        raise HTTPException(status_code=401, detail="Email hoặc mật khẩu không chính xác.")
+
+    token = create_access_token({"sub": user.id, "email": user.email})
+    return {
+        "success": True,
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "full_name": user.full_name,
+            "tier": user.tier,
+            "credits": user.credits,
+        },
+    }
+
+
+@app.get("/api/auth/me")
+async def get_my_profile(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    project_count = db.query(Project).filter(Project.user_id == current_user.id).count()
+    return {
+        "id": current_user.id,
+        "email": current_user.email,
+        "full_name": current_user.full_name,
+        "tier": current_user.tier,
+        "credits": current_user.credits,
+        "project_count": project_count,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Multi-Tenant Project Management Endpoints (Strict Tenant Isolation)
+# ---------------------------------------------------------------------------
+@app.get("/api/projects")
+async def list_user_projects(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    projects = db.query(Project).filter(Project.user_id == current_user.id).order_by(Project.created_at.desc()).all()
+    res = []
+    for p in projects:
+        total = p.blueprint.total_slides if p.blueprint else 0
+        res.append({
+            "id": p.id,
+            "title": p.title,
+            "source_filename": p.source_filename,
+            "status": p.status,
+            "total_slides": total,
+            "created_at": p.created_at.isoformat() if p.created_at else "",
+        })
+    return res
+
+
+@app.post("/api/projects/upload")
+async def create_project_from_file(
+    file: UploadFile = File(...),
+    depth_mode: str = Form("DEEP"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    project_id = str(uuid.uuid4())
+    p_dir = SESSIONS_DIR / project_id
+    p_dir.mkdir(parents=True, exist_ok=True)
+
+    file_suffix = Path(file.filename).suffix.lower()
+    saved_filename = f"source{file_suffix}"
+    saved_path = p_dir / saved_filename
+
+    with open(saved_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    try:
+        ingestor = ContentIngestor()
+        ingest_res = ingestor.ingest_document(saved_path)
+        canonical = ingest_res.get("canonical_content", {})
+        save_session_json(project_id, "canonical.json", canonical)
+
+        doc_title = canonical.get("deck_title", "")
+        if not doc_title or doc_title == "CHUYÊN ĐỀ DÂN SỐ HỌC":
+            doc_title = Path(file.filename).stem.replace("_", " ").title()
+            canonical["deck_title"] = doc_title
+
+        blueprints = generate_blueprints_from_canonical(canonical, doc_name=file.filename)
+        save_session_json(project_id, "blueprints.json", blueprints)
+
+        # Save to Database with User Ownership
+        project = Project(
+            id=project_id,
+            user_id=current_user.id,
+            title=doc_title,
+            source_filename=file.filename,
+            depth_mode=depth_mode,
+            status="BLUEPRINT_READY"
+        )
+        db.add(project)
+
+        bp_model = BlueprintModel(
+            project_id=project_id,
+            total_slides=len(blueprints.get("slides", [])),
+            macc_score=100.0,
+        )
+        bp_model.set_slides(blueprints.get("slides", []))
+        db.add(bp_model)
+
+        db.commit()
+        db.refresh(project)
+
+        sections = canonical.get("sections", [])
+        all_atoms = [a for s in sections for a in s.get("atoms", [])]
+
+        return {
+            "success": True,
+            "project_id": project.id,
+            "session_id": project.id,
+            "title": project.title,
+            "status": project.status,
+            "stats": {
+                "sections": len(sections),
+                "atoms": len(all_atoms),
+                "tables": sum(1 for a in all_atoms if a.get("is_table")),
+                "formulas": sum(1 for a in all_atoms if a.get("is_formula")),
+                "metrics": sum(1 for a in all_atoms if a.get("contains_metric")),
+                "slides": len(blueprints.get("slides", [])),
+            },
+            "blueprints": blueprints,
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Lỗi khởi tạo dự án: {str(e)}")
+
+
+@app.get("/api/projects/{project_id}")
+async def get_project_detail(
+    project_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Không tìm thấy dự án.")
+    if project.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Từ chối truy cập: Bạn không phải chủ sở hữu dự án này.")
+
+    slides = project.blueprint.get_slides() if project.blueprint else []
+    return {
+        "id": project.id,
+        "title": project.title,
+        "source_filename": project.source_filename,
+        "status": project.status,
+        "total_slides": len(slides),
+        "blueprints": {
+            "deck_title": project.title,
+            "total_slides": len(slides),
+            "slides": slides,
+        },
+    }
+
+
+@app.post("/api/projects/{project_id}/render")
+async def render_project_slides(
+    project_id: str,
+    payload: RenderRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Không tìm thấy dự án.")
+    if project.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Từ chối truy cập: Dự án không thuộc tài khoản của bạn.")
+
+    if current_user.credits < 1:
+        raise HTTPException(
+            status_code=402,
+            detail="Tài khoản của bạn đã hết Credits (cần 1 credit/lần render). Vui lòng nạp thêm để tiếp tục."
+        )
+
+    current_user.credits -= 1
+    project.status = "RENDERING"
+
+    job = RenderJob(
+        project_id=project.id,
+        theme=payload.theme or "ALL",
+        progress_percent=10,
+        current_stage="QUEUED",
+    )
+    db.add(job)
+    db.commit()
+
+    loop = MAIN_LOOP or asyncio.get_event_loop()
+    loop.run_in_executor(executor, _execute_render_job, project.id, payload.theme or "ALL")
+
+    return {
+        "success": True,
+        "project_id": project.id,
+        "job_id": job.id,
+        "remaining_credits": current_user.credits,
+        "status": "RENDERING_STARTED",
+    }
+
+
+@app.get("/api/projects/{project_id}/status")
+async def get_project_render_status(
+    project_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    project = db.query(Project).filter(Project.id == project_id).first()
+    if not project:
+        raise HTTPException(status_code=404, detail="Không tìm thấy dự án.")
+    if project.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Từ chối truy cập.")
+
+    previews = load_session_json(project_id, "previews.json") or {}
+    return {
+        "project_id": project.id,
+        "status": project.status,
+        "previews": previews,
+        "has_previews": bool(previews),
+    }
+
 
 
 @app.post("/api/upload/file")
@@ -252,8 +563,12 @@ async def upload_file(
 
 
 @app.post("/api/upload/text")
-async def upload_text(payload: TextUploadRequest):
-    session_id = str(uuid.uuid4())[:8]
+async def upload_text(
+    payload: TextUploadRequest,
+    current_user: Optional[User] = Depends(get_optional_user),
+    db: Session = Depends(get_db)
+):
+    session_id = str(uuid.uuid4())
     s_dir = get_session_dir(session_id)
     
     saved_path = s_dir / "source.txt"
@@ -275,6 +590,26 @@ async def upload_text(payload: TextUploadRequest):
         blueprints = generate_blueprints_from_canonical(canonical, doc_name=payload.title)
         save_session_json(session_id, "blueprints.json", blueprints)
 
+        # If authenticated, link to User's Project in DB
+        if current_user:
+            project = Project(
+                id=session_id,
+                user_id=current_user.id,
+                title=payload.title,
+                source_filename="source.txt",
+                depth_mode="DEEP",
+                status="BLUEPRINT_READY"
+            )
+            db.add(project)
+            bp_model = BlueprintModel(
+                project_id=session_id,
+                total_slides=len(blueprints.get("slides", [])),
+                macc_score=100.0,
+            )
+            bp_model.set_slides(blueprints.get("slides", []))
+            db.add(bp_model)
+            db.commit()
+
         return {
             "success": True,
             "session_id": session_id,
@@ -291,6 +626,8 @@ async def upload_text(payload: TextUploadRequest):
             "blueprints": blueprints,
         }
     except Exception as e:
+        if current_user:
+            db.rollback()
         raise HTTPException(status_code=500, detail=f"Lỗi phân tích văn bản: {str(e)}")
 
 
@@ -359,64 +696,106 @@ def _execute_render_job(session_id: str, theme: str):
         return
 
     sync_broadcast(session_id, "INGESTION", 20, "Xác nhận tính toàn vẹn cấu trúc tài liệu...", "info")
-    asyncio.run(asyncio.sleep(0.5))
+    time.sleep(0.5)
 
     sync_broadcast(session_id, "BLUEPRINT", 40, f"Tổng hợp kịch bản {len(bp.get('slides', []))} slide...", "info")
-    asyncio.run(asyncio.sleep(0.5))
+    time.sleep(0.5)
 
-    author = NativeDeckAuthor()
+    bp_path = s_dir / "blueprints.json"
     themes_to_render = ["DARK", "LIGHT"] if theme == "ALL" else [theme]
     deck_paths = {}
 
-    for idx, th in enumerate(themes_to_render):
-        pct = 50 + idx * 20
-        th_name = "Nền Tối (Obsidian)" if th == "DARK" else "Nền Sáng (Pearl)"
-        sync_broadcast(session_id, "POWERPOINT_COM", pct, f"Đang vẽ các khối hình học & typography cho {th_name}...", "info")
-        
-        out_name = f"Presentation_{th.title()}.pptx"
-        deck_file = s_dir / out_name
-        res = author.author_deck(bp, deck_file, theme=th)
-        deck_paths[th] = deck_file
-
-    # Export high-resolution PNG previews using PowerPoint COM
-    sync_broadcast(session_id, "EXPORT_PREVIEW", 85, "Đang trích xuất ảnh xem trước 1080p độ nét cao...", "info")
-    previews = {}
-    
     try:
-        import win32com.client
-        ppt = win32com.client.DispatchEx("PowerPoint.Application")
+        for idx, th in enumerate(themes_to_render):
+            pct = 50 + idx * 20
+            th_name = "Nền Tối (Obsidian)" if th == "DARK" else "Nền Sáng (Pearl)"
+            sync_broadcast(session_id, "POWERPOINT_COM", pct, f"Đang vẽ các khối hình học & typography cho {th_name}...", "info")
+            
+            out_name = f"Presentation_{th.title()}.pptx"
+            deck_file = s_dir / out_name
+            author = NativeDeckAuthor(visible=False, theme=th)
+            try:
+                author.create_deck(bp_path, deck_file)
+                deck_paths[th] = deck_file
+            finally:
+                author.close()
+
+        # Export high-resolution PNG previews using PowerPoint COM
+        sync_broadcast(session_id, "EXPORT_PREVIEW", 85, "Đang trích xuất ảnh xem trước 1080p độ nét cao...", "info")
+        previews = {}
+        
         try:
-            for th, d_path in deck_paths.items():
-                if not d_path.exists():
-                    continue
-                pres = ppt.Presentations.Open(str(d_path.resolve()), ReadOnly=True, Untitled=False, WithWindow=False)
+            import pythoncom
+            import win32com.client
+            pythoncom.CoInitialize()
+            try:
+                ppt = win32com.client.DispatchEx("PowerPoint.Application")
                 try:
-                    th_folder = s_dir / "previews" / th.lower()
-                    th_folder.mkdir(parents=True, exist_ok=True)
-                    slide_files = []
-                    for s_idx in range(1, pres.Slides.Count + 1):
-                        s = pres.Slides(s_idx)
-                        img_name = f"slide_{s_idx:02d}.png"
-                        img_path = th_folder / img_name
-                        s.Export(str(img_path.resolve()), "PNG", 1920, 1080)
-                        slide_files.append(f"/sessions/{session_id}/previews/{th.lower()}/{img_name}")
-                    previews[th] = slide_files
+                    for th, d_path in deck_paths.items():
+                        if not d_path.exists():
+                            continue
+                        pres = ppt.Presentations.Open(str(d_path.resolve()), ReadOnly=True, Untitled=False, WithWindow=False)
+                        try:
+                            th_folder = s_dir / "previews" / th.lower()
+                            th_folder.mkdir(parents=True, exist_ok=True)
+                            slide_files = []
+                            for s_idx in range(1, pres.Slides.Count + 1):
+                                s = pres.Slides(s_idx)
+                                img_name = f"slide_{s_idx:02d}.png"
+                                img_path = th_folder / img_name
+                                s.Export(str(img_path.resolve()), "PNG", 1920, 1080)
+                                slide_files.append(f"/sessions/{session_id}/previews/{th.lower()}/{img_name}")
+                            previews[th] = slide_files
+                        finally:
+                            pres.Close()
                 finally:
-                    pres.Close()
-        finally:
-            ppt.Quit()
-    except Exception as e:
-        sync_broadcast(session_id, "WARNING", 90, f"Lưu ý trích xuất ảnh xem trước: {str(e)}", "warn")
+                    ppt.Quit()
+            finally:
+                pythoncom.CoUninitialize()
+        except Exception as e:
+            sync_broadcast(session_id, "WARNING", 90, f"Lưu ý trích xuất ảnh xem trước: {str(e)}", "warn")
 
-    save_session_json(session_id, "previews.json", previews)
+        save_session_json(session_id, "previews.json", previews)
 
-    sync_broadcast(
-        session_id,
-        "COMPLETED",
-        100,
-        f"Đã hoàn thành xuất bản thành công {len(bp.get('slides', []))} slide!",
-        "success"
-    )
+        # Update Project & RenderJob in Database if exists
+        try:
+            from web.database import SessionLocal, Project, RenderJob
+            with SessionLocal() as db_session:
+                proj = db_session.query(Project).filter(Project.id == session_id).first()
+                if proj:
+                    proj.status = "COMPLETED"
+                job = db_session.query(RenderJob).filter(RenderJob.project_id == session_id).order_by(RenderJob.created_at.desc()).first()
+                if job:
+                    job.status = "COMPLETED"
+                    job.progress_percent = 100
+                    job.current_stage = "DONE"
+                    job.set_previews(previews)
+                db_session.commit()
+        except Exception:
+            pass
+
+        sync_broadcast(
+            session_id,
+            "COMPLETED",
+            100,
+            f"Đã hoàn thành xuất bản thành công {len(bp.get('slides', []))} slide!",
+            "success"
+        )
+    except Exception as exc:
+        sync_broadcast(session_id, "ERROR", 0, f"Lỗi trong quá trình render: {str(exc)}", "error")
+        try:
+            from web.database import SessionLocal, Project, RenderJob
+            with SessionLocal() as db_session:
+                proj = db_session.query(Project).filter(Project.id == session_id).first()
+                if proj:
+                    proj.status = "FAILED"
+                job = db_session.query(RenderJob).filter(RenderJob.project_id == session_id).order_by(RenderJob.created_at.desc()).first()
+                if job:
+                    job.status = "FAILED"
+                    job.error_message = str(exc)
+                db_session.commit()
+        except Exception:
+            pass
 
 
 @app.post("/api/render")
@@ -427,7 +806,7 @@ async def render_presentation(payload: RenderRequest):
         raise HTTPException(status_code=404, detail="Session không tồn tại hoặc chưa có blueprints.")
 
     # Schedule PowerPoint generation in background thread
-    loop = asyncio.get_event_loop()
+    loop = MAIN_LOOP or asyncio.get_event_loop()
     loop.run_in_executor(executor, _execute_render_job, payload.session_id, payload.theme)
 
     return {
