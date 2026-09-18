@@ -33,20 +33,49 @@ class BaseCouncilAgent(ABC):
         return target
 
     def extract_slide_text(self, slide: Dict[str, Any]) -> str:
-        """Helper to extract all searchable textual content from a slide dictionary."""
+        """Helper to extract all searchable textual content from a slide dictionary across all blueprint schemas."""
         texts = [
             slide.get("assertion_title", ""),
+            slide.get("title", ""),
+            slide.get("headline", ""),
             slide.get("primary_claim", ""),
+            slide.get("subtitle", ""),
             slide.get("section", ""),
             slide.get("speaker_notes", "")
         ]
+        # Blueprint atoms
         for atom in slide.get("atoms", []):
             if isinstance(atom, dict):
-                texts.append(atom.get("title", ""))
-                texts.append(atom.get("text", ""))
-                texts.append(atom.get("mechanism", ""))
-                texts.append(atom.get("kicker", ""))
-                texts.append(atom.get("tag", ""))
+                texts.extend([
+                    atom.get("title", ""),
+                    atom.get("text", ""),
+                    atom.get("body", ""),
+                    atom.get("mechanism", ""),
+                    atom.get("kicker", ""),
+                    atom.get("tag", ""),
+                    str(atom.get("metric_value", "")),
+                    atom.get("metric_label", "")
+                ])
             else:
                 texts.append(str(atom))
+
+        # Generic content_items / cards / boxes
+        for item in slide.get("content_items", []) + slide.get("cards", []) + slide.get("boxes", []):
+            if isinstance(item, dict):
+                texts.extend([
+                    item.get("title", ""),
+                    item.get("body", ""),
+                    item.get("text", ""),
+                    item.get("description", ""),
+                    item.get("headline", ""),
+                    str(item.get("metric_value", "")),
+                    item.get("metric_label", "")
+                ])
+            else:
+                texts.append(str(item))
+
+        # Bullets
+        for b in slide.get("bullets", []) + slide.get("bullet_points", []):
+            texts.append(str(b))
+
         return "\n".join(t for t in texts if t)
