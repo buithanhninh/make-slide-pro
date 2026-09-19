@@ -33,6 +33,11 @@ except ImportError:
     except ImportError:
         ContentMultiAgentCouncil = None
 
+try:
+    from component_library import detect_optimal_archetype
+except ImportError:
+    detect_optimal_archetype = None
+
 
 def extract_pedagogical_sentence(text: str, max_words: int = 32) -> str:
     cleaned = " ".join(text.strip().split())
@@ -1148,7 +1153,14 @@ def generate_generic_blueprints(canonical: Dict[str, Any]) -> Dict[str, Any]:
             has_mechanism = any(a.get("semantic_role") == "DYNAMIC_MECHANISM" for a in chunk)
 
             # Assign Visual Job
-            if slide_counter % 5 == 3:
+            detected = None
+            if detect_optimal_archetype:
+                chunk_text = " ".join([a.get("verbatim", "") for a in chunk])
+                detected = detect_optimal_archetype({"assertion_title": sec_clean, "primary_claim": chunk_text, "atoms": chunk})
+
+            if detected and detected != "CONTAINER_BENTO_COMPLEX":
+                vjob = detected
+            elif slide_counter % 5 == 3:
                 vjob = "EDITORIAL_HERO"
                 current_ill = AI_ILLUSTRATIONS[ill_idx % len(AI_ILLUSTRATIONS)]
                 ill_idx += 1

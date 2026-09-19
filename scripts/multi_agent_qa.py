@@ -257,10 +257,15 @@ class VisualAestheticsAuditor:
                 all_shapes = get_all_shapes_recursive(slide.Shapes)
                 shape_names = [s.Name for s in all_shapes]
 
-                # Invariant: Each non-cover slide must contain visual assets (icons, charts, illustrations)
+                # Invariant: Each non-cover slide must contain visual assets (icons, charts, illustrations, tables)
                 if role != "COVER":
-                    has_picture = any("Picture" in name or s.Type == 13 for s, name in zip(all_shapes, shape_names))
-                    if not has_picture and len(all_shapes) < 5:
+                    has_visual = any(
+                        "Picture" in name or "Chart" in name or "Table" in name or
+                        getattr(s, "HasChart", False) or getattr(s, "HasTable", False) or
+                        s.Type in {3, 13, 19}
+                        for s, name in zip(all_shapes, shape_names)
+                    )
+                    if not has_visual and len(all_shapes) < 5:
                         findings.append({
                             "severity": "P1",
                             "slide": s_idx,
@@ -269,8 +274,12 @@ class VisualAestheticsAuditor:
                         score -= 5
 
                 # Check chart slide
-                if visual_job == "CHART_AND_INSIGHTS":
-                    has_chart_or_pic = any("Picture" in name or s.Type == 13 for s, name in zip(all_shapes, shape_names))
+                if "CHART" in visual_job:
+                    has_chart_or_pic = any(
+                        "Picture" in name or "Chart" in name or
+                        getattr(s, "HasChart", False) or s.Type in {3, 13}
+                        for s, name in zip(all_shapes, shape_names)
+                    )
                     if not has_chart_or_pic:
                         findings.append({
                             "severity": "P1",

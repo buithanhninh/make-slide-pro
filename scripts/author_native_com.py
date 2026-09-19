@@ -32,6 +32,12 @@ try:
 except ImportError:
     win32com = None
 
+try:
+    from component_library import MasterComponentDispatcher, detect_optimal_archetype
+except ImportError:
+    MasterComponentDispatcher = None
+    detect_optimal_archetype = None
+
 # PowerPoint Constants
 ppLayoutBlank = 12
 msoShapeRectangle = 1
@@ -165,6 +171,10 @@ class NativeDeckAuthor:
         self.tokens = LIGHT_TOKENS if self.theme == "LIGHT" else DARK_TOKENS
         global TOKENS
         TOKENS = self.tokens
+        if MasterComponentDispatcher is not None:
+            self.dispatcher = MasterComponentDispatcher(theme=self.theme, tokens=self.tokens)
+        else:
+            self.dispatcher = None
 
     def close(self):
         if self.presentation:
@@ -217,7 +227,7 @@ class NativeDeckAuthor:
             except Exception as e:
                 print(f"Warning: Cinematic fallback error: {e}, falling back to standard native authoring")
 
-        self.presentation = self.app.Presentations.Add(WithWindow=msoFalse)
+        self.presentation = self.app.Presentations.Add(WithWindow=msoTrue)
         self.presentation.PageSetup.SlideWidth = CANVAS_WIDTH
         self.presentation.PageSetup.SlideHeight = CANVAS_HEIGHT
 
@@ -521,12 +531,34 @@ class NativeDeckAuthor:
         content_height = CANVAS_HEIGHT - content_top - MARGIN_BOTTOM - 20.0
 
         # Dispatch
-        if chart_type or visual_job == "CHART_AND_INSIGHTS":
+        has_table_data = bool(spec.get("table_data") and spec["table_data"].get("headers"))
+        rendered_shapes = None
+
+        if hasattr(self, "dispatcher") and self.dispatcher:
+            if has_table_data:
+                table_vjob = visual_job if visual_job.startswith("TABLE_") else (detect_optimal_archetype(spec) if detect_optimal_archetype else "TABLE_METRIC_MATRIX")
+                rendered_shapes = self.dispatcher.render(slide, spec, table_vjob, MARGIN_LEFT, content_top, USABLE_WIDTH, content_height)
+            elif self.dispatcher.can_handle(visual_job):
+                rendered_shapes = self.dispatcher.render(slide, spec, visual_job, MARGIN_LEFT, content_top, USABLE_WIDTH, content_height)
+
+        if rendered_shapes is not None and len(rendered_shapes) > 0:
+            # Successfully rendered by Master Component Library
+            if not any(getattr(s, "Name", "") == "!!Stage_Hero_Container!!" for s in rendered_shapes):
+                names = [s.Name for s in rendered_shapes if s is not None]
+                if len(names) > 1:
+                    try:
+                        grp = slide.Shapes.Range(names).Group()
+                        grp.Name = "!!Stage_Hero_Container!!"
+                    except Exception:
+                        pass
+                elif len(names) == 1:
+                    rendered_shapes[0].Name = "!!Stage_Hero_Container!!"
+        elif has_table_data or visual_job in {"DATA_TABLE", "TABLE_MATRIX", "TABLE"}:
+            self._render_data_table_layout(slide, spec, atoms, content_top, content_height)
+        elif chart_type or visual_job == "CHART_AND_INSIGHTS":
             self._render_chart_and_insights_layout(slide, spec, atoms, content_top, content_height)
         elif visual_job in {"FORMULA_CARD", "FORMULA_HERO", "FORMULA", "MATH_FORMULA"}:
             self._render_formula_hero_layout(slide, spec, atoms, content_top, content_height)
-        elif visual_job in {"DATA_TABLE", "TABLE_MATRIX", "TABLE"}:
-            self._render_data_table_layout(slide, spec, atoms, content_top, content_height)
         elif visual_job in {"EDITORIAL_HERO", "ILLUSTRATION_SPLIT"}:
             self._render_editorial_hero_layout(slide, spec, atoms, content_top, content_height, lesson_idx)
         elif visual_job in {"BENTO", "BENTO_GRID"}:
