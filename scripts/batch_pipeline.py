@@ -100,7 +100,11 @@ def run_batch_pipeline(input_dir: Path, output_root: Path, pattern: Optional[str
         # Step 2.5: MACC-QA V8.0 16-Agent Omniscient Council Dialectical Review & Auto-Remediation
         orchestrator = MultiRoundCouncilOrchestrator()
         canonical_text = " ".join(
-            sec.get("title", "") + " " + " ".join(sec.get("paragraphs", []))
+            sec.get("title", "")
+            + " "
+            + " ".join(sec.get("paragraphs", []))
+            + " "
+            + " ".join(a.get("verbatim", "") for a in sec.get("atoms", []))
             for sec in canonical.get("sections", [])
         )
         council_context = {

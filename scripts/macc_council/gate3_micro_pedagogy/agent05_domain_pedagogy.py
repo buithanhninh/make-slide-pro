@@ -177,22 +177,28 @@ class DomainPedagogyScholar(BaseCouncilAgent):
                                 new_text = new_text.replace(forb.group(0), rule["replace_func"](forb.group(0)))
                 return new_text
 
-            if "title" in s:
-                s["title"] = _clean_text(s["title"])
-            if "subtitle" in s:
-                s["subtitle"] = _clean_text(s["subtitle"])
+            for k in ["title", "subtitle", "assertion_title", "primary_claim", "speaker_notes", "headline"]:
+                if k in s and isinstance(s[k], str):
+                    s[k] = _clean_text(s[k])
 
-            for item in s.get("content_items", []):
-                if isinstance(item, dict):
-                    if "title" in item:
-                        item["title"] = _clean_text(item["title"])
-                    if "body" in item:
-                        item["body"] = _clean_text(item["body"])
-                    if "text" in item:
-                        item["text"] = _clean_text(item["text"])
-                    if "metric_value" in item and isinstance(item["metric_value"], str):
-                        item["metric_value"] = _clean_text(item["metric_value"])
-                    if "metric_label" in item and isinstance(item["metric_label"], str):
-                        item["metric_label"] = _clean_text(item["metric_label"])
+            for col_key in ["atoms", "cards", "content_items", "boxes", "items"]:
+                for item in s.get(col_key, []):
+                    if isinstance(item, dict):
+                        for field in ["title", "body", "text", "description", "label", "value", "verbatim", "mechanism", "kicker", "metric_value", "metric_label"]:
+                            if field in item and isinstance(item[field], str):
+                                item[field] = _clean_text(item[field])
+
+            table = s.get("table_data")
+            if isinstance(table, dict):
+                headers = table.get("headers", [])
+                if isinstance(headers, list):
+                    table["headers"] = [_clean_text(h) if isinstance(h, str) else h for h in headers]
+                rows = table.get("rows", [])
+                if isinstance(rows, list):
+                    for r in rows:
+                        if isinstance(r, list):
+                            for idx, cell in enumerate(r):
+                                if isinstance(cell, str):
+                                    r[idx] = _clean_text(cell)
 
         return remediated_target

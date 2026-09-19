@@ -357,16 +357,31 @@ class SourceFidelityFactChecker(BaseCouncilAgent):
 
         for finding in findings:
             if finding.original_value and finding.suggested_value:
+                orig_val = finding.original_value
+                sugg_val = finding.suggested_value
                 for s in slides:
                     if s.get("slide_id") == finding.slide_id:
-                        for k in ["assertion_title", "primary_claim", "speaker_notes"]:
+                        for k in ["title", "subtitle", "headline", "assertion_title", "primary_claim", "speaker_notes", "source_footer"]:
                             if k in s and isinstance(s[k], str):
-                                s[k] = s[k].replace(finding.original_value, finding.suggested_value)
-                        for atom in s.get("atoms", []):
-                            if isinstance(atom, dict):
-                                for ak in ["title", "text", "mechanism", "kicker"]:
-                                    if ak in atom and isinstance(atom[ak], str):
-                                        atom[ak] = atom[ak].replace(finding.original_value, finding.suggested_value)
+                                s[k] = s[k].replace(orig_val, sugg_val)
+                        for col_key in ["atoms", "cards", "content_items", "boxes", "items"]:
+                            for item in s.get(col_key, []):
+                                if isinstance(item, dict):
+                                    for ak in ["title", "text", "body", "description", "mechanism", "kicker", "label", "value", "verbatim", "metric_value", "metric_label"]:
+                                        if ak in item and isinstance(item[ak], str):
+                                            item[ak] = item[ak].replace(orig_val, sugg_val)
+                        table = s.get("table_data")
+                        if isinstance(table, dict):
+                            headers = table.get("headers", [])
+                            if isinstance(headers, list):
+                                table["headers"] = [h.replace(orig_val, sugg_val) if isinstance(h, str) else h for h in headers]
+                            rows = table.get("rows", [])
+                            if isinstance(rows, list):
+                                for r in rows:
+                                    if isinstance(r, list):
+                                        for idx, cell in enumerate(r):
+                                            if isinstance(cell, str):
+                                                r[idx] = cell.replace(orig_val, sugg_val)
 
         if isinstance(remediated, dict):
             remediated["slides"] = slides

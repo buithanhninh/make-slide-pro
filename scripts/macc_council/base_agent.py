@@ -78,4 +78,18 @@ class BaseCouncilAgent(ABC):
         for b in slide.get("bullets", []) + slide.get("bullet_points", []):
             texts.append(str(b))
 
+        # Table data
+        table = slide.get("table_data")
+        if isinstance(table, dict):
+            headers = table.get("headers", [])
+            if isinstance(headers, list):
+                texts.extend(str(h) for h in headers if h)
+            rows = table.get("rows", [])
+            if isinstance(rows, list):
+                for r in rows:
+                    if isinstance(r, list):
+                        texts.extend(str(c) for c in r if c)
+                    elif isinstance(r, dict):
+                        texts.extend(str(v) for v in r.values() if v)
+
         return "\n".join(t for t in texts if t)

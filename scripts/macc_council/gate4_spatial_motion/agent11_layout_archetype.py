@@ -26,7 +26,7 @@ class LayoutArchetypeStrategist(BaseCouncilAgent):
         "split_comparison": (2, 2),
         "3_cards": (3, 3),
         "grid_2x2": (4, 4),
-        "process_flow_4": (3, 4),
+        "process_flow_4": (2, 4),
         "process_flow_5": (4, 5),
         "metric_callout_3x": (2, 3),
         "quote_callout": (0, 1),
@@ -105,6 +105,8 @@ class LayoutArchetypeStrategist(BaseCouncilAgent):
         if count <= 1:
             return "quote_callout"
         elif count == 2:
+            if is_process:
+                return "process_flow_4"
             return "split_comparison"
         elif count == 3:
             if is_process:

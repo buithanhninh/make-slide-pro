@@ -91,8 +91,16 @@ class AssertionCognitiveArbiter(BaseCouncilAgent):
             title = (s.get("assertion_title") or s.get("title") or s.get("headline") or "").strip()
             archetype = s.get("archetype", "")
 
-            # Exclude cover / title hero slides
-            if s.get("role", "").upper() == "COVER" or s.get("visual_job", "").upper() == "HERO_TITLE" or (idx == 0 and archetype in ("title_hero", "cover", "hero_cover")):
+            role = s.get("role", "").upper()
+            visual_job = s.get("visual_job", "").upper()
+
+            # Exclude cover / title hero and section divider slides
+            if (
+                role in ("COVER", "SECTION")
+                or visual_job in ("HERO_TITLE", "SECTION_DIVIDER", "SECTION_TRACKER")
+                or (idx == 0 and archetype in ("title_hero", "cover", "hero_cover"))
+                or archetype in ("section_header", "section_divider")
+            ):
                 pass
             else:
                 clean_title = title.lower().strip()
@@ -121,9 +129,11 @@ class AssertionCognitiveArbiter(BaseCouncilAgent):
                         )
                     )
 
-            # 2. Cognitive Limits: Max 4 Atoms / Cards per slide
+            # 2. Cognitive Limits: Max 4 Atoms / Cards per slide (Exempt 5-step process and dense table)
             item_key, items = self._get_slide_items(s)
-            if len(items) > 4:
+            is_process_5 = (archetype == "process_flow_5" or (visual_job == "PROCESS" and len(items) <= 5))
+            is_table = (archetype == "table_dense" or visual_job in ("DATA_TABLE", "TABLE"))
+            if len(items) > 4 and not (is_process_5 or is_table):
                 findings.append(
                     AgentFinding(
                         agent=self.name,
@@ -184,21 +194,33 @@ class AssertionCognitiveArbiter(BaseCouncilAgent):
 
         for s in slides:
             slide_id = s.get("slide_id")
+            role = s.get("role", "").upper()
+            visual_job = s.get("visual_job", "").upper()
+            archetype = s.get("archetype", "")
+
+            is_exempt_title = (
+                role in ("COVER", "SECTION")
+                or visual_job in ("HERO_TITLE", "SECTION_DIVIDER", "SECTION_TRACKER")
+                or archetype in ("title_hero", "cover", "hero_cover", "section_header", "section_divider")
+            )
 
             # 1. Remediate Title
-            title = (s.get("assertion_title") or s.get("title") or s.get("headline") or "").strip()
-            clean_title = title.lower().strip()
-            words = clean_title.split()
-            has_verb_or_number = any(v in clean_title for v in self.ACTIVE_CLAIM_VERBS) or any(char.isdigit() for char in clean_title)
+            if not is_exempt_title:
+                title = (s.get("assertion_title") or s.get("title") or s.get("headline") or "").strip()
+                clean_title = title.lower().strip()
+                words = clean_title.split()
+                has_verb_or_number = any(v in clean_title for v in self.ACTIVE_CLAIM_VERBS) or any(char.isdigit() for char in clean_title)
 
-            if clean_title in self.LAZY_TOPIC_LABELS or (len(words) <= 4 and not has_verb_or_number):
-                enhanced_title = self._suggest_assertion_title(title, s)
-                s["assertion_title"] = enhanced_title
-                s["title"] = enhanced_title
+                if clean_title in self.LAZY_TOPIC_LABELS or (len(words) <= 4 and not has_verb_or_number):
+                    enhanced_title = self._suggest_assertion_title(title, s)
+                    s["assertion_title"] = enhanced_title
+                    s["title"] = enhanced_title
 
             # 2. Remediate Card Overload (> 4 items)
             item_key, items = self._get_slide_items(s)
-            if len(items) > 4:
+            is_process_5 = (archetype == "process_flow_5" or (visual_job == "PROCESS" and len(items) <= 5))
+            is_table = (archetype == "table_dense" or visual_job in ("DATA_TABLE", "TABLE"))
+            if len(items) > 4 and not (is_process_5 or is_table):
                 overflow_items = items[4:]
                 s[item_key] = items[:4]
 

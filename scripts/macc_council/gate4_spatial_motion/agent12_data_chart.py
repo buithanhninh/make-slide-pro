@@ -30,6 +30,17 @@ class DataChartCartographer(BaseCouncilAgent):
         "mekko", "dumbbell"
     }
 
+    NATIVE_CHART_TYPES = {
+        "POPULATION_PYRAMID", "FERTILITY_TRENDS", "FERTILITY_BY_REGION_BAR",
+        "LIFE_EXPECTANCY_WATERFALL", "MORTALITY_CURVE_GOMPERTZ", "DEMO_TRANSITION_STAGES",
+        "AGE_STRUCTURE_RADAR", "DEPENDENCY_RATIO_TRENDS", "DEMOGRAPHIC_DIVIDEND_STACKED_AREA",
+        "DEPENDENCY_COMPONENTS_GROUPED", "LABOR_FORCE_DONUT", "HDI_DIMENSIONS",
+        "URBAN_RURAL_DIVERGENCE_BUBBLE", "REGIONAL_DENSITY", "MIGRATION_FLOWS_MATRIX",
+        "URBANIZATION_SCURVE", "POPULATION_FORECAST_SCENARIOS", "MATH_MODELS",
+        "SEX_RATIO_BIRTH_HEATMAP", "CENSUS_DATA_COLLECTION_FLOW", "POPULATION_METRICS",
+        "SYSTEM_INTERACTION"
+    }
+
     TIME_INDICATORS = re.compile(
         r"\b(năm\s*20\d{2}|20\d{2}|quý\s*[1-4]|tháng\s*\d{1,2}|q[1-4]|year|quarter|month)\b",
         re.IGNORECASE
@@ -81,6 +92,42 @@ class DataChartCartographer(BaseCouncilAgent):
         for s in slides:
             slide_id = s.get("slide_id", "unknown_slide")
             chart = s.get("chart") or s.get("chart_spec")
+
+            # Native demographic chart check
+            native_ct = s.get("chart_type")
+            if native_ct and isinstance(native_ct, str):
+                native_ct_upper = native_ct.upper()
+                if native_ct_upper not in self.NATIVE_CHART_TYPES:
+                    findings.append(
+                        AgentFinding(
+                            agent=self.name,
+                            gate=self.gate,
+                            slide_id=slide_id,
+                            severity=Severity.P1,
+                            issue=f"Loại biểu đồ nhân khẩu học không chuẩn hóa: '{native_ct}'",
+                            rationale="Hệ thống chỉ hỗ trợ danh mục biểu đồ nhân khẩu học và đồ thị chuyên sâu chuẩn hóa.",
+                            suggestion="Chuyển sang loại biểu đồ hợp lệ như 'POPULATION_PYRAMID', 'FERTILITY_TRENDS', hoặc 'REGIONAL_DENSITY'.",
+                            evidence=f"chart_type='{native_ct}'",
+                            original_value=native_ct,
+                            suggested_value="POPULATION_PYRAMID"
+                        )
+                    )
+
+                atoms = s.get("atoms", [])
+                cards = s.get("cards", [])
+                if not atoms and not cards:
+                    findings.append(
+                        AgentFinding(
+                            agent=self.name,
+                            gate=self.gate,
+                            slide_id=slide_id,
+                            severity=Severity.P1,
+                            issue="Biểu đồ trực quan thiếu phân tích định tính (Missing Chart Insights)",
+                            rationale="Theo nguyên lý Chart & Insights, biểu đồ số liệu phải luôn đi kèm ít nhất 1-3 thẻ insight phân tích ý nghĩa số liệu.",
+                            suggestion="Bổ sung các thẻ atoms diễn giải ý nghĩa phát hiện từ biểu đồ.",
+                            evidence=f"chart_type='{native_ct}', atoms count={len(atoms)}"
+                        )
+                    )
 
             if chart and isinstance(chart, dict):
                 chart_type = chart.get("type", "bar_vertical")
@@ -197,6 +244,22 @@ class DataChartCartographer(BaseCouncilAgent):
         slides = self._get_slides(remediated)
 
         for s in slides:
+            # 1. Remediate native demographic charts
+            native_ct = s.get("chart_type")
+            if native_ct and isinstance(native_ct, str):
+                if native_ct.upper() not in self.NATIVE_CHART_TYPES:
+                    s["chart_type"] = "POPULATION_PYRAMID"
+                atoms = s.get("atoms", [])
+                cards = s.get("cards", [])
+                if not atoms and not cards:
+                    s["atoms"] = [
+                        {
+                            "kicker": "PHÂN TÍCH TRỌNG TÂM",
+                            "title": "Xu hướng biến động chỉ số then chốt",
+                            "text": "Số liệu phản ánh xu thế chuyển dịch rõ nét và tạo tiền đề cho các quyết sách chiến lược."
+                        }
+                    ]
+
             chart = s.get("chart") or s.get("chart_spec")
             if chart and isinstance(chart, dict):
                 chart_type = chart.get("type", "bar_vertical")

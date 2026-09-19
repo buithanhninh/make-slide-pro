@@ -42,7 +42,10 @@ class MultiRoundCouncilOrchestrator:
     Gate 5: Supreme Arbitration & Dialectical Convergence (Agent 16)
     """
 
-    def __init__(self):
+    def __init__(self, max_rounds: int = 5, target_score: float = 90.0, *args, **kwargs):
+        self.default_max_rounds = max_rounds
+        self.target_score = target_score
+
         # Gate 1
         self.agent01 = SourceFidelityFactChecker()
         self.agent02 = CompliancePrivacyGuardian()
@@ -68,6 +71,41 @@ class MultiRoundCouncilOrchestrator:
 
         # Gate 5
         self.agent16 = SupremeConsensusJudge()
+
+    def run_council(
+        self,
+        blueprints: Any,
+        canonical_source: Optional[Any] = None,
+        doc_metadata: Optional[Dict[str, Any]] = None,
+        max_rounds: Optional[int] = None,
+        on_round_callback: Optional[Callable[[int, CouncilAuditReport], None]] = None,
+        **kwargs
+    ) -> CouncilAuditReport:
+        """Backwards-compatible API alias for run_convergence_loop."""
+        canonical_text = ""
+        if isinstance(canonical_source, dict):
+            canonical_text = " ".join(
+                sec.get("title", "")
+                + " "
+                + " ".join(sec.get("paragraphs", []))
+                + " "
+                + " ".join(a.get("verbatim", "") for a in sec.get("atoms", []))
+                for sec in canonical_source.get("sections", [])
+            )
+        elif isinstance(canonical_source, str):
+            canonical_text = canonical_source
+
+        context = {
+            "canonical_text": canonical_text,
+            "source_text": canonical_text,
+            "deck_title": (doc_metadata or {}).get("file_stem", "") or (blueprints.get("deck_title", "") if isinstance(blueprints, dict) else "")
+        }
+        return self.run_convergence_loop(
+            target=blueprints,
+            context=context,
+            max_rounds=max_rounds or self.default_max_rounds,
+            on_round_callback=on_round_callback
+        )
 
     def run_round(
         self,
@@ -208,20 +246,27 @@ class MultiRoundCouncilOrchestrator:
         """
         Runs the multi-round convergence loop until zero defects (0 P0, 0 P1, Score >= 99.5)
         or until max_rounds is exhausted.
+        Includes automatic oscillation detection to break infinite cyclic deadlocks.
         """
         current_target = copy.deepcopy(target)
         final_report: Optional[CouncilAuditReport] = None
+        round_history: List[List[Any]] = []
 
         for round_idx in range(1, max_rounds + 1):
             report, remediated_target = self.run_round(current_target, context, auto_remediate=True)
             report.total_rounds = round_idx
             final_report = report
+            round_history.append(report.all_findings)
 
             if on_round_callback:
                 on_round_callback(round_idx, report)
 
             # Check convergence condition
             if report.certified:
+                break
+
+            # Oscillation detection to break deadlocks (repeating or alternating cycles)
+            if round_idx >= 2 and self.agent16.detect_oscillation(round_history):
                 break
 
             # If not yet certified, feed remediated target into next round

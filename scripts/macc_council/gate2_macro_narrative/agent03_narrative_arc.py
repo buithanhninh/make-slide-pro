@@ -234,12 +234,16 @@ class NarrativeArcDirector(BaseCouncilAgent):
 
             agenda_slide = {
                 "slide_id": "slide_02_agenda",
+                "role": "CONTENT",
                 "section": "Mục lục",
                 "assertion_title": "Khung nội dung và lộ trình phân tích chiến lược",
                 "primary_claim": "Tổng quan cấu trúc 4 phần định hình bức tranh toàn diện.",
-                "archetype": "agenda_list",
+                "visual_job": "CARDS",
+                "visual_anchor": "SECTION_CARDS",
+                "archetype": "3_cards",
                 "atoms": agenda_atoms,
-                "speaker_notes": "Giới thiệu tổng quan cấu trúc bài thuyết trình trước hội đồng."
+                "speaker_notes": "Giới thiệu tổng quan cấu trúc bài thuyết trình trước hội đồng.",
+                "source_footer": (context or {}).get("deck_title", "")
             }
             slides.insert(1, agenda_slide)
 
@@ -249,9 +253,12 @@ class NarrativeArcDirector(BaseCouncilAgent):
             last_num = len(slides) + 1
             conclusion_slide = {
                 "slide_id": f"slide_{last_num:02d}",
+                "role": "CONTENT",
                 "section": "Kết luận & Hành động",
                 "assertion_title": "Tổng kết định hướng và các bước triển khai trọng tâm",
                 "primary_claim": "Thực hiện đồng bộ các giải pháp chiến lược nhằm tối ưu hóa hiệu quả thực thi.",
+                "visual_job": "EDITORIAL_HERO",
+                "visual_anchor": "EDITORIAL_HERO",
                 "archetype": "conclusion_cta",
                 "atoms": [
                     {
@@ -273,11 +280,18 @@ class NarrativeArcDirector(BaseCouncilAgent):
                         "tag": "Dài hạn"
                     }
                 ],
-                "speaker_notes": "Tóm tắt các phát hiện chính và khuyến nghị lộ trình 3 giai đoạn rõ ràng cho ban lãnh đạo."
+                "speaker_notes": "Tóm tắt các phát hiện chính và khuyến nghị lộ trình 3 giai đoạn rõ ràng cho ban lãnh đạo.",
+                "source_footer": (context or {}).get("deck_title", "")
             }
             slides.append(conclusion_slide)
 
+        # Re-index slide_ids sequentially if new slides were inserted/appended
+        if needs_agenda or needs_conclusion:
+            for idx, s in enumerate(slides):
+                s["slide_id"] = f"slide_{idx+1:02d}"
+
         if isinstance(remediated, dict):
             remediated["slides"] = slides
+            remediated["total_slides"] = len(slides)
             return remediated
         return slides

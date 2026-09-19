@@ -127,6 +127,7 @@ def process_single_document(
     if council_report.remediated_slides:
         blueprints["slides"] = council_report.remediated_slides
         blueprints["total_slides"] = len(council_report.remediated_slides)
+        total_slides = blueprints["total_slides"]
         with open(bp_path, "w", encoding="utf-8") as f:
             json.dump(blueprints, f, ensure_ascii=False, indent=2)
 

@@ -61,7 +61,7 @@ class SupremeConsensusJudge(BaseCouncilAgent):
     def detect_oscillation(self, round_history: List[List[Any]]) -> bool:
         """
         Detects repeating finding signatures across rounds to break potential oscillation loops.
-        Returns True if the last 2 rounds have identical defect signatures.
+        Returns True if the last 2 rounds have identical defect signatures or if a 2-period cycle occurs.
         """
         if len(round_history) < 2:
             return False
@@ -72,7 +72,8 @@ class SupremeConsensusJudge(BaseCouncilAgent):
                 if isinstance(it, tuple):
                     sigs.add(str(it))
                 elif isinstance(it, AgentFinding):
-                    sigs.add(f"{it.slide_id}:{it.severity}:{it.original_value}")
+                    ident = it.original_value if it.original_value else it.issue[:30]
+                    sigs.add(f"{it.slide_id}:{it.severity}:{it.agent}:{ident}")
                 else:
                     sigs.add(str(it))
             return sigs
@@ -80,7 +81,17 @@ class SupremeConsensusJudge(BaseCouncilAgent):
         last_sigs = _to_sig_set(round_history[-1])
         prev_sigs = _to_sig_set(round_history[-2])
 
-        return len(last_sigs) > 0 and last_sigs == prev_sigs
+        # Immediate repeating loop (Round N == Round N-1)
+        if len(last_sigs) > 0 and last_sigs == prev_sigs:
+            return True
+
+        # 2-period alternating cycle (Round N == Round N-2)
+        if len(round_history) >= 3:
+            prev2_sigs = _to_sig_set(round_history[-3])
+            if len(last_sigs) > 0 and last_sigs == prev2_sigs:
+                return True
+
+        return False
 
     def evaluate_council(
         self,

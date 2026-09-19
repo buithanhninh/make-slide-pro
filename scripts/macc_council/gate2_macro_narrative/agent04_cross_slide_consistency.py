@@ -219,26 +219,46 @@ class CrossSlideConsistencyAuditor(BaseCouncilAgent):
         for finding in findings:
             # 1. Remediate numeric contradiction or terminology drift
             if finding.original_value and finding.suggested_value:
+                orig_val = finding.original_value
+                sugg_val = finding.suggested_value
                 for s in slides:
                     if s.get("slide_id") == finding.slide_id:
-                        for k in ["assertion_title", "primary_claim", "speaker_notes"]:
+                        for k in ["title", "subtitle", "headline", "assertion_title", "primary_claim", "speaker_notes", "source_footer"]:
                             if k in s and isinstance(s[k], str):
-                                s[k] = s[k].replace(finding.original_value, finding.suggested_value)
-                        for atom in s.get("atoms", []):
-                            if isinstance(atom, dict):
-                                for ak in ["title", "text", "mechanism", "kicker"]:
-                                    if ak in atom and isinstance(atom[ak], str):
-                                        atom[ak] = atom[ak].replace(finding.original_value, finding.suggested_value)
+                                s[k] = s[k].replace(orig_val, sugg_val)
+                        for col_key in ["atoms", "cards", "content_items", "boxes", "items"]:
+                            for item in s.get(col_key, []):
+                                if isinstance(item, dict):
+                                    for ak in ["title", "text", "body", "description", "mechanism", "kicker", "label", "value", "verbatim", "metric_value", "metric_label"]:
+                                        if ak in item and isinstance(item[ak], str):
+                                            item[ak] = item[ak].replace(orig_val, sugg_val)
+                        table = s.get("table_data")
+                        if isinstance(table, dict):
+                            headers = table.get("headers", [])
+                            if isinstance(headers, list):
+                                table["headers"] = [h.replace(orig_val, sugg_val) if isinstance(h, str) else h for h in headers]
+                            rows = table.get("rows", [])
+                            if isinstance(rows, list):
+                                for r in rows:
+                                    if isinstance(r, list):
+                                        for idx, cell in enumerate(r):
+                                            if isinstance(cell, str):
+                                                r[idx] = cell.replace(orig_val, sugg_val)
 
             # 2. Remediate visual rhythm fatigue
             if finding.severity == Severity.P2 and "Visual Rhythm Fatigue" in finding.issue:
                 for s in slides:
                     if s.get("slide_id") == finding.slide_id:
-                        cur_arch = s.get("archetype")
-                        if cur_arch == "3_cards":
+                        cur_arch = (s.get("archetype") or s.get("visual_job") or "").upper()
+                        if cur_arch in ("3_CARDS", "CARDS"):
                             s["archetype"] = "split_comparison"
-                        elif cur_arch == "grid_2x2":
+                            s["visual_job"] = "COMPARISON"
+                        elif cur_arch in ("GRID_2X2", "BENTO", "BENTO_GRID"):
                             s["archetype"] = "process_flow_4"
+                            s["visual_job"] = "PROCESS"
+                        else:
+                            s["archetype"] = "split_comparison"
+                            s["visual_job"] = "COMPARISON"
 
         if isinstance(remediated, dict):
             remediated["slides"] = slides

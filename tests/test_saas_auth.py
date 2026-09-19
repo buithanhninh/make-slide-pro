@@ -38,6 +38,11 @@ def test_saas_multi_tenant_isolation_and_credits():
         })
         assert r_login_a.status_code == 200
         token_a = r_login_a.json()["access_token"]
+        with SessionLocal() as db:
+            u = db.query(User).filter(User.email == "alice@saas.com").first()
+            if u:
+                u.credits = 5
+                db.commit()
     else:
         assert r_reg_a.status_code == 200
         token_a = r_reg_a.json()["access_token"]
