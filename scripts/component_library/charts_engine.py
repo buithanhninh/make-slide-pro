@@ -14,6 +14,7 @@ xlColumnStacked = 52
 xlColumnStacked100 = 53
 xlBarClustered = 57
 xlBarStacked = 58
+xlBarStacked100 = 59
 xlLine = 4
 xlLineMarkers = 65
 xlPie = 5
@@ -21,6 +22,7 @@ xlDoughnut = -4120
 xlArea = 1
 xlAreaStacked = 76
 xlRadar = -4151
+xlRadarFilled = 82
 xlPieExploded = 69
 xlXYScatter = -4169
 xlBubble = 15
@@ -58,7 +60,17 @@ class NativeChartsEngine:
         """
         try:
             chart_data = chart.ChartData
+            try:
+                chart_data.Activate()
+            except Exception:
+                pass
             workbook = chart_data.Workbook
+            xl_app = getattr(workbook, "Application", None)
+            if xl_app is not None:
+                try:
+                    xl_app.DisplayAlerts = False
+                except Exception:
+                    pass
             sheet = workbook.Worksheets(1)
 
             # Clear default dummy cells (PowerPoint defaults to 4 rows, 3 cols)
@@ -87,7 +99,15 @@ class NativeChartsEngine:
 
             data_range = f"='{sheet.Name}'!$A$1:${last_col_letter}${num_rows}"
             chart.SetSourceData(data_range)
-            workbook.Close(True)
+            try:
+                workbook.Close(True)
+            except Exception:
+                pass
+            if xl_app is not None:
+                try:
+                    xl_app.Quit()
+                except Exception:
+                    pass
         except Exception as e:
             print(f"Warning: Chart Excel worksheet update error: {e}")
 
@@ -422,3 +442,103 @@ class NativeChartsEngine:
 
         self._populate_worksheet_data(chart, categories, series)
         return [shape]
+
+    # -------------------------------------------------------------
+    # 16. BAR STACKED 100% (Thanh Ngang 100% Chồng)
+    # -------------------------------------------------------------
+    def render_bar_stacked_100(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        c_data = spec.get("chart_data", {})
+        categories = c_data.get("categories", ["Miền Bắc", "Miền Trung", "Miền Nam", "Đồng Bằng SCL"])
+        series = c_data.get("series", [
+            {"name": "Thành Thị (%)", "values": [42.5, 31.8, 68.2, 28.5]},
+            {"name": "Nông Thôn (%)", "values": [57.5, 68.2, 31.8, 71.5]}
+        ])
+
+        shape = slide.Shapes.AddChart(xlBarStacked100, left, top, width, height)
+        shape.Name = "!!Stage_Hero_Container!!"
+        chart = shape.Chart
+        chart.HasTitle = False
+        chart.HasLegend = True
+
+        self._populate_worksheet_data(chart, categories, series)
+        return [shape]
+
+    # -------------------------------------------------------------
+    # 17. PARETO ANALYSIS (Biểu Đồ Pareto 80/20)
+    # -------------------------------------------------------------
+    def render_pareto_analysis(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        c_data = spec.get("chart_data", {})
+        categories = c_data.get("categories", ["Lỗi Định Dạng Font", "Lỗi Tràn Khung Chữ", "Thiếu Icon Đồ Họa", "Lỗi Màu Tương Phản", "Khác"])
+        series = c_data.get("series", [
+            {"name": "Số Lần Xuất Hiện (Cột)", "values": [120, 85, 45, 18, 12]},
+            {"name": "Tỷ Lệ Tích Lũy % (Đường)", "values": [42.8, 73.2, 89.3, 95.7, 100.0]}
+        ])
+
+        shape = slide.Shapes.AddChart(xlColumnClustered, left, top, width, height)
+        shape.Name = "!!Stage_Hero_Container!!"
+        chart = shape.Chart
+        chart.HasTitle = False
+        chart.HasLegend = True
+
+        self._populate_worksheet_data(chart, categories, series)
+        return [shape]
+
+    # -------------------------------------------------------------
+    # 18. STEPPED LINE (Đường Bậc Thang)
+    # -------------------------------------------------------------
+    def render_stepped_line(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        c_data = spec.get("chart_data", {})
+        categories = c_data.get("categories", ["Tháng 1", "Tháng 3", "Tháng 6", "Tháng 9", "Tháng 12"])
+        series = c_data.get("series", [
+            {"name": "Lãi Suất Cơ Bản Điều Hành (%)", "values": [4.5, 4.5, 5.0, 5.0, 5.5]},
+            {"name": "Lãi Suất Trần Huy Động (%)", "values": [5.5, 5.5, 6.0, 6.0, 6.5]}
+        ])
+
+        shape = slide.Shapes.AddChart(xlLineMarkers, left, top, width, height)
+        shape.Name = "!!Stage_Hero_Container!!"
+        chart = shape.Chart
+        chart.HasTitle = False
+        chart.HasLegend = True
+
+        self._populate_worksheet_data(chart, categories, series)
+        return [shape]
+
+    # -------------------------------------------------------------
+    # 19. RADAR FILLED (Mạng Nhện Diện Tích Phủ)
+    # -------------------------------------------------------------
+    def render_radar_filled(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        c_data = spec.get("chart_data", {})
+        categories = c_data.get("categories", ["Tốc Độ Render", "Độ Phủ Mẫu (165+)", "Chất Lượng Native", "Độ Ổn Định QA", "Chuyển Động Apple"])
+        series = c_data.get("series", [
+            {"name": "Giải Pháp Make Slide Pro", "values": [98, 100, 100, 96, 95]},
+            {"name": "Tiêu Chuẩn Thị Trường", "values": [65, 40, 50, 60, 45]}
+        ])
+
+        shape = slide.Shapes.AddChart(xlRadarFilled, left, top, width, height)
+        shape.Name = "!!Stage_Hero_Container!!"
+        chart = shape.Chart
+        chart.HasTitle = False
+        chart.HasLegend = True
+
+        self._populate_worksheet_data(chart, categories, series)
+        return [shape]
+
+    # -------------------------------------------------------------
+    # 20. HISTOGRAM DISTRIBUTION (Phân Phối Tần Suất)
+    # -------------------------------------------------------------
+    def render_histogram_distribution(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        c_data = spec.get("chart_data", {})
+        categories = c_data.get("categories", ["0 - 5 giây", "5 - 10 giây", "10 - 15 giây", "15 - 20 giây", "20 - 25 giây", "> 25 giây"])
+        series = c_data.get("series", [
+            {"name": "Số Lượng Bài Thuyết Trình Hoàn Tất", "values": [45, 120, 85, 30, 15, 5]}
+        ])
+
+        shape = slide.Shapes.AddChart(xlColumnClustered, left, top, width, height)
+        shape.Name = "!!Stage_Hero_Container!!"
+        chart = shape.Chart
+        chart.HasTitle = False
+        chart.HasLegend = False
+
+        self._populate_worksheet_data(chart, categories, series)
+        return [shape]
+

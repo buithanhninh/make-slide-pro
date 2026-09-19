@@ -1087,3 +1087,430 @@ class ArchitecturesEngine:
             shapes.append(tb)
 
         return shapes
+
+    # 16. ARCH_EVENT_DRIVEN_KAFKA (Kiến Trúc Hướng Sự Kiện Kafka)
+    def render_event_driven_kafka(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        brand = self._get_token("colors", "brand", "#0284C7")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        col_w = width * 0.28
+        bus_w = width * 0.36
+        gap = (width - 2 * col_w - bus_w) / 2.0
+
+        # Left Column: Event Producers
+        prod = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, top, col_w, height)
+        prod.Fill.Solid()
+        prod.Fill.ForeColor.RGB = hex_to_bgr(surface)
+        prod.Line.Visible = msoTrue
+        prod.Line.ForeColor.RGB = hex_to_bgr("#38BDF8")
+        prod.Line.Weight = 2.0
+        shapes.append(prod)
+        t_prod = prod.TextFrame.TextRange
+        t_prod.Text = "NGUỒN PHÁT SỰ KIỆN\n(EVENT PRODUCERS)\n\n• Web Studio Frontend\n• AI Agent Workflow API\n• Batch PPTX Generator\n• Webhook Triggers"
+        t_prod.Font.Size = 10.5
+        t_prod.Font.Color.RGB = hex_to_bgr(ink)
+
+        # Center Column: Kafka Event Streaming Bus
+        bus = slide.Shapes.AddShape(msoShapeRoundedRectangle, left + col_w + gap, top, bus_w, height)
+        bus.Fill.Solid()
+        bus.Fill.ForeColor.RGB = hex_to_bgr("#082F49")
+        bus.Line.Visible = msoTrue
+        bus.Line.ForeColor.RGB = hex_to_bgr(brand)
+        bus.Line.Weight = 2.5
+        shapes.append(bus)
+        t_bus = bus.TextFrame.TextRange
+        t_bus.Text = "CỤM KAFKA STREAMING BUS\n(DISTRIBUTED LOG TOPICS)\n\n[Topic 1: Deck_Creation_Requests]\n[Topic 2: Agent_Audit_Events]\n[Topic 3: Motion_Render_Tasks]\n[Topic 4: High_Res_PNG_Exports]"
+        t_bus.Font.Size = 11.0
+        t_bus.Font.Bold = msoTrue
+        t_bus.Font.Color.RGB = hex_to_bgr("#FFFFFF")
+        t_bus.ParagraphFormat.Alignment = ppAlignCenter
+
+        # Right Column: Event Consumers & Microservices
+        cons = slide.Shapes.AddShape(msoShapeRoundedRectangle, left + col_w + bus_w + 2 * gap, top, col_w, height)
+        cons.Fill.Solid()
+        cons.Fill.ForeColor.RGB = hex_to_bgr(surface)
+        cons.Line.Visible = msoTrue
+        cons.Line.ForeColor.RGB = hex_to_bgr("#10B981")
+        cons.Line.Weight = 2.0
+        shapes.append(cons)
+        t_cons = cons.TextFrame.TextRange
+        t_cons.Text = "XỬ LÝ DỮ LIỆU ĐÍCH\n(EVENT CONSUMERS)\n\n• Native COM Worker Nodes\n• 16 Tác Tử MACC QA\n• Notification Webhook\n• Cloud S3 Storage Sync"
+        t_cons.Font.Size = 10.5
+        t_cons.Font.Color.RGB = hex_to_bgr(ink)
+
+        return shapes
+
+    # 17. ARCH_SERVERLESS_EVENT_FLOW (Kiến Trúc Không Máy Chủ Serverless)
+    def render_serverless_event_flow(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        steps = [
+            ("1. KHÁCH HÀNG (CLIENT)", "Trình duyệt Web Studio / SDK Desktop gửi yêu cầu", "#64748B"),
+            ("2. CỔNG API GATEWAY", "Xác thực JWT token & Điều phối hạn mức (Rate-limit)", "#0284C7"),
+            ("3. HÀM CLOUD FUNCTIONS", "Tự động kích hoạt các worker tính toán không trạng thái", "#38BDF8"),
+            ("4. CƠ SỞ DỮ LIỆU QUẢN TRỊ", "Lưu trữ cấu hình Blueprint & Lịch sử phiên bản", "#10B981")
+        ]
+
+        card_w = (width - 36.0) / 4.0
+        for i, (title, desc, color) in enumerate(steps):
+            cx = left + i * (card_w + 12.0)
+            c = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, top, card_w, height)
+            c.Fill.Solid()
+            c.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            c.Line.Visible = msoTrue
+            c.Line.ForeColor.RGB = hex_to_bgr(color)
+            c.Line.Weight = 2.0
+            shapes.append(c)
+
+            tr = c.TextFrame.TextRange
+            tr.Text = f"{title}\n\n{desc}"
+            tr.Font.Size = 11.0
+            tr.Font.Bold = msoTrue
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+
+    # 18. ARCH_ZERO_TRUST_SECURITY (Kiến Trúc An Ninh Zero Trust 5 Lớp)
+    def render_zero_trust_security(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        layers = [
+            ("LỚP 1: XÁC THỰC DANH TÍNH (IDENTITY)", "MFA đa yếu tố & Chứng chỉ số PKI cho mọi phiên kết nối", "#0284C7"),
+            ("LỚP 2: KIỂM SOÁT THIẾT BỊ (DEVICE)", "Đánh giá trạng thái tuân thủ bảo mật thiết bị đầu cuối", "#38BDF8"),
+            ("LỚP 3: PHÂN ĐOẠN MẠNG VI MÔ (NETWORK)", "Tường lửa phân đoạn mạng ảo & mã hóa đường truyền mTLS", "#10B981"),
+            ("LỚP 4: BẢO VỆ ỨNG DỤNG (APPLICATION)", "Quét lỗ hổng tĩnh/động SAST & Bảo vệ runtime WAF", "#F59E0B"),
+            ("LỚP 5: BẢO MẬT DỮ LIỆU CỐT LÕI (DATA)", "Mã hóa AES-256 dữ liệu lưu trữ & Ngăn rò rỉ dữ liệu DLP", "#EF4444")
+        ]
+
+        row_h = (height - 24.0) / len(layers)
+        for i, (title, desc, color) in enumerate(layers):
+            ry = top + i * (row_h + 6.0)
+            sh = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, ry, width, row_h)
+            sh.Fill.Solid()
+            sh.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            sh.Line.Visible = msoTrue
+            sh.Line.ForeColor.RGB = hex_to_bgr(color)
+            sh.Line.Weight = 2.0
+            shapes.append(sh)
+
+            tr = sh.TextFrame.TextRange
+            tr.Text = f"{title}: {desc}"
+            tr.Font.Size = 10.5
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignLeft
+
+        return shapes
+
+    # 19. ARCH_DATA_LAKEHOUSE_MEDALLION (Kiến Trúc Hồ Dữ Liệu Medallion 3 Tầng)
+    def render_data_lakehouse_medallion(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        tiers = [
+            ("TẦNG BRONZE (RAW INGESTION)", "Dữ liệu thô chưa qua xử lý, lưu trữ nguyên bản toàn bộ log slide và prompt", "#78350F", "#B45309"),
+            ("TẦNG SILVER (CURATED & CLEANED)", "Dữ liệu đã chuẩn hóa cấu trúc, lọc bỏ lỗi cú pháp và gán nhãn Archetype", "#475569", "#94A3B8"),
+            ("TẦNG GOLD (BUSINESS AGGREGATED)", "Báo cáo phân tích cao cấp, dữ liệu sẵn sàng cho BI và bài thuyết trình C-Level", "#713F12", "#EAB308")
+        ]
+
+        card_w = (width - 24.0) / 3.0
+        for i, (title, desc, bg_tint, border_col) in enumerate(tiers):
+            cx = left + i * (card_w + 12.0)
+            c = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, top, card_w, height)
+            c.Fill.Solid()
+            c.Fill.ForeColor.RGB = hex_to_bgr(bg_tint)
+            c.Line.Visible = msoTrue
+            c.Line.ForeColor.RGB = hex_to_bgr(border_col)
+            c.Line.Weight = 2.5
+            shapes.append(c)
+
+            tr = c.TextFrame.TextRange
+            tr.Text = f"{title}\n\n{desc}"
+            tr.Font.Size = 11.5
+            tr.Font.Bold = msoTrue
+            tr.Font.Color.RGB = hex_to_bgr("#FFFFFF")
+            tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+
+    # 20. ARCH_CI_CD_AUTOMATION (Quy Trình Tự Động Hóa CI/CD 4 Bước)
+    def render_ci_cd_automation(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        brand = self._get_token("colors", "brand", "#0284C7")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        stages = [
+            ("BƯỚC 1: GIT COMMIT", "Lập trình viên commit mã nguồn lên nhánh main", "#0284C7"),
+            ("BƯỚC 2: BUILD & UNIT TEST", "Chạy 48/48 bài kiểm thử tự động pytest trong 2.5s", "#38BDF8"),
+            ("BƯỚC 3: MACC QA AUDIT", "Hội đồng 16 tác tử quét lỗi hồi quy và độ chuẩn font", "#10B981"),
+            ("BƯỚC 4: DEPLOY PRODUCTION", "Phát hành bản cập nhật an toàn không downtime", "#059669")
+        ]
+
+        card_w = (width - 36.0) / 4.0
+        for i, (title, desc, color) in enumerate(stages):
+            cx = left + i * (card_w + 12.0)
+            c = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, top, card_w, height)
+            c.Fill.Solid()
+            c.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            c.Line.Visible = msoTrue
+            c.Line.ForeColor.RGB = hex_to_bgr(color)
+            c.Line.Weight = 2.0
+            shapes.append(c)
+
+            tr = c.TextFrame.TextRange
+            tr.Text = f"{title}\n\n{desc}"
+            tr.Font.Size = 11.0
+            tr.Font.Bold = msoTrue
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+
+    # 21. ARCH_HUB_SPOKE_ENTERPRISE_NETWORK (Mạng Doanh Nghiệp Hub-Spoke)
+    def render_hub_spoke_enterprise_network(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        brand = self._get_token("colors", "brand", "#0284C7")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        # Center Hub (Transit Gateway & Shared Core Services)
+        hub_w = width * 0.32
+        hub_h = height * 0.65
+        hx = left + (width - hub_w) / 2.0
+        hy = top + (height - hub_h) / 2.0
+
+        hub = slide.Shapes.AddShape(msoShapeRoundedRectangle, hx, hy, hub_w, hub_h)
+        hub.Fill.Solid()
+        hub.Fill.ForeColor.RGB = hex_to_bgr("#0C4A6E")
+        hub.Line.Visible = msoTrue
+        hub.Line.ForeColor.RGB = hex_to_bgr(brand)
+        hub.Line.Weight = 2.5
+        shapes.append(hub)
+        t_hub = hub.TextFrame.TextRange
+        t_hub.Text = "TRUNG TÂM ĐIỀU HÀNH (CORE HUB)\n\n• Transit Gateway Router\n• Shared Database Cluster\n• Central Authentication SSO\n• Master Component Registry"
+        t_hub.Font.Size = 10.5
+        t_hub.Font.Bold = msoTrue
+        t_hub.Font.Color.RGB = hex_to_bgr("#FFFFFF")
+        t_hub.ParagraphFormat.Alignment = ppAlignCenter
+
+        # Left Spokes (Spoke 1 & Spoke 2)
+        spoke_w = width * 0.28
+        spoke_h = (height - 16.0) / 2.0
+        s1 = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, top, spoke_w, spoke_h)
+        s1.Fill.Solid()
+        s1.Fill.ForeColor.RGB = hex_to_bgr(surface)
+        s1.Line.Visible = msoTrue
+        s1.Line.ForeColor.RGB = hex_to_bgr("#38BDF8")
+        shapes.append(s1)
+        s1.TextFrame.TextRange.Text = "SPOKE 1: WEB STUDIO\nFrontend Interactive Editor"
+        s1.TextFrame.TextRange.Font.Size = 10.0
+        s1.TextFrame.TextRange.Font.Color.RGB = hex_to_bgr(ink)
+
+        s2 = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, top + spoke_h + 16.0, spoke_w, spoke_h)
+        s2.Fill.Solid()
+        s2.Fill.ForeColor.RGB = hex_to_bgr(surface)
+        s2.Line.Visible = msoTrue
+        s2.Line.ForeColor.RGB = hex_to_bgr("#38BDF8")
+        shapes.append(s2)
+        s2.TextFrame.TextRange.Text = "SPOKE 2: DESKTOP COM ENGINE\nNative PowerPoint Automation"
+        s2.TextFrame.TextRange.Font.Size = 10.0
+        s2.TextFrame.TextRange.Font.Color.RGB = hex_to_bgr(ink)
+
+        # Right Spokes (Spoke 3 & Spoke 4)
+        rx = left + hub_w + spoke_w + 24.0
+        s3 = slide.Shapes.AddShape(msoShapeRoundedRectangle, rx, top, spoke_w, spoke_h)
+        s3.Fill.Solid()
+        s3.Fill.ForeColor.RGB = hex_to_bgr(surface)
+        s3.Line.Visible = msoTrue
+        s3.Line.ForeColor.RGB = hex_to_bgr("#10B981")
+        shapes.append(s3)
+        s3.TextFrame.TextRange.Text = "SPOKE 3: MACC QA AUDIT\n16 Tác Tử Kiểm Định Đa Chiều"
+        s3.TextFrame.TextRange.Font.Size = 10.0
+        s3.TextFrame.TextRange.Font.Color.RGB = hex_to_bgr(ink)
+
+        s4 = slide.Shapes.AddShape(msoShapeRoundedRectangle, rx, top + spoke_h + 16.0, spoke_w, spoke_h)
+        s4.Fill.Solid()
+        s4.Fill.ForeColor.RGB = hex_to_bgr(surface)
+        s4.Line.Visible = msoTrue
+        s4.Line.ForeColor.RGB = hex_to_bgr("#10B981")
+        shapes.append(s4)
+        s4.TextFrame.TextRange.Text = "SPOKE 4: APPLE MOTION\nChuyển Động Morph & Reveal"
+        s4.TextFrame.TextRange.Font.Size = 10.0
+        s4.TextFrame.TextRange.Font.Color.RGB = hex_to_bgr(ink)
+
+        return shapes
+
+    # 22. ARCH_MULTI_TENANT_SAAS (Kiến Trúc Đa Người Thuê SaaS)
+    def render_multi_tenant_saas(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        brand = self._get_token("colors", "brand", "#0284C7")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        # Top Shared Tier (API & Application Gateway)
+        top_h = height * 0.35
+        app_sh = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, top, width, top_h)
+        app_sh.Fill.Solid()
+        app_sh.Fill.ForeColor.RGB = hex_to_bgr("#0C4A6E")
+        app_sh.Line.Visible = msoTrue
+        app_sh.Line.ForeColor.RGB = hex_to_bgr(brand)
+        app_sh.Line.Weight = 2.0
+        shapes.append(app_sh)
+        t_app = app_sh.TextFrame.TextRange
+        t_app.Text = "TẦNG ỨNG DỤNG DÙNG CHUNG (SHARED APPLICATION TIER)\n\n• Load Balancer • Định Tuyến Tenant Router • 165+ Archetype Engine"
+        t_app.Font.Size = 11.5
+        t_app.Font.Bold = msoTrue
+        t_app.Font.Color.RGB = hex_to_bgr("#FFFFFF")
+        t_app.ParagraphFormat.Alignment = ppAlignCenter
+
+        # 3 Isolated Tenant Databases Below
+        db_w = (width - 24.0) / 3.0
+        db_h = height * 0.55
+        db_y = top + top_h + 16.0
+
+        tenants = [
+            ("TENANT A (ENTERPRISE 1)", "Cơ sở dữ liệu cô lập riêng biệt\nMã hóa dữ liệu với khóa KMS riêng", "#10B981"),
+            ("TENANT B (ENTERPRISE 2)", "Cơ sở dữ liệu cô lập riêng biệt\nĐáp ứng chuẩn tuân thủ HIPAA/GDPR", "#38BDF8"),
+            ("TENANT C (DOANH NGHIỆP 3)", "Cơ sở dữ liệu cô lập riêng biệt\nToàn quyền xuất file bảo mật cao", "#F59E0B")
+        ]
+
+        for i, (t_name, t_desc, color) in enumerate(tenants):
+            dx = left + i * (db_w + 12.0)
+            tdb = slide.Shapes.AddShape(msoShapeRoundedRectangle, dx, db_y, db_w, db_h)
+            tdb.Fill.Solid()
+            tdb.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            tdb.Line.Visible = msoTrue
+            tdb.Line.ForeColor.RGB = hex_to_bgr(color)
+            tdb.Line.Weight = 1.8
+            shapes.append(tdb)
+
+            tr = tdb.TextFrame.TextRange
+            tr.Text = f"{t_name}\n\n{t_desc}"
+            tr.Font.Size = 10.5
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+
+    # 23. ARCH_RAG_LLM_PIPELINE (Đường Ống RAG Cho Mô Hình Ngôn Ngữ Lớn)
+    def render_rag_llm_pipeline(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        steps = [
+            ("1. NẠP TÀI LIỆU (INGESTION)", "Phân tách tài liệu giáo trình thành các khối kiến thức nhỏ", "#64748B"),
+            ("2. CƠ SỞ VECTOR (EMBEDDING)", "Tạo vector nhúng và lưu vào cơ sở dữ liệu tri thức", "#0284C7"),
+            ("3. TRUY XUẤT (RETRIEVER)", "Tìm kiếm ngữ nghĩa các thông tin phù hợp nhất với chủ đề", "#38BDF8"),
+            ("4. TỔNG HỢP LLM (GENERATOR)", "Sinh nội dung slide chuẩn xác và điều phối layout tự động", "#10B981")
+        ]
+
+        card_w = (width - 36.0) / 4.0
+        for i, (title, desc, color) in enumerate(steps):
+            cx = left + i * (card_w + 12.0)
+            c = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, top, card_w, height)
+            c.Fill.Solid()
+            c.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            c.Line.Visible = msoTrue
+            c.Line.ForeColor.RGB = hex_to_bgr(color)
+            c.Line.Weight = 2.0
+            shapes.append(c)
+
+            tr = c.TextFrame.TextRange
+            tr.Text = f"{title}\n\n{desc}"
+            tr.Font.Size = 11.0
+            tr.Font.Bold = msoTrue
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+
+    # 24. ARCH_EDGE_TO_CLOUD_IOT (Kiến Trúc IoT Từ Biên Đến Đám Mây)
+    def render_edge_to_cloud_iot(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        brand = self._get_token("colors", "brand", "#0284C7")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        tiers = [
+            ("1. THIẾT BỊ BIÊN (EDGE SENSORS)", "Cảm biến IoT, Camera thông minh thu thập dữ liệu thời gian thực", "#0284C7"),
+            ("2. CỔNG BIÊN (EDGE GATEWAY)", "Xử lý sơ bộ tại chỗ, lọc nhiễu và nén dữ liệu đường truyền", "#38BDF8"),
+            ("3. ĐÁM MÂY (CLOUD INGESTION)", "Hấp thụ hàng triệu thông điệp mỗi giây qua giao thức MQTT", "#10B981"),
+            ("4. PHÂN TÍCH THỊ GIÁC (AI ANALYTICS)", "Trực quan hóa biểu đồ và tạo slide báo cáo vận hành tự động", "#F59E0B")
+        ]
+
+        card_w = (width - 36.0) / 4.0
+        for i, (title, desc, color) in enumerate(tiers):
+            cx = left + i * (card_w + 12.0)
+            c = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, top, card_w, height)
+            c.Fill.Solid()
+            c.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            c.Line.Visible = msoTrue
+            c.Line.ForeColor.RGB = hex_to_bgr(color)
+            c.Line.Weight = 2.0
+            shapes.append(c)
+
+            tr = c.TextFrame.TextRange
+            tr.Text = f"{title}\n\n{desc}"
+            tr.Font.Size = 11.0
+            tr.Font.Bold = msoTrue
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+
+    # 25. ARCH_MODULAR_MONOLITH (Kiến Trúc Monolith Module Hóa)
+    def render_modular_monolith(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        brand = self._get_token("colors", "brand", "#0284C7")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        # Outer Bounded Context Box
+        outer = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, top, width, height)
+        outer.Fill.Solid()
+        outer.Fill.ForeColor.RGB = hex_to_bgr("#082F49")
+        outer.Line.Visible = msoTrue
+        outer.Line.ForeColor.RGB = hex_to_bgr(brand)
+        outer.Line.Weight = 2.0
+        shapes.append(outer)
+
+        # 4 Internal Independent Modules Inside
+        mod_w = (width - 48.0) / 4.0
+        mod_h = height * 0.65
+        mod_y = top + height * 0.22
+
+        modules = [
+            ("MODULE 1\nComponent Library", "165+ Archetypes", "#38BDF8"),
+            ("MODULE 2\nNative COM", "Tables & Charts", "#10B981"),
+            ("MODULE 3\nMotion Engine", "Apple Keynote", "#F59E0B"),
+            ("MODULE 4\nMACC QA Council", "16 Tác Tử Kiểm Định", "#8B5CF6")
+        ]
+
+        for i, (title, desc, color) in enumerate(modules):
+            mx = left + 12.0 + i * (mod_w + 8.0)
+            m = slide.Shapes.AddShape(msoShapeRoundedRectangle, mx, mod_y, mod_w, mod_h)
+            m.Fill.Solid()
+            m.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            m.Line.Visible = msoTrue
+            m.Line.ForeColor.RGB = hex_to_bgr(color)
+            m.Line.Weight = 1.5
+            shapes.append(m)
+
+            tr = m.TextFrame.TextRange
+            tr.Text = f"{title}\n\n{desc}"
+            tr.Font.Size = 10.5
+            tr.Font.Bold = msoTrue
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+

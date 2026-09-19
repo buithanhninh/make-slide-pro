@@ -19,8 +19,9 @@ from .processes_engine import ProcessesEngine
 from .architectures_engine import ArchitecturesEngine
 from .charts_engine import NativeChartsEngine
 from .containers_engine import AdvancedContainersEngine
+from .motion_engine import AppleSlideTransitionOrchestrator, AppleChoreographedEntranceAnimator
 
-# Master Registry of 110+ Archetypes and Aliases
+# Master Registry of 165+ Archetypes and Aliases
 ARCHETYPES_REGISTRY = {
     # -------------------------------------------------------------
     # MODULE 1: NATIVE TABLES (15 Archetypes + Aliases)
@@ -61,9 +62,29 @@ ARCHETYPES_REGISTRY = {
     "WEIGHTED_DECISION": "tables",
     "TABLE_EXECUTIVE_SUMMARY": "tables",
     "EXECUTIVE_SUMMARY_TABLE": "tables",
+    "TABLE_PRICING_FEATURE_MATRIX": "tables",
+    "PRICING_FEATURE_MATRIX": "tables",
+    "TABLE_MILESTONE_DELIVERABLES": "tables",
+    "MILESTONE_DELIVERABLES": "tables",
+    "TABLE_SWOT_DETAILED": "tables",
+    "SWOT_DETAILED_TABLE": "tables",
+    "TABLE_RISK_HEATMAP_5X5": "tables",
+    "RISK_HEATMAP_5X5": "tables",
+    "TABLE_BUDGET_ALLOCATION": "tables",
+    "BUDGET_ALLOCATION": "tables",
+    "TABLE_VENDOR_EVALUATION": "tables",
+    "VENDOR_EVALUATION": "tables",
+    "TABLE_OKRS_TRACKER": "tables",
+    "OKRS_TRACKER": "tables",
+    "TABLE_EMPLOYEE_SKILLS_MATRIX": "tables",
+    "EMPLOYEE_SKILLS_MATRIX": "tables",
+    "TABLE_PRODUCT_SPECS": "tables",
+    "PRODUCT_SPECS": "tables",
+    "TABLE_SLA_TIERS": "tables",
+    "SLA_TIERS": "tables",
 
     # -------------------------------------------------------------
-    # MODULE 2: STRATEGIC FRAMEWORKS (25 Archetypes + Aliases)
+    # MODULE 2: STRATEGIC FRAMEWORKS (35 Archetypes + Aliases)
     # -------------------------------------------------------------
     "FRAMEWORK_MATRIX_2X2": "frameworks",
     "MATRIX_2X2": "frameworks",
@@ -146,9 +167,31 @@ ARCHETYPES_REGISTRY = {
     "HORIZONS": "frameworks",
     "FRAMEWORK_SWIMLANE": "frameworks",
     "SWIMLANE": "frameworks",
+    "FRAMEWORK_STEEPLE": "frameworks",
+    "STEEPLE": "frameworks",
+    "FRAMEWORK_KANO_MODEL": "frameworks",
+    "KANO_MODEL": "frameworks",
+    "FRAMEWORK_LEAN_CANVAS": "frameworks",
+    "LEAN_CANVAS": "frameworks",
+    "FRAMEWORK_VALUE_PROPOSITION_CANVAS": "frameworks",
+    "VALUE_PROPOSITION_CANVAS": "frameworks",
+    "FRAMEWORK_CYNEFIN": "frameworks",
+    "CYNEFIN": "frameworks",
+    "FRAMEWORK_BOW_TIE": "frameworks",
+    "BOW_TIE": "frameworks",
+    "FRAMEWORK_BLUE_OCEAN_ERRC": "frameworks",
+    "BLUE_OCEAN_ERRC": "frameworks",
+    "ERRC_GRID": "frameworks",
+    "FRAMEWORK_NORTH_STAR_METRIC": "frameworks",
+    "NORTH_STAR_METRIC": "frameworks",
+    "FRAMEWORK_GROW_COACHING": "frameworks",
+    "GROW_COACHING": "frameworks",
+    "FRAMEWORK_PIRATE_AARRR": "frameworks",
+    "PIRATE_AARRR": "frameworks",
+    "AARRR_FUNNEL": "frameworks",
 
     # -------------------------------------------------------------
-    # MODULE 3: PROCESSES & MECHANISMS (20 Archetypes + Aliases)
+    # MODULE 3: PROCESSES & MECHANISMS (30 Archetypes + Aliases)
     # -------------------------------------------------------------
     "PROCESS_CHEVRON_LINEAR": "processes",
     "CHEVRON_LINEAR": "processes",
@@ -210,9 +253,34 @@ ARCHETYPES_REGISTRY = {
     "CHAIN_REACTION": "processes",
     "PROCESS_RADIAL_PROGRESSION": "processes",
     "RADIAL_PROGRESSION": "processes",
+    "PROCESS_CIRCULAR_LOOP_6STEP": "processes",
+    "CIRCULAR_LOOP_6STEP": "processes",
+    "PROCESS_SPIRAL_GROWTH": "processes",
+    "SPIRAL_GROWTH": "processes",
+    "PROCESS_HOURGLASS_WORKFLOW": "processes",
+    "HOURGLASS_WORKFLOW": "processes",
+    "PROCESS_PARALLEL_STREAMS": "processes",
+    "PARALLEL_STREAMS": "processes",
+    "PROCESS_STAGED_GATE_PHASES": "processes",
+    "STAGED_GATE_PHASES": "processes",
+    "STAGE_GATE": "processes",
+    "PROCESS_SERPENTINE_ROADMAP": "processes",
+    "SERPENTINE_ROADMAP": "processes",
+    "S_ROADMAP": "processes",
+    "PROCESS_PIPELINE_FILTRATION": "processes",
+    "PIPELINE_FILTRATION": "processes",
+    "PROCESS_CONTINUOUS_IMPROVEMENT_PDCA": "processes",
+    "CONTINUOUS_IMPROVEMENT_PDCA": "processes",
+    "PDCA_IMPROVEMENT": "processes",
+    "PROCESS_DEVSECOPS_INFINITY_LOOP": "processes",
+    "DEVSECOPS_INFINITY_LOOP": "processes",
+    "DEVSECOPS_LOOP": "processes",
+    "PROCESS_CRITICAL_PATH_CPM": "processes",
+    "CRITICAL_PATH_CPM": "processes",
+    "PERT_CPM": "processes",
 
     # -------------------------------------------------------------
-    # MODULE 4: SYSTEM & ARCHITECTURES (15 Archetypes + Aliases)
+    # MODULE 4: SYSTEM & ARCHITECTURES (25 Archetypes + Aliases)
     # -------------------------------------------------------------
     "ARCH_SYSTEM_LAYERED_STACK": "architectures",
     "SYSTEM_LAYERED_STACK": "architectures",
@@ -259,9 +327,38 @@ ARCHETYPES_REGISTRY = {
     "ARCH_AI_AGENT_ORCHESTRATOR": "architectures",
     "AI_AGENT_ORCHESTRATOR": "architectures",
     "AGENT_ORCHESTRATION": "architectures",
+    "ARCH_EVENT_DRIVEN_KAFKA": "architectures",
+    "EVENT_DRIVEN_KAFKA": "architectures",
+    "KAFKA_STREAMING": "architectures",
+    "ARCH_SERVERLESS_EVENT_FLOW": "architectures",
+    "SERVERLESS_EVENT_FLOW": "architectures",
+    "SERVERLESS_ARCHITECTURE": "architectures",
+    "ARCH_ZERO_TRUST_SECURITY": "architectures",
+    "ZERO_TRUST_SECURITY": "architectures",
+    "ZERO_TRUST": "architectures",
+    "ARCH_DATA_LAKEHOUSE_MEDALLION": "architectures",
+    "DATA_LAKEHOUSE_MEDALLION": "architectures",
+    "MEDALLION_LAKEHOUSE": "architectures",
+    "ARCH_CI_CD_AUTOMATION": "architectures",
+    "CI_CD_AUTOMATION": "architectures",
+    "CI_CD_PIPELINE": "architectures",
+    "ARCH_HUB_SPOKE_ENTERPRISE_NETWORK": "architectures",
+    "HUB_SPOKE_ENTERPRISE_NETWORK": "architectures",
+    "ENTERPRISE_HUB_SPOKE": "architectures",
+    "ARCH_MULTI_TENANT_SAAS": "architectures",
+    "MULTI_TENANT_SAAS": "architectures",
+    "SAAS_MULTI_TENANT": "architectures",
+    "ARCH_RAG_LLM_PIPELINE": "architectures",
+    "RAG_LLM_PIPELINE": "architectures",
+    "RAG_PIPELINE": "architectures",
+    "ARCH_EDGE_TO_CLOUD_IOT": "architectures",
+    "EDGE_TO_CLOUD_IOT": "architectures",
+    "IOT_EDGE_TO_CLOUD": "architectures",
+    "ARCH_MODULAR_MONOLITH": "architectures",
+    "MODULAR_MONOLITH": "architectures",
 
     # -------------------------------------------------------------
-    # MODULE 5: NATIVE OFFICE CHARTS (15 Archetypes + Aliases)
+    # MODULE 5: NATIVE OFFICE CHARTS (20 Archetypes + Aliases)
     # -------------------------------------------------------------
     "CHART_COLUMN_CLUSTERED": "charts",
     "COLUMN_CLUSTERED": "charts",
@@ -300,9 +397,21 @@ ARCHETYPES_REGISTRY = {
     "SCATTER_CORRELATION": "charts",
     "CHART_BUBBLE_MATRIX": "charts",
     "BUBBLE_MATRIX": "charts",
+    "CHART_BAR_STACKED_100": "charts",
+    "BAR_STACKED_100": "charts",
+    "CHART_PARETO_ANALYSIS": "charts",
+    "PARETO_ANALYSIS": "charts",
+    "PARETO_CHART": "charts",
+    "CHART_STEPPED_LINE": "charts",
+    "STEPPED_LINE": "charts",
+    "CHART_RADAR_FILLED": "charts",
+    "RADAR_FILLED": "charts",
+    "CHART_HISTOGRAM_DISTRIBUTION": "charts",
+    "HISTOGRAM_DISTRIBUTION": "charts",
+    "HISTOGRAM": "charts",
 
     # -------------------------------------------------------------
-    # MODULE 6: KEYNOTE CONTAINERS & ACCENTS (22 Archetypes + Aliases)
+    # MODULE 6: KEYNOTE CONTAINERS & ACCENTS (30 Archetypes + Aliases)
     # -------------------------------------------------------------
     "CONTAINER_BENTO_COMPLEX": "containers",
     "BENTO_COMPLEX": "containers",
@@ -357,7 +466,30 @@ ARCHETYPES_REGISTRY = {
     "EXECUTIVE_DASHBOARD": "containers",
     "CONTAINER_CLOSING_CTA_HERO": "containers",
     "CLOSING_CTA_HERO": "containers",
-    "CLOSING_CTA": "containers"
+    "CLOSING_CTA": "containers",
+    "CONTAINER_DEVICE_MOCKUP_FRAME": "containers",
+    "DEVICE_MOCKUP_FRAME": "containers",
+    "MOCKUP_FRAME": "containers",
+    "CONTAINER_METRIC_MARQUEE_BANNER": "containers",
+    "METRIC_MARQUEE_BANNER": "containers",
+    "MARQUEE_BANNER": "containers",
+    "CONTAINER_THREE_PILLARS_CARDS": "containers",
+    "THREE_PILLARS_CARDS": "containers",
+    "CONTAINER_PROBLEM_SOLUTION_IMPACT": "containers",
+    "PROBLEM_SOLUTION_IMPACT": "containers",
+    "PROBLEM_SOL_IMPACT": "containers",
+    "CONTAINER_FEATURE_HEX_CLUSTER": "containers",
+    "FEATURE_HEX_CLUSTER": "containers",
+    "HEX_CLUSTER": "containers",
+    "CONTAINER_TESTIMONIAL_CAROUSEL_ROW": "containers",
+    "TESTIMONIAL_CAROUSEL_ROW": "containers",
+    "TESTIMONIALS_ROW": "containers",
+    "CONTAINER_STAT_HERO_SPLIT_60_40": "containers",
+    "STAT_HERO_SPLIT_60_40": "containers",
+    "STAT_SPLIT_60_40": "containers",
+    "CONTAINER_MINIMALIST_APPLE_QUOTE": "containers",
+    "MINIMALIST_APPLE_QUOTE": "containers",
+    "APPLE_QUOTE": "containers"
 }
 
 
@@ -430,8 +562,38 @@ class MasterComponentDispatcher:
         elif vj in {"TABLE_EXECUTIVE_SUMMARY", "EXECUTIVE_SUMMARY_TABLE"}:
             res = self.tables.render_executive_summary_table(slide, spec, left, top, width, height)
             return [res] if res else []
+        elif vj in {"TABLE_PRICING_FEATURE_MATRIX", "PRICING_FEATURE_MATRIX"}:
+            res = self.tables.render_pricing_feature_matrix(slide, spec, left, top, width, height)
+            return [res] if res else []
+        elif vj in {"TABLE_MILESTONE_DELIVERABLES", "MILESTONE_DELIVERABLES"}:
+            res = self.tables.render_milestone_deliverables(slide, spec, left, top, width, height)
+            return [res] if res else []
+        elif vj in {"TABLE_SWOT_DETAILED", "SWOT_DETAILED_TABLE"}:
+            res = self.tables.render_swot_detailed_table(slide, spec, left, top, width, height)
+            return [res] if res else []
+        elif vj in {"TABLE_RISK_HEATMAP_5X5", "RISK_HEATMAP_5X5"}:
+            res = self.tables.render_risk_heatmap_5x5(slide, spec, left, top, width, height)
+            return [res] if res else []
+        elif vj in {"TABLE_BUDGET_ALLOCATION", "BUDGET_ALLOCATION"}:
+            res = self.tables.render_budget_allocation(slide, spec, left, top, width, height)
+            return [res] if res else []
+        elif vj in {"TABLE_VENDOR_EVALUATION", "VENDOR_EVALUATION"}:
+            res = self.tables.render_vendor_evaluation(slide, spec, left, top, width, height)
+            return [res] if res else []
+        elif vj in {"TABLE_OKRS_TRACKER", "OKRS_TRACKER"}:
+            res = self.tables.render_okrs_tracker(slide, spec, left, top, width, height)
+            return [res] if res else []
+        elif vj in {"TABLE_EMPLOYEE_SKILLS_MATRIX", "EMPLOYEE_SKILLS_MATRIX"}:
+            res = self.tables.render_skills_matrix(slide, spec, left, top, width, height)
+            return [res] if res else []
+        elif vj in {"TABLE_PRODUCT_SPECS", "PRODUCT_SPECS"}:
+            res = self.tables.render_product_specs(slide, spec, left, top, width, height)
+            return [res] if res else []
+        elif vj in {"TABLE_SLA_TIERS", "SLA_TIERS"}:
+            res = self.tables.render_sla_tiers(slide, spec, left, top, width, height)
+            return [res] if res else []
 
-        # ----------------- 2. STRATEGIC FRAMEWORKS (25) -----------------
+        # ----------------- 2. STRATEGIC FRAMEWORKS (35) -----------------
         elif vj in {"FRAMEWORK_MATRIX_2X2", "MATRIX_2X2", "2X2_MATRIX"}:
             return self.frameworks.render_matrix_2x2(slide, spec, left, top, width, height)
         elif vj in {"FRAMEWORK_MATRIX_3X3", "MATRIX_3X3", "GE_MCKINSEY_9BOX"}:
@@ -482,8 +644,28 @@ class MasterComponentDispatcher:
             return self.frameworks.render_iceberg_model(slide, spec, left, top, width, height)
         elif vj in {"FRAMEWORK_DOUBLE_DIAMOND", "DOUBLE_DIAMOND", "DESIGN_THINKING_DIAMOND"}:
             return self.frameworks.render_double_diamond(slide, spec, left, top, width, height)
+        elif vj in {"FRAMEWORK_STEEPLE", "STEEPLE"}:
+            return self.frameworks.render_steeple(slide, spec, left, top, width, height)
+        elif vj in {"FRAMEWORK_KANO_MODEL", "KANO_MODEL"}:
+            return self.frameworks.render_kano_model(slide, spec, left, top, width, height)
+        elif vj in {"FRAMEWORK_LEAN_CANVAS", "LEAN_CANVAS"}:
+            return self.frameworks.render_lean_canvas(slide, spec, left, top, width, height)
+        elif vj in {"FRAMEWORK_VALUE_PROPOSITION_CANVAS", "VALUE_PROPOSITION_CANVAS"}:
+            return self.frameworks.render_value_proposition_canvas(slide, spec, left, top, width, height)
+        elif vj in {"FRAMEWORK_CYNEFIN", "CYNEFIN"}:
+            return self.frameworks.render_cynefin(slide, spec, left, top, width, height)
+        elif vj in {"FRAMEWORK_BOW_TIE", "BOW_TIE"}:
+            return self.frameworks.render_bow_tie(slide, spec, left, top, width, height)
+        elif vj in {"FRAMEWORK_BLUE_OCEAN_ERRC", "BLUE_OCEAN_ERRC", "ERRC_GRID"}:
+            return self.frameworks.render_blue_ocean_errc(slide, spec, left, top, width, height)
+        elif vj in {"FRAMEWORK_NORTH_STAR_METRIC", "NORTH_STAR_METRIC"}:
+            return self.frameworks.render_north_star_metric(slide, spec, left, top, width, height)
+        elif vj in {"FRAMEWORK_GROW_COACHING", "GROW_COACHING"}:
+            return self.frameworks.render_grow_coaching(slide, spec, left, top, width, height)
+        elif vj in {"FRAMEWORK_PIRATE_AARRR", "PIRATE_AARRR", "AARRR_FUNNEL"}:
+            return self.frameworks.render_pirate_aarrr(slide, spec, left, top, width, height)
 
-        # ----------------- 3. PROCESSES & MECHANISMS (20) -----------------
+        # ----------------- 3. PROCESSES & MECHANISMS (30) -----------------
         elif vj in {"PROCESS_CHEVRON_LINEAR", "CHEVRON_LINEAR", "PROCESS_CHEVRON", "CHEVRON_FLOW"}:
             return self.processes.render_chevron_linear(slide, spec, left, top, width, height)
         elif vj in {"PROCESS_CURVED_PIPELINE", "CURVED_PIPELINE", "S_CURVE_PIPELINE"}:
@@ -524,8 +706,28 @@ class MasterComponentDispatcher:
             return self.processes.render_domino_cascade(slide, spec, left, top, width, height)
         elif vj in {"PROCESS_RADIAL_PROGRESSION", "RADIAL_PROGRESSION"}:
             return self.processes.render_radial_progression(slide, spec, left, top, width, height)
+        elif vj in {"PROCESS_CIRCULAR_LOOP_6STEP", "CIRCULAR_LOOP_6STEP"}:
+            return self.processes.render_circular_loop_6step(slide, spec, left, top, width, height)
+        elif vj in {"PROCESS_SPIRAL_GROWTH", "SPIRAL_GROWTH"}:
+            return self.processes.render_spiral_growth(slide, spec, left, top, width, height)
+        elif vj in {"PROCESS_HOURGLASS_WORKFLOW", "HOURGLASS_WORKFLOW"}:
+            return self.processes.render_hourglass_workflow(slide, spec, left, top, width, height)
+        elif vj in {"PROCESS_PARALLEL_STREAMS", "PARALLEL_STREAMS"}:
+            return self.processes.render_parallel_streams(slide, spec, left, top, width, height)
+        elif vj in {"PROCESS_STAGED_GATE_PHASES", "STAGED_GATE_PHASES", "STAGE_GATE"}:
+            return self.processes.render_staged_gate_phases(slide, spec, left, top, width, height)
+        elif vj in {"PROCESS_SERPENTINE_ROADMAP", "SERPENTINE_ROADMAP", "S_ROADMAP"}:
+            return self.processes.render_serpentine_roadmap(slide, spec, left, top, width, height)
+        elif vj in {"PROCESS_PIPELINE_FILTRATION", "PIPELINE_FILTRATION"}:
+            return self.processes.render_pipeline_filtration(slide, spec, left, top, width, height)
+        elif vj in {"PROCESS_CONTINUOUS_IMPROVEMENT_PDCA", "CONTINUOUS_IMPROVEMENT_PDCA", "PDCA_IMPROVEMENT"}:
+            return self.processes.render_continuous_improvement_pdca(slide, spec, left, top, width, height)
+        elif vj in {"PROCESS_DEVSECOPS_INFINITY_LOOP", "DEVSECOPS_INFINITY_LOOP", "DEVSECOPS_LOOP"}:
+            return self.processes.render_devsecops_infinity_loop(slide, spec, left, top, width, height)
+        elif vj in {"PROCESS_CRITICAL_PATH_CPM", "CRITICAL_PATH_CPM", "PERT_CPM"}:
+            return self.processes.render_critical_path_cpm(slide, spec, left, top, width, height)
 
-        # ----------------- 4. ARCHITECTURES (15) -----------------
+        # ----------------- 4. ARCHITECTURES (25) -----------------
         elif vj in {"ARCH_SYSTEM_LAYERED_STACK", "SYSTEM_LAYERED_STACK", "LAYERED_ARCHITECTURE"}:
             return self.architectures.render_system_layered_stack(slide, spec, left, top, width, height)
         elif vj in {"ARCH_ORG_HIERARCHY_TREE", "ORG_HIERARCHY_TREE", "ORGANIZATION_CHART"}:
@@ -556,8 +758,28 @@ class MasterComponentDispatcher:
             return self.architectures.render_container_cluster_k8s(slide, spec, left, top, width, height)
         elif vj in {"ARCH_AI_AGENT_ORCHESTRATOR", "AI_AGENT_ORCHESTRATOR", "AGENT_ORCHESTRATION"}:
             return self.architectures.render_ai_agent_orchestrator(slide, spec, left, top, width, height)
+        elif vj in {"ARCH_EVENT_DRIVEN_KAFKA", "EVENT_DRIVEN_KAFKA", "KAFKA_STREAMING"}:
+            return self.architectures.render_event_driven_kafka(slide, spec, left, top, width, height)
+        elif vj in {"ARCH_SERVERLESS_EVENT_FLOW", "SERVERLESS_EVENT_FLOW", "SERVERLESS_ARCHITECTURE"}:
+            return self.architectures.render_serverless_event_flow(slide, spec, left, top, width, height)
+        elif vj in {"ARCH_ZERO_TRUST_SECURITY", "ZERO_TRUST_SECURITY", "ZERO_TRUST"}:
+            return self.architectures.render_zero_trust_security(slide, spec, left, top, width, height)
+        elif vj in {"ARCH_DATA_LAKEHOUSE_MEDALLION", "DATA_LAKEHOUSE_MEDALLION", "MEDALLION_LAKEHOUSE"}:
+            return self.architectures.render_data_lakehouse_medallion(slide, spec, left, top, width, height)
+        elif vj in {"ARCH_CI_CD_AUTOMATION", "CI_CD_AUTOMATION", "CI_CD_PIPELINE"}:
+            return self.architectures.render_ci_cd_automation(slide, spec, left, top, width, height)
+        elif vj in {"ARCH_HUB_SPOKE_ENTERPRISE_NETWORK", "HUB_SPOKE_ENTERPRISE_NETWORK", "ENTERPRISE_HUB_SPOKE"}:
+            return self.architectures.render_hub_spoke_enterprise_network(slide, spec, left, top, width, height)
+        elif vj in {"ARCH_MULTI_TENANT_SAAS", "MULTI_TENANT_SAAS", "SAAS_MULTI_TENANT"}:
+            return self.architectures.render_multi_tenant_saas(slide, spec, left, top, width, height)
+        elif vj in {"ARCH_RAG_LLM_PIPELINE", "RAG_LLM_PIPELINE", "RAG_PIPELINE"}:
+            return self.architectures.render_rag_llm_pipeline(slide, spec, left, top, width, height)
+        elif vj in {"ARCH_EDGE_TO_CLOUD_IOT", "EDGE_TO_CLOUD_IOT", "IOT_EDGE_TO_CLOUD"}:
+            return self.architectures.render_edge_to_cloud_iot(slide, spec, left, top, width, height)
+        elif vj in {"ARCH_MODULAR_MONOLITH", "MODULAR_MONOLITH"}:
+            return self.architectures.render_modular_monolith(slide, spec, left, top, width, height)
 
-        # ----------------- 5. NATIVE OFFICE CHARTS (15) -----------------
+        # ----------------- 5. NATIVE OFFICE CHARTS (20) -----------------
         elif vj in {"CHART_COLUMN_CLUSTERED", "COLUMN_CLUSTERED"}:
             return self.charts.render_column_clustered(slide, spec, left, top, width, height)
         elif vj in {"CHART_COLUMN_STACKED", "COLUMN_STACKED"}:
@@ -588,8 +810,18 @@ class MasterComponentDispatcher:
             return self.charts.render_scatter_correlation(slide, spec, left, top, width, height)
         elif vj in {"CHART_BUBBLE_MATRIX", "BUBBLE_MATRIX"}:
             return self.charts.render_bubble_matrix(slide, spec, left, top, width, height)
+        elif vj in {"CHART_BAR_STACKED_100", "BAR_STACKED_100"}:
+            return self.charts.render_bar_stacked_100(slide, spec, left, top, width, height)
+        elif vj in {"CHART_PARETO_ANALYSIS", "PARETO_ANALYSIS", "PARETO_CHART"}:
+            return self.charts.render_pareto_analysis(slide, spec, left, top, width, height)
+        elif vj in {"CHART_STEPPED_LINE", "STEPPED_LINE"}:
+            return self.charts.render_stepped_line(slide, spec, left, top, width, height)
+        elif vj in {"CHART_RADAR_FILLED", "RADAR_FILLED"}:
+            return self.charts.render_radar_filled(slide, spec, left, top, width, height)
+        elif vj in {"CHART_HISTOGRAM_DISTRIBUTION", "HISTOGRAM_DISTRIBUTION", "HISTOGRAM"}:
+            return self.charts.render_histogram_distribution(slide, spec, left, top, width, height)
 
-        # ----------------- 6. KEYNOTE CONTAINERS & ACCENTS (22) -----------------
+        # ----------------- 6. KEYNOTE CONTAINERS & ACCENTS (30) -----------------
         elif vj in {"CONTAINER_BENTO_COMPLEX", "BENTO_COMPLEX", "CONTAINER_BENTO_COMPLEX_4"}:
             return self.containers.render_bento_complex(slide, spec, left, top, width, height)
         elif vj in {"CONTAINER_BENTO_GRID_3X3", "BENTO_GRID_3X3"}:
@@ -632,6 +864,22 @@ class MasterComponentDispatcher:
             return self.containers.render_executive_dashboard(slide, spec, left, top, width, height)
         elif vj in {"CONTAINER_CLOSING_CTA_HERO", "CLOSING_CTA_HERO", "CLOSING_CTA"}:
             return self.containers.render_closing_cta_hero(slide, spec, left, top, width, height)
+        elif vj in {"CONTAINER_DEVICE_MOCKUP_FRAME", "DEVICE_MOCKUP_FRAME", "MOCKUP_FRAME"}:
+            return self.containers.render_device_mockup_frame(slide, spec, left, top, width, height)
+        elif vj in {"CONTAINER_METRIC_MARQUEE_BANNER", "METRIC_MARQUEE_BANNER", "MARQUEE_BANNER"}:
+            return self.containers.render_metric_marquee_banner(slide, spec, left, top, width, height)
+        elif vj in {"CONTAINER_THREE_PILLARS_CARDS", "THREE_PILLARS_CARDS"}:
+            return self.containers.render_three_pillars_cards(slide, spec, left, top, width, height)
+        elif vj in {"CONTAINER_PROBLEM_SOLUTION_IMPACT", "PROBLEM_SOLUTION_IMPACT", "PROBLEM_SOL_IMPACT"}:
+            return self.containers.render_problem_solution_impact(slide, spec, left, top, width, height)
+        elif vj in {"CONTAINER_FEATURE_HEX_CLUSTER", "FEATURE_HEX_CLUSTER", "HEX_CLUSTER"}:
+            return self.containers.render_feature_hex_cluster(slide, spec, left, top, width, height)
+        elif vj in {"CONTAINER_TESTIMONIAL_CAROUSEL_ROW", "TESTIMONIAL_CAROUSEL_ROW", "TESTIMONIALS_ROW"}:
+            return self.containers.render_testimonial_carousel_row(slide, spec, left, top, width, height)
+        elif vj in {"CONTAINER_STAT_HERO_SPLIT_60_40", "STAT_HERO_SPLIT_60_40", "STAT_SPLIT_60_40"}:
+            return self.containers.render_stat_hero_split_60_40(slide, spec, left, top, width, height)
+        elif vj in {"CONTAINER_MINIMALIST_APPLE_QUOTE", "MINIMALIST_APPLE_QUOTE", "APPLE_QUOTE"}:
+            return self.containers.render_minimalist_apple_quote(slide, spec, left, top, width, height)
 
         return None
 
@@ -650,6 +898,26 @@ def detect_optimal_archetype(slide_spec: Dict[str, Any]) -> str:
 
         if "raci" in h_str or "trách nhiệm" in h_str or "accountable" in h_str:
             return "TABLE_RACI_GOVERNANCE"
+        elif "sla" in h_str or "uptime" in h_str or "thời gian phản hồi" in h_str:
+            return "TABLE_SLA_TIERS"
+        elif "ngân sách" in h_str or "dự toán" in h_str or "capex" in h_str or "opex" in h_str:
+            return "TABLE_BUDGET_ALLOCATION"
+        elif "nhà thầu" in h_str or "nhà cung cấp" in h_str or "vendor" in h_str:
+            return "TABLE_VENDOR_EVALUATION"
+        elif "okr" in h_str or "mục tiêu then chốt" in h_str or "key result" in h_str:
+            return "TABLE_OKRS_TRACKER"
+        elif "kỹ năng" in h_str or "ma trận kỹ năng" in h_str or "skills" in h_str:
+            return "TABLE_EMPLOYEE_SKILLS_MATRIX"
+        elif "thông số" in h_str or "cấu hình" in h_str or "specs" in h_str:
+            return "TABLE_PRODUCT_SPECS"
+        elif "5x5" in h_str or "nhiệt 5x5" in h_str:
+            return "TABLE_RISK_HEATMAP_5X5"
+        elif "bàn giao" in h_str or "deliverable" in h_str:
+            return "TABLE_MILESTONE_DELIVERABLES"
+        elif "swot chi tiết" in h_str:
+            return "TABLE_SWOT_DETAILED"
+        elif "tính năng 4 gói" in h_str or "pricing feature" in h_str:
+            return "TABLE_PRICING_FEATURE_MATRIX"
         elif "rủi ro" in h_str or "xác suất" in h_str or "thiệt hại" in h_str:
             return "TABLE_RISK_REGISTER"
         elif "doanh thu" in h_str or "lợi nhuận" in h_str or "ebitda" in h_str or "chi phí" in h_str:
@@ -681,7 +949,17 @@ def detect_optimal_archetype(slide_spec: Dict[str, Any]) -> str:
     # 2. Check Chart data
     if slide_spec.get("chart_data") or slide_spec.get("chart_type"):
         ctype = str(slide_spec.get("chart_type", "")).upper()
-        if "PYRAMID" in ctype or "DIVERGING" in ctype:
+        if "PARETO" in ctype or "80/20" in ctype:
+            return "CHART_PARETO_ANALYSIS"
+        elif "STEPPED" in ctype or "BẬC THANG" in ctype:
+            return "CHART_STEPPED_LINE"
+        elif "RADAR_FILLED" in ctype or "FILLED_RADAR" in ctype:
+            return "CHART_RADAR_FILLED"
+        elif "HISTOGRAM" in ctype or "TẦN SUẤT" in ctype:
+            return "CHART_HISTOGRAM_DISTRIBUTION"
+        elif "BAR_STACKED_100" in ctype or ("100" in ctype and "BAR" in ctype):
+            return "CHART_BAR_STACKED_100"
+        elif "PYRAMID" in ctype or "DIVERGING" in ctype:
             return "CHART_BAR_DIVERGING_PYRAMID"
         elif "DONUT" in ctype or "DOUGHNUT" in ctype:
             return "CHART_DONUT_KPI_CENTER"
@@ -731,12 +1009,16 @@ def detect_optimal_archetype(slide_spec: Dict[str, Any]) -> str:
         return "FRAMEWORK_PESTEL_HEX"
     elif any(kw in full_text for kw in ["thẻ điểm cân bằng", "balanced scorecard", "bsc"]):
         return "FRAMEWORK_BALANCED_SCORECARD"
-    elif any(kw in full_text for kw in ["ngôi nhà", "trụ cột", "tầm nhìn", "house", "móng"]):
+    elif any(kw in full_text for kw in ["ngôi nhà", "strategy house", "móng nhà", "tầm nhìn chiến lược"]):
         return "FRAMEWORK_STRATEGY_HOUSE"
     elif any(kw in full_text for kw in ["tháp ngược", "inverted pyramid"]):
         return "FRAMEWORK_INVERTED_PYRAMID"
     elif any(kw in full_text for kw in ["tháp", "pyramid", "maslow", "tháp phân cấp", "tháp nhu cầu"]):
         return "FRAMEWORK_PYRAMID_ASCENDING"
+    elif any(kw in full_text for kw in ["aarrr", "pirate", "phễu aarrr"]):
+        return "FRAMEWORK_PIRATE_AARRR"
+    elif any(kw in full_text for kw in ["phễu lọc", "lọc đa tầng", "pipeline filtration"]):
+        return "PROCESS_PIPELINE_FILTRATION"
     elif any(kw in full_text for kw in ["phễu", "funnel", "chuyển đổi", "tỷ lệ rớt"]):
         return "FRAMEWORK_CONVERSION_FUNNEL"
     elif any(kw in full_text for kw in ["vòng quay", "flywheel", "bánh đà"]):
@@ -767,8 +1049,48 @@ def detect_optimal_archetype(slide_spec: Dict[str, Any]) -> str:
         return "FRAMEWORK_ICEBERG_MODEL"
     elif any(kw in full_text for kw in ["double diamond", "2 viên kim cương"]):
         return "FRAMEWORK_DOUBLE_DIAMOND"
+    elif any(kw in full_text for kw in ["steeple", "môi trường vĩ mô 7"]):
+        return "FRAMEWORK_STEEPLE"
+    elif any(kw in full_text for kw in ["kano", "phân loại tính năng"]):
+        return "FRAMEWORK_KANO_MODEL"
+    elif any(kw in full_text for kw in ["lean canvas", "kinh doanh tinh gọn"]):
+        return "FRAMEWORK_LEAN_CANVAS"
+    elif any(kw in full_text for kw in ["value proposition", "đề xuất giá trị"]):
+        return "FRAMEWORK_VALUE_PROPOSITION_CANVAS"
+    elif any(kw in full_text for kw in ["cynefin", "khung cynefin"]):
+        return "FRAMEWORK_CYNEFIN"
+    elif any(kw in full_text for kw in ["bow tie", "nơ bướm", "rào chắn rủi ro"]):
+        return "FRAMEWORK_BOW_TIE"
+    elif any(kw in full_text for kw in ["errc", "đại dương xanh", "blue ocean"]):
+        return "FRAMEWORK_BLUE_OCEAN_ERRC"
+    elif any(kw in full_text for kw in ["north star", "bắc đẩu", "nsm"]):
+        return "FRAMEWORK_NORTH_STAR_METRIC"
+    elif any(kw in full_text for kw in ["grow coaching", "mô hình grow"]):
+        return "FRAMEWORK_GROW_COACHING"
+    elif any(kw in full_text for kw in ["aarrr", "pirate metrics", "phễu aarrr"]):
+        return "FRAMEWORK_PIRATE_AARRR"
 
     # Process Keywords
+    elif any(kw in full_text for kw in ["chu trình 6 bước", "loop 6"]):
+        return "PROCESS_CIRCULAR_LOOP_6STEP"
+    elif any(kw in full_text for kw in ["xoắn ốc", "spiral"]):
+        return "PROCESS_SPIRAL_GROWTH"
+    elif any(kw in full_text for kw in ["đồng hồ cát", "hourglass"]):
+        return "PROCESS_HOURGLASS_WORKFLOW"
+    elif any(kw in full_text for kw in ["3 luồng song song", "parallel streams"]):
+        return "PROCESS_PARALLEL_STREAMS"
+    elif any(kw in full_text for kw in ["stage gate", "cổng quyết định"]):
+        return "PROCESS_STAGED_GATE_PHASES"
+    elif any(kw in full_text for kw in ["serpentine", "lộ trình chữ s", "s roadmap"]):
+        return "PROCESS_SERPENTINE_ROADMAP"
+    elif any(kw in full_text for kw in ["lọc đa tầng", "pipeline filtration"]):
+        return "PROCESS_PIPELINE_FILTRATION"
+    elif any(kw in full_text for kw in ["pdca liên tục", "cải tiến liên tục pdca"]):
+        return "PROCESS_CONTINUOUS_IMPROVEMENT_PDCA"
+    elif any(kw in full_text for kw in ["devsecops", "vô cực", "infinity loop"]):
+        return "PROCESS_DEVSECOPS_INFINITY_LOOP"
+    elif any(kw in full_text for kw in ["đường găng", "pert cpm", "critical path"]):
+        return "PROCESS_CRITICAL_PATH_CPM"
     elif any(kw in full_text for kw in ["đường cong", "s-curve", "curved pipeline", "ống dẫn cong"]):
         return "PROCESS_CURVED_PIPELINE"
     elif any(kw in full_text for kw in ["chu trình", "vòng tuần hoàn", "pdca"]):
@@ -799,7 +1121,7 @@ def detect_optimal_archetype(slide_spec: Dict[str, Any]) -> str:
         return "PROCESS_JIGSAW_PUZZLE"
     elif any(kw in full_text for kw in ["tổ ong", "lục giác", "honeycomb"]):
         return "PROCESS_HONEYCOMB_CHAIN"
-    elif any(kw in full_text for kw in ["etl", "pipeline dữ liệu", "pipeline", "thu nạp"]):
+    elif any(kw in full_text for kw in ["etl", "pipeline dữ liệu", "etl pipeline", "data pipeline", "thu nạp"]):
         return "PROCESS_ETL_DATA_PIPELINE"
     elif any(kw in full_text for kw in ["chiếc thang", "ladder", "nâng tầm"]):
         return "PROCESS_LEVEL_UP_LADDER"
@@ -811,6 +1133,26 @@ def detect_optimal_archetype(slide_spec: Dict[str, Any]) -> str:
         return "PROCESS_CHEVRON_LINEAR"
 
     # Architecture Keywords
+    elif any(kw in full_text for kw in ["kafka", "event driven", "hướng sự kiện"]):
+        return "ARCH_EVENT_DRIVEN_KAFKA"
+    elif any(kw in full_text for kw in ["serverless", "không máy chủ", "cloud function"]):
+        return "ARCH_SERVERLESS_EVENT_FLOW"
+    elif any(kw in full_text for kw in ["zero trust", "không tin cậy", "an ninh 5 lớp"]):
+        return "ARCH_ZERO_TRUST_SECURITY"
+    elif any(kw in full_text for kw in ["medallion", "lakehouse", "bronze silver gold"]):
+        return "ARCH_DATA_LAKEHOUSE_MEDALLION"
+    elif any(kw in full_text for kw in ["ci/cd", "tự động hóa build", "pipeline ci cd"]):
+        return "ARCH_CI_CD_AUTOMATION"
+    elif any(kw in full_text for kw in ["hub spoke enterprise", "transit gateway"]):
+        return "ARCH_HUB_SPOKE_ENTERPRISE_NETWORK"
+    elif any(kw in full_text for kw in ["multi tenant", "đa người thuê", "saas multi tenant"]):
+        return "ARCH_MULTI_TENANT_SAAS"
+    elif any(kw in full_text for kw in ["rag", "vector db", "retriever llm"]):
+        return "ARCH_RAG_LLM_PIPELINE"
+    elif any(kw in full_text for kw in ["edge to cloud", "iot cảm biến"]):
+        return "ARCH_EDGE_TO_CLOUD_IOT"
+    elif any(kw in full_text for kw in ["modular monolith", "monolith module hóa"]):
+        return "ARCH_MODULAR_MONOLITH"
     elif any(kw in full_text for kw in ["phân tầng", "layered", "tầng 1", "tier"]):
         return "ARCH_SYSTEM_LAYERED_STACK"
     elif any(kw in full_text for kw in ["cơ cấu tổ chức", "sơ đồ tổ chức", "org chart"]):
@@ -843,6 +1185,22 @@ def detect_optimal_archetype(slide_spec: Dict[str, Any]) -> str:
         return "ARCH_AI_AGENT_ORCHESTRATOR"
 
     # Keynote Containers Keywords
+    elif any(kw in full_text for kw in ["màn hình thiết bị", "mockup", "laptop frame"]):
+        return "CONTAINER_DEVICE_MOCKUP_FRAME"
+    elif any(kw in full_text for kw in ["marquee banner", "dải banner 4 chỉ số"]):
+        return "CONTAINER_METRIC_MARQUEE_BANNER"
+    elif any(kw in full_text for kw in ["3 trụ cột kính mờ", "three pillars glass", "three pillars", "ba trụ cột"]):
+        return "CONTAINER_THREE_PILLARS_CARDS"
+    elif any(kw in full_text for kw in ["nỗi đau giải pháp tác động", "problem solution impact", "vấn đề giải pháp tác động"]):
+        return "CONTAINER_PROBLEM_SOLUTION_IMPACT"
+    elif any(kw in full_text for kw in ["cụm lục giác", "feature hex cluster"]):
+        return "CONTAINER_FEATURE_HEX_CLUSTER"
+    elif any(kw in full_text for kw in ["nhận xét khách hàng", "testimonial carousel"]):
+        return "CONTAINER_TESTIMONIAL_CAROUSEL_ROW"
+    elif any(kw in full_text for kw in ["chia đôi 60 40", "stat split 60 40"]):
+        return "CONTAINER_STAT_HERO_SPLIT_60_40"
+    elif any(kw in full_text for kw in ["steve jobs", "trích dẫn tối giản", "apple quote"]):
+        return "CONTAINER_MINIMALIST_APPLE_QUOTE"
     elif any(kw in full_text for kw in ["trước và sau", "before after", "thực trạng và giải pháp"]):
         return "CONTAINER_BEFORE_AFTER_SPLIT"
     elif any(kw in full_text for kw in ["trích dẫn", "quote"]):

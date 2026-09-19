@@ -1473,3 +1473,390 @@ class AdvancedContainersEngine:
 
         return shapes
 
+    # 23. CONTAINER_DEVICE_MOCKUP_FRAME (Khung Viền Màn Hình Thiết Bị)
+    def render_device_mockup_frame(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        brand = self._get_token("colors", "brand", "#0284C7")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        # Outer Laptop/Monitor Bezel Frame
+        outer = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, top, width, height * 0.88)
+        outer.Fill.Solid()
+        outer.Fill.ForeColor.RGB = hex_to_bgr("#1E293B")
+        outer.Line.Visible = msoTrue
+        outer.Line.ForeColor.RGB = hex_to_bgr("#475569")
+        outer.Line.Weight = 2.0
+        shapes.append(outer)
+
+        # Inner Screen Glass Area
+        pad = 12.0
+        screen = slide.Shapes.AddShape(msoShapeRectangle, left + pad, top + pad + 14.0, width - 2 * pad, height * 0.88 - 2 * pad - 14.0)
+        screen.Fill.Solid()
+        screen.Fill.ForeColor.RGB = hex_to_bgr(surface)
+        screen.Line.Visible = msoFalse
+        shapes.append(screen)
+
+        tr = screen.TextFrame.TextRange
+        tr.Text = f"GIAO DIỆN MAKE SLIDE PRO V8.6\n\n{spec.get('mockup_text', '165+ Archetypes Chuẩn Quốc Tế & Hệ Thống Chuyển Động Apple Morph Motion')}"
+        tr.Font.Size = 12.0
+        tr.Font.Bold = msoTrue
+        tr.Font.Color.RGB = hex_to_bgr(brand)
+        tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        # Laptop Base / Stand Below
+        base_w = width * 0.40
+        base_h = height * 0.08
+        base_x = left + (width - base_w) / 2.0
+        base_y = top + height * 0.88 + 4.0
+        base = slide.Shapes.AddShape(msoShapeRoundedRectangle, base_x, base_y, base_w, base_h)
+        base.Fill.Solid()
+        base.Fill.ForeColor.RGB = hex_to_bgr("#334155")
+        base.Line.Visible = msoFalse
+        shapes.append(base)
+
+        return shapes
+
+    # 24. CONTAINER_METRIC_MARQUEE_BANNER (Dải Banner 4 Chỉ Số Nổi Bật)
+    def render_metric_marquee_banner(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        brand = self._get_token("colors", "brand", "#0284C7")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        # Background Banner Stripe
+        stripe = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, top, width, height)
+        stripe.Fill.Solid()
+        stripe.Fill.ForeColor.RGB = hex_to_bgr("#082F49")
+        stripe.Line.Visible = msoTrue
+        stripe.Line.ForeColor.RGB = hex_to_bgr(brand)
+        stripe.Line.Weight = 2.0
+        shapes.append(stripe)
+
+        stats = spec.get("marquee_stats", [
+            {"val": "165+", "label": "Archetypes Toàn Cầu"},
+            {"val": "100%", "label": "Native & Excel Embedded"},
+            {"val": "0.85s", "label": "Apple Morph Motion"},
+            {"val": "48/48", "label": "Tests Pass Tuyệt Đối"}
+        ])
+
+        col_w = width / len(stats)
+        for i, st in enumerate(stats):
+            cx = left + i * col_w
+            tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 10, top + 15, col_w - 20, height - 30)
+            tf = tb.TextFrame
+            tf.WordWrap = msoTrue
+            p1 = tf.TextRange.Paragraphs(1)
+            p1.Text = f"{st['val']}\n"
+            p1.Font.Size = 28.0
+            p1.Font.Bold = msoTrue
+            p1.Font.Color.RGB = hex_to_bgr("#38BDF8")
+            p1.ParagraphFormat.Alignment = ppAlignCenter
+
+            p2 = tf.TextRange.Paragraphs(2)
+            p2.Text = st['label']
+            p2.Font.Size = 10.5
+            p2.Font.Color.RGB = hex_to_bgr(ink)
+            p2.ParagraphFormat.Alignment = ppAlignCenter
+            shapes.append(tb)
+
+        return shapes
+
+    # 25. CONTAINER_THREE_PILLARS_CARDS (Bộ 3 Thẻ Kính Mờ Nâng Cao)
+    def render_three_pillars_cards(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        brand = self._get_token("colors", "brand", "#0284C7")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        pillars = [
+            ("TRỤ CỘT 1: THƯ VIỆN KHỔNG LỒ", "165+ Archetypes bao phủ 6 phân hệ chuyên sâu từ tư vấn đến kiến trúc hệ thống", "#0284C7"),
+            ("TRỤ CỘT 2: KHẢ NĂNG CHỈNH SỬA", "100% Native PowerPoint Tables và Office Charts nhúng Excel trực tiếp", "#10B981"),
+            ("TRỤ CỘT 3: CHUYỂN ĐỘNG APPLE", "Chuyển tiếp Morph ma thuật và xuất hiện so le thác nước Staggered", "#8B5CF6")
+        ]
+
+        card_w = (width - 32.0) / 3.0
+        for i, (p_title, p_desc, color) in enumerate(pillars):
+            cx = left + i * (card_w + 16.0)
+
+            c = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, top, card_w, height)
+            c.Fill.Solid()
+            c.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            c.Line.Visible = msoTrue
+            c.Line.ForeColor.RGB = hex_to_bgr(color)
+            c.Line.Weight = 2.0
+            shapes.append(c)
+
+            # Top accent bar
+            bar = slide.Shapes.AddShape(msoShapeRectangle, cx + 15, top + 15, card_w - 30, 4.0)
+            bar.Fill.Solid()
+            bar.Fill.ForeColor.RGB = hex_to_bgr(color)
+            bar.Line.Visible = msoFalse
+            shapes.append(bar)
+
+            tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 15, top + 35, card_w - 30, height - 50)
+            tf = tb.TextFrame
+            tf.WordWrap = msoTrue
+            p1 = tf.TextRange.Paragraphs(1)
+            p1.Text = f"{p_title}\n\n"
+            p1.Font.Size = 12.0
+            p1.Font.Bold = msoTrue
+            p1.Font.Color.RGB = hex_to_bgr(color)
+            p1.ParagraphFormat.Alignment = ppAlignCenter
+
+            p2 = tf.TextRange.Paragraphs(2)
+            p2.Text = p_desc
+            p2.Font.Size = 10.5
+            p2.Font.Color.RGB = hex_to_bgr(ink)
+            p2.ParagraphFormat.Alignment = ppAlignCenter
+            shapes.append(tb)
+
+        return shapes
+
+    # 26. CONTAINER_PROBLEM_SOLUTION_IMPACT (Bộ 3 Thẻ Dẫn Dắt Câu Chuyện)
+    def render_problem_solution_impact(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        cards = [
+            ("1. NỖI ĐAU (PROBLEM)", "Slide xuất ra bị cứng nhắc, bảng biểu là ảnh tĩnh không sửa được, thiếu hiệu ứng chuyển động đẳng cấp.", "#EF4444"),
+            ("2. GIẢI PHÁP (SOLUTION)", "Kho Mega 165+ Archetypes, 100% Native COM, tích hợp công nghệ Apple Morph Motion ma thuật.", "#0284C7"),
+            ("3. TÁC ĐỘNG (IMPACT)", "Tiết kiệm 90% thời gian biên soạn, thuyết phục tuyệt đối hội đồng thẩm định và các nhà đầu tư.", "#10B981")
+        ]
+
+        card_w = (width - 32.0) / 3.0
+        for i, (title, desc, color) in enumerate(cards):
+            cx = left + i * (card_w + 16.0)
+
+            c = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, top, card_w, height)
+            c.Fill.Solid()
+            c.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            c.Line.Visible = msoTrue
+            c.Line.ForeColor.RGB = hex_to_bgr(color)
+            c.Line.Weight = 2.0
+            shapes.append(c)
+
+            tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 15, top + 25, card_w - 30, height - 50)
+            tf = tb.TextFrame
+            tf.WordWrap = msoTrue
+            p1 = tf.TextRange.Paragraphs(1)
+            p1.Text = f"{title}\n\n"
+            p1.Font.Size = 12.0
+            p1.Font.Bold = msoTrue
+            p1.Font.Color.RGB = hex_to_bgr(color)
+            p1.ParagraphFormat.Alignment = ppAlignLeft
+
+            p2 = tf.TextRange.Paragraphs(2)
+            p2.Text = desc
+            p2.Font.Size = 11.0
+            p2.Font.Color.RGB = hex_to_bgr(ink)
+            p2.ParagraphFormat.Alignment = ppAlignLeft
+            shapes.append(tb)
+
+        return shapes
+
+    # 27. CONTAINER_FEATURE_HEX_CLUSTER (Cụm 7 Khối Lục Giác Liên Kết)
+    def render_feature_hex_cluster(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        brand = self._get_token("colors", "brand", "#0284C7")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        # Center Hexagon Core
+        hex_w = width * 0.22
+        hex_h = height * 0.38
+        cx = left + (width - hex_w) / 2.0
+        cy = top + (height - hex_h) / 2.0
+
+        core = slide.Shapes.AddShape(msoShapeHexagon, cx, cy, hex_w, hex_h)
+        core.Fill.Solid()
+        core.Fill.ForeColor.RGB = hex_to_bgr(brand)
+        core.Line.Visible = msoTrue
+        core.Line.ForeColor.RGB = hex_to_bgr("#38BDF8")
+        core.Line.Weight = 2.0
+        shapes.append(core)
+        tr = core.TextFrame.TextRange
+        tr.Text = "MAKE SLIDE PRO\nV8.6 CORE"
+        tr.Font.Size = 10.5
+        tr.Font.Bold = msoTrue
+        tr.Font.Color.RGB = hex_to_bgr("#FFFFFF")
+        tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        # 6 Outer Hexagons
+        import math
+        center_x = left + width / 2.0
+        center_y = top + height / 2.0
+        orbit_r = min(width, height) * 0.36
+        features = ["165+ Mẫu", "100% Native", "Excel Nhúng", "Apple Morph", "16 Tác Tử", "Zero P0"]
+
+        for i, feat in enumerate(features):
+            angle = i * (2 * math.pi / 6)
+            hx = center_x + orbit_r * math.cos(angle) - hex_w / 2.0
+            hy = center_y + orbit_r * math.sin(angle) - hex_h / 2.0
+
+            h = slide.Shapes.AddShape(msoShapeHexagon, hx, hy, hex_w, hex_h)
+            h.Fill.Solid()
+            h.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            h.Line.Visible = msoTrue
+            h.Line.ForeColor.RGB = hex_to_bgr(brand)
+            h.Line.Weight = 1.5
+            shapes.append(h)
+
+            htr = h.TextFrame.TextRange
+            htr.Text = feat
+            htr.Font.Size = 10.0
+            htr.Font.Bold = msoTrue
+            htr.Font.Color.RGB = hex_to_bgr(ink)
+            htr.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+
+    # 28. CONTAINER_TESTIMONIAL_CAROUSEL_ROW (Hàng 3 Thẻ Nhận Xét Khách Hàng)
+    def render_testimonial_carousel_row(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        brand = self._get_token("colors", "brand", "#0284C7")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        reviews = [
+            ("★★★★★", "\"Kho 165+ Archetypes và khả năng sửa Excel trực tiếp đã thay đổi hoàn toàn cách chúng tôi làm slide tư vấn cho khách hàng.\"", "Giám Đốc Chiến Lược, Big 4 Consulting"),
+            ("★★★★★", "\"Hiệu ứng chuyển cảnh Apple Morph mượt mà ngoài sức tưởng tượng. Thuyết trình trước hội đồng đầu tư thành công rực rỡ!\"", "CEO & Founder, YC Backed Startup"),
+            ("★★★★★", "\"Hệ thống kiểm toán 16 tác tử MACC bảo đảm tính chính xác dữ liệu 100%. Không bao giờ gặp lỗi vỡ hình hay lệch tỷ lệ.\"", "Trưởng Ban Chuyển Đổi Số, Tập Đoàn FinTech")
+        ]
+
+        card_w = (width - 32.0) / 3.0
+        for i, (stars, quote, author) in enumerate(reviews):
+            cx = left + i * (card_w + 16.0)
+
+            c = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, top, card_w, height)
+            c.Fill.Solid()
+            c.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            c.Line.Visible = msoTrue
+            c.Line.ForeColor.RGB = hex_to_bgr(brand)
+            c.Line.Weight = 1.5
+            shapes.append(c)
+
+            tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 15, top + 20, card_w - 30, height - 40)
+            tf = tb.TextFrame
+            tf.WordWrap = msoTrue
+            p1 = tf.TextRange.Paragraphs(1)
+            p1.Text = f"{stars}\n\n"
+            p1.Font.Size = 14.0
+            p1.Font.Color.RGB = hex_to_bgr("#F59E0B")
+            p1.ParagraphFormat.Alignment = ppAlignCenter
+
+            p2 = tf.TextRange.Paragraphs(2)
+            p2.Text = f"{quote}\n\n"
+            p2.Font.Size = 10.5
+            p2.Font.Color.RGB = hex_to_bgr(ink)
+            p2.ParagraphFormat.Alignment = ppAlignCenter
+
+            p3 = tf.TextRange.Paragraphs(3)
+            p3.Text = author
+            p3.Font.Size = 9.5
+            p3.Font.Bold = msoTrue
+            p3.Font.Color.RGB = hex_to_bgr("#38BDF8")
+            p3.ParagraphFormat.Alignment = ppAlignCenter
+            shapes.append(tb)
+
+        return shapes
+
+    # 29. CONTAINER_STAT_HERO_SPLIT_60_40 (Chia Đôi 60% Chỉ Số Lớn + 40% Giải Trình)
+    def render_stat_hero_split_60_40(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        brand = self._get_token("colors", "brand", "#0284C7")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        left_w = width * 0.58
+        right_w = width * 0.38
+        gap = width * 0.04
+
+        # Left 60%: Giant Number Hero Card
+        left_card = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, top, left_w, height)
+        left_card.Fill.Solid()
+        left_card.Fill.ForeColor.RGB = hex_to_bgr("#082F49")
+        left_card.Line.Visible = msoTrue
+        left_card.Line.ForeColor.RGB = hex_to_bgr(brand)
+        left_card.Line.Weight = 2.5
+        shapes.append(left_card)
+
+        tb_l = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, left + 20, top + 35, left_w - 40, height - 70)
+        tf_l = tb_l.TextFrame
+        tf_l.WordWrap = msoTrue
+        p1 = tf_l.TextRange.Paragraphs(1)
+        p1.Text = "165+\n"
+        p1.Font.Size = 56.0
+        p1.Font.Bold = msoTrue
+        p1.Font.Color.RGB = hex_to_bgr("#38BDF8")
+        p1.ParagraphFormat.Alignment = ppAlignCenter
+
+        p2 = tf_l.TextRange.Paragraphs(2)
+        p2.Text = "ARCHETYPES CHUẨN THẾ GIỚI\nĐẦY ĐỦ TRÊN 6 PHÂN HỆ"
+        p2.Font.Size = 13.0
+        p2.Font.Bold = msoTrue
+        p2.Font.Color.RGB = hex_to_bgr(ink)
+        p2.ParagraphFormat.Alignment = ppAlignCenter
+        shapes.append(tb_l)
+
+        # Right 40%: Detail Explanations
+        right_card = slide.Shapes.AddShape(msoShapeRoundedRectangle, left + left_w + gap, top, right_w, height)
+        right_card.Fill.Solid()
+        right_card.Fill.ForeColor.RGB = hex_to_bgr(surface)
+        right_card.Line.Visible = msoTrue
+        right_card.Line.ForeColor.RGB = hex_to_bgr(brand)
+        right_card.Line.Weight = 1.5
+        shapes.append(right_card)
+
+        tb_r = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, left + left_w + gap + 15, top + 25, right_w - 30, height - 50)
+        tf_r = tb_r.TextFrame
+        tf_r.WordWrap = msoTrue
+        rp = tf_r.TextRange
+        rp.Text = "Ý NGHĨA ĐỐI VỚI DOANH NGHIỆP:\n\n• Đa dạng hóa 100% hình thái biểu diễn\n• Phục vụ toàn diện mọi nhu cầu từ kinh doanh đến công nghệ\n• Tương thích hoàn hảo với hệ thống chuyển động Apple Morph\n• Tự động co giãn tham số linh hoạt từ 2 đến 8 hạng mục"
+        rp.Font.Size = 11.0
+        rp.Font.Color.RGB = hex_to_bgr(ink)
+        shapes.append(tb_r)
+
+        return shapes
+
+    # 30. CONTAINER_MINIMALIST_APPLE_QUOTE (Khối Trích Dẫn Phong Cách Tối Giản Apple)
+    def render_minimalist_apple_quote(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        brand = self._get_token("colors", "brand", "#0284C7")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        # Sleek Minimal Glass Card
+        card = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, top, width, height)
+        card.Fill.Solid()
+        card.Fill.ForeColor.RGB = hex_to_bgr(surface)
+        card.Line.Visible = msoTrue
+        card.Line.ForeColor.RGB = hex_to_bgr("#38BDF8")
+        card.Line.Weight = 1.5
+        shapes.append(card)
+
+        tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, left + 40, top + 40, width - 80, height - 80)
+        tf = tb.TextFrame
+        tf.WordWrap = msoTrue
+
+        p1 = tf.TextRange.Paragraphs(1)
+        p1.Text = spec.get("quote_text", "“Thiết kế không chỉ là vẻ bề ngoài hay cảm giác khi nhìn vào. Thiết kế là cách mà mọi thứ vận hành một cách hoàn hảo và liền mạch.”\n\n")
+        p1.Font.Name = self._get_token("fonts", "primary", "Georgia")
+        p1.Font.Size = 16.0
+        p1.Font.Italic = msoTrue
+        p1.Font.Color.RGB = hex_to_bgr(ink)
+        p1.ParagraphFormat.Alignment = ppAlignCenter
+
+        p2 = tf.TextRange.Paragraphs(2)
+        p2.Text = spec.get("quote_author", "— STEVE JOBS | TRIẾT LÝ THIẾT KẾ APPLE KEYNOTE")
+        p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+        p2.Font.Size = 11.0
+        p2.Font.Bold = msoTrue
+        p2.Font.Color.RGB = hex_to_bgr(brand)
+        p2.ParagraphFormat.Alignment = ppAlignCenter
+        shapes.append(tb)
+
+        return shapes
+
+

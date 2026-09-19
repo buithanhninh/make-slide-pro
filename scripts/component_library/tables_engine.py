@@ -705,3 +705,408 @@ class NativeTablesEngine:
                 self._apply_body_cell(tbl.Cell(r_idx, c_idx), val, row_bg, ink, bold, align)
 
         return table_shape
+
+    # 16. TABLE_PRICING_FEATURE_MATRIX (Ma Trận Tính Năng 4 Gói)
+    def render_pricing_feature_matrix(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> Any:
+        table_data = spec.get("table_data", {})
+        headers = table_data.get("headers", ["Tính Năng / Đặc Quyền", "Starter (Miễn Phí)", "Pro (Cá Nhân)", "Business (Nhóm)", "Enterprise (Tổ Chức)"])
+        rows = table_data.get("rows", [
+            ["Kho 165+ Archetypes Chuẩn Quốc Tế", "30 Archetypes", "110 Archetypes", "165 Archetypes", "Toàn Bộ + Tùy Biến Riêng"],
+            ["Xuất 100% Native Tables & Office Charts", "✕ (Ảnh tĩnh)", "✓ (Native Editable)", "✓ (Native Editable)", "✓ (Native + API Tự Động)"],
+            ["Hệ Thống Chuyển Động Apple Morph Motion", "✕ (Cơ bản)", "✓ (Standard Fade)", "✓ (Apple Morph)", "✓ (Choreographed Staggered)"],
+            ["Hội Đồng Kiểm Định 16 Tác Tử MACC", "✕", "✓ (3 Tác tử)", "✓ (8 Tác tử)", "✓ (16 Tác Tử Đầy Đủ)"],
+            ["Hỗ Trợ Kỹ Thuật & SLA Cam Kết", "Cộng đồng", "Email 48h", "Ưu tiên 12h", "SLA 99.99% Dedicated 24/7"]
+        ])
+
+        num_rows = len(rows) + 1
+        num_cols = len(headers)
+        table_shape = slide.Shapes.AddTable(num_rows, num_cols, left, top, width, height)
+        table_shape.Name = "!!Stage_Hero_Container!!"
+        tbl = table_shape.Table
+
+        tbl.Columns(1).Width = width * 0.32
+        for c in range(2, num_cols + 1):
+            tbl.Columns(c).Width = (width * 0.68) / (num_cols - 1)
+
+        brand = self._get_token("colors", "brand", "#0284C7")
+        accent = self._get_token("colors", "accent", "#38BDF8")
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        for c_idx, h in enumerate(headers, start=1):
+            bg = accent if c_idx == 4 else brand
+            self._apply_header_cell(tbl.Cell(1, c_idx), h, bg, "#FFFFFF", ppAlignLeft if c_idx == 1 else ppAlignCenter)
+
+        for r_idx, row_items in enumerate(rows, start=2):
+            row_bg = surface if (r_idx % 2 == 1) else ("#111C3A" if self.theme == "DARK" else "#F8FAFC")
+            for c_idx, val in enumerate(row_items, start=1):
+                fg = "#10B981" if "✓" in str(val) else ("#EF4444" if "✕" in str(val) else ink)
+                self._apply_body_cell(tbl.Cell(r_idx, c_idx), val, row_bg, fg, msoTrue if c_idx == 1 else msoFalse, ppAlignLeft if c_idx == 1 else ppAlignCenter)
+
+        return table_shape
+
+    # 17. TABLE_MILESTONE_DELIVERABLES (Bảng Phân Công Bàn Giao Mốc Dự Án)
+    def render_milestone_deliverables(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> Any:
+        table_data = spec.get("table_data", {})
+        headers = table_data.get("headers", ["Cột Mốc / Giai Đoạn", "Sản Phẩm Bàn Giao", "Bộ Phận Chủ Trì", "Hạn Chót", "Trạng Thái"])
+        rows = table_data.get("rows", [
+            ["Milestone 1: Khởi Động & Kiến Trúc", "Tài liệu kiến trúc hệ thống V8.6", "Lead Architect", "15/10/2026", "HOÀN TẤT 100%"],
+            ["Milestone 2: Mega Library 165+", "Toàn bộ 6 Module Engines", "Core Dev Team", "25/10/2026", "HOÀN TẤT 100%"],
+            ["Milestone 3: Apple Motion Engine", "Bộ điều phối Morph & Staggered Reveal", "Motion Engineer", "05/11/2026", "ĐANG THỬ NGHIỆM"],
+            ["Milestone 4: Kiểm Thử 16 Tác Tử MACC", "Báo cáo kiểm thử 48/48 tiêu chí", "QA Council", "15/11/2026", "CHUẨN BỊ"],
+            ["Milestone 5: Phát Hành Toàn Diện", "Bàn giao sản phẩm cho khách hàng", "Release Manager", "30/11/2026", "THEO KẾ HOẠCH"]
+        ])
+
+        num_rows = len(rows) + 1
+        num_cols = len(headers)
+        table_shape = slide.Shapes.AddTable(num_rows, num_cols, left, top, width, height)
+        table_shape.Name = "!!Stage_Hero_Container!!"
+        tbl = table_shape.Table
+
+        tbl.Columns(1).Width = width * 0.25
+        tbl.Columns(2).Width = width * 0.30
+        tbl.Columns(3).Width = width * 0.18
+        tbl.Columns(4).Width = width * 0.12
+        tbl.Columns(5).Width = width * 0.15
+
+        brand = self._get_token("colors", "brand", "#0284C7")
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        for c_idx, h in enumerate(headers, start=1):
+            self._apply_header_cell(tbl.Cell(1, c_idx), h, brand, "#FFFFFF", ppAlignCenter if c_idx in {3, 4, 5} else ppAlignLeft)
+
+        for r_idx, row_items in enumerate(rows, start=2):
+            row_bg = surface if (r_idx % 2 == 1) else ("#111C3A" if self.theme == "DARK" else "#F8FAFC")
+            for c_idx, val in enumerate(row_items, start=1):
+                status_color = "#10B981" if "HOÀN TẤT" in str(val) else ("#F59E0B" if "ĐANG" in str(val) else ink)
+                fg = status_color if c_idx == 5 else ink
+                self._apply_body_cell(tbl.Cell(r_idx, c_idx), val, row_bg, fg, msoTrue if c_idx in {1, 5} else msoFalse, ppAlignCenter if c_idx in {3, 4, 5} else ppAlignLeft)
+
+        return table_shape
+
+    # 18. TABLE_SWOT_DETAILED (Bảng Phân Tích SWOT Chi Tiết)
+    def render_swot_detailed_table(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> Any:
+        table_data = spec.get("table_data", {})
+        headers = table_data.get("headers", ["Góc Nhìn Chiến Lược", "Nội Dung Phân Tích Thực Tế", "Tác Động Đến Tổ Chức", "Hành Động Đề Xuất"])
+        rows = table_data.get("rows", [
+            ["Điểm Mạnh (Strengths)", "Kho 165+ Archetypes, 100% Native Tables/Charts nhúng Excel", "Lợi thế dẫn đầu công nghệ vượt trội", "Truyền thông quảng bá tính năng độc quyền"],
+            ["Điểm Yếu (Weaknesses)", "Cần tối ưu thời gian render cho các bài giảng trên 100 slides", "Ảnh hưởng trải nghiệm người dùng lớn", "Nâng cấp cơ chế batch render song song"],
+            ["Cơ Hội (Opportunities)", "Nhu cầu chuẩn hóa báo cáo chuyên nghiệp của các tập đoàn", "Thị trường B2B tiềm năng tăng trưởng 35%", "Thiết kế gói Enterprise dành riêng cho DN"],
+            ["Thách Thức (Threats)", "Sự xuất hiện của các công cụ sinh slide AI giá rẻ", "Cạnh tranh về giá trên thị trường", "Tập trung vào chất lượng Native & Motion Apple"]
+        ])
+
+        num_rows = len(rows) + 1
+        num_cols = len(headers)
+        table_shape = slide.Shapes.AddTable(num_rows, num_cols, left, top, width, height)
+        table_shape.Name = "!!Stage_Hero_Container!!"
+        tbl = table_shape.Table
+
+        tbl.Columns(1).Width = width * 0.22
+        tbl.Columns(2).Width = width * 0.38
+        tbl.Columns(3).Width = width * 0.20
+        tbl.Columns(4).Width = width * 0.20
+
+        brand = self._get_token("colors", "brand", "#0284C7")
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        for c_idx, h in enumerate(headers, start=1):
+            self._apply_header_cell(tbl.Cell(1, c_idx), h, brand, "#FFFFFF", ppAlignLeft)
+
+        swot_colors = ["#10B981", "#EF4444", "#3B82F6", "#F59E0B"]
+        for r_idx, row_items in enumerate(rows, start=2):
+            row_bg = surface if (r_idx % 2 == 1) else ("#111C3A" if self.theme == "DARK" else "#F8FAFC")
+            corner_color = swot_colors[(r_idx - 2) % len(swot_colors)]
+            for c_idx, val in enumerate(row_items, start=1):
+                fg = corner_color if c_idx == 1 else ink
+                self._apply_body_cell(tbl.Cell(r_idx, c_idx), val, row_bg, fg, msoTrue if c_idx == 1 else msoFalse, ppAlignLeft)
+
+        return table_shape
+
+    # 19. TABLE_RISK_HEATMAP_5X5 (Ma Trận Nhiệt Rủi Ro 5x5)
+    def render_risk_heatmap_5x5(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> Any:
+        table_data = spec.get("table_data", {})
+        headers = table_data.get("headers", ["Khả Năng / Tác Động", "1 - Rất Thấp", "2 - Thấp", "3 - Trung Bình", "4 - Cao", "5 - Nghiêm Trọng"])
+        rows = table_data.get("rows", [
+            ["5 - Chắc Chắn Xảy Ra", "Trung Bình (5)", "Cao (10)", "Nghiêm Trọng (15)", "Nguy Hiểm (20)", "Cực Kỳ Nguy Hiểm (25)"],
+            ["4 - Khả Năng Cao", "Thấp (4)", "Trung Bình (8)", "Cao (12)", "Nghiêm Trọng (16)", "Nguy Hiểm (20)"],
+            ["3 - Có Thể Xảy Ra", "Thấp (3)", "Thấp (6)", "Trung Bình (9)", "Cao (12)", "Nghiêm Trọng (15)"],
+            ["2 - Ít Khả Năng", "Rất Thấp (2)", "Thấp (4)", "Thấp (6)", "Trung Bình (8)", "Cao (10)"],
+            ["1 - Hiếm Khi", "Rất Thấp (1)", "Rất Thấp (2)", "Thấp (3)", "Thấp (4)", "Trung Bình (5)"]
+        ])
+
+        num_rows = len(rows) + 1
+        num_cols = len(headers)
+        table_shape = slide.Shapes.AddTable(num_rows, num_cols, left, top, width, height)
+        table_shape.Name = "!!Stage_Hero_Container!!"
+        tbl = table_shape.Table
+
+        tbl.Columns(1).Width = width * 0.25
+        for c in range(2, num_cols + 1):
+            tbl.Columns(c).Width = (width * 0.75) / (num_cols - 1)
+
+        brand = self._get_token("colors", "brand", "#0284C7")
+        for c_idx, h in enumerate(headers, start=1):
+            self._apply_header_cell(tbl.Cell(1, c_idx), h, brand, "#FFFFFF", ppAlignCenter if c_idx > 1 else ppAlignLeft)
+
+        # Risk level heatmap colors
+        def get_heat_color(val_str: str) -> str:
+            if "Nguy Hiểm" in val_str or "25" in val_str or "20" in val_str:
+                return "#7F1D1D"  # Deep Red
+            elif "Nghiêm Trọng" in val_str or "16" in val_str or "15" in val_str:
+                return "#991B1B"  # Dark Red
+            elif "Cao" in val_str or "12" in val_str or "10" in val_str:
+                return "#B45309"  # Amber Orange
+            elif "Trung Bình" in val_str or "8" in val_str or "9" in val_str:
+                return "#854D0E"  # Yellow Amber
+            else:
+                return "#064E3B"  # Deep Emerald Green
+
+        surface = self._get_token("colors", "surface", "#0B132B")
+        for r_idx, row_items in enumerate(rows, start=2):
+            for c_idx, val in enumerate(row_items, start=1):
+                bg = surface if c_idx == 1 else get_heat_color(str(val))
+                self._apply_body_cell(tbl.Cell(r_idx, c_idx), val, bg, "#FFFFFF", msoTrue if c_idx == 1 else msoFalse, ppAlignCenter if c_idx > 1 else ppAlignLeft, font_size=10.5)
+
+        return table_shape
+
+    # 20. TABLE_BUDGET_ALLOCATION (Bảng Phân Bổ Ngân Sách Capex/Opex)
+    def render_budget_allocation(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> Any:
+        table_data = spec.get("table_data", {})
+        headers = table_data.get("headers", ["Khoản Mục Đầu Tư", "Loại Chi Phí", "Dự Toán Kế Hoạch", "Thực Tế Đã Chi", "Chênh Lệch (% Var)"])
+        rows = table_data.get("rows", [
+            ["1. Hạ Tầng Máy Chủ & GPU Đám Mây", "CAPEX", "$250,000", "$238,500", "-4.6% (Tiết Kiệm)"],
+            ["2. Nghiên Cứu & Phát Triển Thuật Toán", "OPEX", "$400,000", "$415,000", "+3.8% (Vượt Nhẹ)"],
+            ["3. Bản Quyền & Thư Viện Đồ Họa Cao Cấp", "CAPEX", "$80,000", "$72,000", "-10.0% (Tối Ưu)"],
+            ["4. Đội Ngũ Kiểm Thử & Kiểm Toán QA", "OPEX", "$150,000", "$148,200", "-1.2% (Đạt Chuẩn)"],
+            ["TỔNG CỘNG NGÂN SÁCH ĐẦU TƯ", "TOÀN DỰ ÁN", "$880,000", "$873,700", "-0.7% (Trong Hạn Mức)"]
+        ])
+
+        num_rows = len(rows) + 1
+        num_cols = len(headers)
+        table_shape = slide.Shapes.AddTable(num_rows, num_cols, left, top, width, height)
+        table_shape.Name = "!!Stage_Hero_Container!!"
+        tbl = table_shape.Table
+
+        tbl.Columns(1).Width = width * 0.35
+        tbl.Columns(2).Width = width * 0.15
+        tbl.Columns(3).Width = width * 0.16
+        tbl.Columns(4).Width = width * 0.16
+        tbl.Columns(5).Width = width * 0.18
+
+        brand = self._get_token("colors", "brand", "#0284C7")
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        for c_idx, h in enumerate(headers, start=1):
+            self._apply_header_cell(tbl.Cell(1, c_idx), h, brand, "#FFFFFF", ppAlignRight if c_idx in {3, 4, 5} else (ppAlignCenter if c_idx == 2 else ppAlignLeft))
+
+        for r_idx, row_items in enumerate(rows, start=2):
+            is_total = (r_idx == num_rows)
+            row_bg = "#1E293B" if is_total else (surface if (r_idx % 2 == 1) else ("#111C3A" if self.theme == "DARK" else "#F8FAFC"))
+            for c_idx, val in enumerate(row_items, start=1):
+                fg = "#10B981" if "-" in str(val) and "%" in str(val) else ("#EF4444" if "+" in str(val) and "%" in str(val) else ink)
+                self._apply_body_cell(tbl.Cell(r_idx, c_idx), val, row_bg, fg, msoTrue if is_total or c_idx == 1 else msoFalse, ppAlignRight if c_idx in {3, 4, 5} else (ppAlignCenter if c_idx == 2 else ppAlignLeft), is_numeric=(c_idx in {3, 4}))
+
+        return table_shape
+
+    # 21. TABLE_VENDOR_EVALUATION (Bảng Chấm Điểm Nhà Cung Cấp Đa Tiêu Chí)
+    def render_vendor_evaluation(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> Any:
+        table_data = spec.get("table_data", {})
+        headers = table_data.get("headers", ["Tiêu Chí Thẩm Định", "Trọng Số (%)", "Nhà Thầu Alpha", "Nhà Thầu Beta (Make Slide)", "Nhà Thầu Gamma"])
+        rows = table_data.get("rows", [
+            ["Năng Lực Kỹ Thuật & Kiến Trúc", "30%", "78 / 100", "98 / 100", "82 / 100"],
+            ["Bảo Mật & Tuân Thủ (ISO/SOC2)", "25%", "85 / 100", "95 / 100", "88 / 100"],
+            ["Tốc Độ Triển Khai & Hiệu Năng", "20%", "70 / 100", "96 / 100", "75 / 100"],
+            ["Chi Phí Sở Hữu Toàn Vòng Đời", "15%", "88 / 100", "90 / 100", "80 / 100"],
+            ["Chất Lượng Hỗ Trợ Kỹ Thuật SLA", "10%", "75 / 100", "94 / 100", "82 / 100"],
+            ["ĐIỂM TỔNG HỢP CÓ TRỌNG SỐ", "100%", "79.1 / 100", "95.5 / 100 (TRÚNG THẦU)", "81.9 / 100"]
+        ])
+
+        num_rows = len(rows) + 1
+        num_cols = len(headers)
+        table_shape = slide.Shapes.AddTable(num_rows, num_cols, left, top, width, height)
+        table_shape.Name = "!!Stage_Hero_Container!!"
+        tbl = table_shape.Table
+
+        tbl.Columns(1).Width = width * 0.32
+        tbl.Columns(2).Width = width * 0.14
+        tbl.Columns(3).Width = width * 0.18
+        tbl.Columns(4).Width = width * 0.20
+        tbl.Columns(5).Width = width * 0.16
+
+        brand = self._get_token("colors", "brand", "#0284C7")
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        for c_idx, h in enumerate(headers, start=1):
+            bg = "#0369A1" if c_idx == 4 else brand
+            self._apply_header_cell(tbl.Cell(1, c_idx), h, bg, "#FFFFFF", ppAlignLeft if c_idx == 1 else ppAlignCenter)
+
+        for r_idx, row_items in enumerate(rows, start=2):
+            is_total = (r_idx == num_rows)
+            row_bg = "#1E293B" if is_total else (surface if (r_idx % 2 == 1) else ("#111C3A" if self.theme == "DARK" else "#F8FAFC"))
+            for c_idx, val in enumerate(row_items, start=1):
+                col_bg = "#0C4A6E" if (c_idx == 4 and not is_total) else ("#0284C7" if (c_idx == 4 and is_total) else row_bg)
+                fg = "#38BDF8" if (c_idx == 4 and not is_total) else ink
+                self._apply_body_cell(tbl.Cell(r_idx, c_idx), val, col_bg, fg, msoTrue if is_total or c_idx in {1, 4} else msoFalse, ppAlignLeft if c_idx == 1 else ppAlignCenter)
+
+        return table_shape
+
+    # 22. TABLE_OKRS_TRACKER (Bảng Theo Dõi Mục Tiêu & Kết Quả Then Chốt)
+    def render_okrs_tracker(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> Any:
+        table_data = spec.get("table_data", {})
+        headers = table_data.get("headers", ["Mục Tiêu Chiến Lược (Objective)", "Kết Quả Then Chốt (Key Results)", "Chỉ Tiêu", "Hiện Tại", "Độ Tự Tin"])
+        rows = table_data.get("rows", [
+            ["O1: Dẫn Đầu Thị Trường Về Độ Phủ Thị Giác", "KR 1.1: Xây dựng kho 165+ Archetypes chuẩn quốc tế", "165 Mẫu", "165 Mẫu (100%)", "RẤT CAO (0.95)"],
+            ["O1: Dẫn Đầu Thị Trường Về Độ Phủ Thị Giác", "KR 1.2: 100% Native Tables và Office Charts", "100%", "100% Đạt Chuẩn", "RẤT CAO (1.00)"],
+            ["O2: Trải Nghiệm Chuyển Động Chuẩn Apple", "KR 2.1: Bộ điều phối chuyển tiếp Apple Morph", "100% Slide", "Hoàn thành", "CAO (0.90)"],
+            ["O2: Trải Nghiệm Chuyển Động Chuẩn Apple", "KR 2.2: Staggered reveal với Ease-In-Out", "100% Card", "Hoàn thành", "CAO (0.90)"],
+            ["O3: Bảo Đảm An Toàn Tuyệt Đối", "KR 3.1: 16 Tác Tử MACC kiểm định không lỗi hồi quy", "100% Pass", "48/48 Tests Pass", "TUYỆT ĐỐI (1.00)"]
+        ])
+
+        num_rows = len(rows) + 1
+        num_cols = len(headers)
+        table_shape = slide.Shapes.AddTable(num_rows, num_cols, left, top, width, height)
+        table_shape.Name = "!!Stage_Hero_Container!!"
+        tbl = table_shape.Table
+
+        tbl.Columns(1).Width = width * 0.28
+        tbl.Columns(2).Width = width * 0.36
+        tbl.Columns(3).Width = width * 0.12
+        tbl.Columns(4).Width = width * 0.12
+        tbl.Columns(5).Width = width * 0.12
+
+        brand = self._get_token("colors", "brand", "#0284C7")
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        for c_idx, h in enumerate(headers, start=1):
+            self._apply_header_cell(tbl.Cell(1, c_idx), h, brand, "#FFFFFF", ppAlignCenter if c_idx in {3, 4, 5} else ppAlignLeft)
+
+        for r_idx, row_items in enumerate(rows, start=2):
+            row_bg = surface if (r_idx % 2 == 1) else ("#111C3A" if self.theme == "DARK" else "#F8FAFC")
+            for c_idx, val in enumerate(row_items, start=1):
+                fg = "#10B981" if c_idx == 5 else ink
+                self._apply_body_cell(tbl.Cell(r_idx, c_idx), val, row_bg, fg, msoTrue if c_idx in {1, 5} else msoFalse, ppAlignCenter if c_idx in {3, 4, 5} else ppAlignLeft)
+
+        return table_shape
+
+    # 23. TABLE_EMPLOYEE_SKILLS_MATRIX (Ma Trận Năng Lực Nhân Sự)
+    def render_skills_matrix(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> Any:
+        table_data = spec.get("table_data", {})
+        headers = table_data.get("headers", ["Thành Viên / Vai Trò", "Python / COM API", "Kiến Trúc Đồ Họa", "Motion & Transition", "Kiểm Định Tác Tử QA", "Đánh Giá Chung"])
+        rows = table_data.get("rows", [
+            ["Nguyễn Văn A (Lead Architect)", "Level 5 (Chuyên Gia)", "Level 5 (Chuyên Gia)", "Level 4 (Nâng Cao)", "Level 5 (Chuyên Gia)", "XUẤT SẮC"],
+            ["Trần Thị B (Graphic Designer)", "Level 3 (Thành Thạo)", "Level 5 (Chuyên Gia)", "Level 5 (Chuyên Gia)", "Level 4 (Nâng Cao)", "XUẤT SẮC"],
+            ["Lê Hoàng C (Motion Engineer)", "Level 4 (Nâng Cao)", "Level 4 (Nâng Cao)", "Level 5 (Chuyên Gia)", "Level 4 (Nâng Cao)", "XUẤT SẮC"],
+            ["Phạm Minh D (QA Automation)", "Level 4 (Nâng Cao)", "Level 3 (Thành Thạo)", "Level 4 (Nâng Cao)", "Level 5 (Chuyên Gia)", "XUẤT SẮC"]
+        ])
+
+        num_rows = len(rows) + 1
+        num_cols = len(headers)
+        table_shape = slide.Shapes.AddTable(num_rows, num_cols, left, top, width, height)
+        table_shape.Name = "!!Stage_Hero_Container!!"
+        tbl = table_shape.Table
+
+        tbl.Columns(1).Width = width * 0.26
+        for c in range(2, num_cols + 1):
+            tbl.Columns(c).Width = (width * 0.74) / (num_cols - 1)
+
+        brand = self._get_token("colors", "brand", "#0284C7")
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        for c_idx, h in enumerate(headers, start=1):
+            self._apply_header_cell(tbl.Cell(1, c_idx), h, brand, "#FFFFFF", ppAlignCenter if c_idx > 1 else ppAlignLeft)
+
+        for r_idx, row_items in enumerate(rows, start=2):
+            row_bg = surface if (r_idx % 2 == 1) else ("#111C3A" if self.theme == "DARK" else "#F8FAFC")
+            for c_idx, val in enumerate(row_items, start=1):
+                fg = "#38BDF8" if "Level 5" in str(val) else ("#10B981" if c_idx == 6 else ink)
+                self._apply_body_cell(tbl.Cell(r_idx, c_idx), val, row_bg, fg, msoTrue if c_idx in {1, 6} else msoFalse, ppAlignCenter if c_idx > 1 else ppAlignLeft)
+
+        return table_shape
+
+    # 24. TABLE_PRODUCT_SPECS (Bảng So Sánh Thông Số Kỹ Thuật Sản Phẩm)
+    def render_product_specs(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> Any:
+        table_data = spec.get("table_data", {})
+        headers = table_data.get("headers", ["Thông Số Kỹ Thuật", "Giải Pháp Tiêu Chuẩn", "Make Slide Pro V8.5", "Make Slide Pro V8.6 (Mới)"])
+        rows = table_data.get("rows", [
+            ["Tổng số lượng Archetypes", "30 Archetypes", "112 Archetypes", "165+ Archetypes Đầy Đủ"],
+            ["Khả năng sửa bảng biểu & biểu đồ", "Ảnh tĩnh hoặc bán phần", "100% Native Editable", "100% Native + Excel Embedded"],
+            ["Hệ thống chuyển động & hiệu ứng", "Chuyển tiếp cơ bản", "Morph đơn lẻ", "Apple Keynote Morph + Staggered"],
+            ["Kiểm toán chất lượng tự động", "Quy tắc tĩnh đơn giản", "Hội đồng 16 tác tử", "16 Tác Tử MACC + Motion Pacing"],
+            ["Khả năng co giãn tham số (Elasticity)", "Cố định 3-4 phần tử", "Co giãn 2-8 phần tử", "Co giãn tham số đa chiều toàn diện"]
+        ])
+
+        num_rows = len(rows) + 1
+        num_cols = len(headers)
+        table_shape = slide.Shapes.AddTable(num_rows, num_cols, left, top, width, height)
+        table_shape.Name = "!!Stage_Hero_Container!!"
+        tbl = table_shape.Table
+
+        tbl.Columns(1).Width = width * 0.31
+        tbl.Columns(2).Width = width * 0.23
+        tbl.Columns(3).Width = width * 0.23
+        tbl.Columns(4).Width = width * 0.23
+
+        brand = self._get_token("colors", "brand", "#0284C7")
+        accent = self._get_token("colors", "accent", "#38BDF8")
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        for c_idx, h in enumerate(headers, start=1):
+            bg = accent if c_idx == 4 else brand
+            self._apply_header_cell(tbl.Cell(1, c_idx), h, bg, "#FFFFFF", ppAlignCenter if c_idx > 1 else ppAlignLeft)
+
+        for r_idx, row_items in enumerate(rows, start=2):
+            row_bg = surface if (r_idx % 2 == 1) else ("#111C3A" if self.theme == "DARK" else "#F8FAFC")
+            for c_idx, val in enumerate(row_items, start=1):
+                col_bg = "#0C4A6E" if c_idx == 4 else row_bg
+                fg = "#38BDF8" if c_idx == 4 else ink
+                self._apply_body_cell(tbl.Cell(r_idx, c_idx), val, col_bg, fg, msoTrue if c_idx in {1, 4} else msoFalse, ppAlignCenter if c_idx > 1 else ppAlignLeft)
+
+        return table_shape
+
+    # 25. TABLE_SLA_TIERS (Bảng Cam Kết Chất Lượng Dịch Vụ SLA)
+    def render_sla_tiers(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> Any:
+        table_data = spec.get("table_data", {})
+        headers = table_data.get("headers", ["Hạng Mục Cam Kết", "Bronze SLA", "Silver SLA", "Gold SLA (Doanh Nghiệp)"])
+        rows = table_data.get("rows", [
+            ["Thời Gian Uptime Khả Dụng Hệ Thống", "99.0% Uptime / Tháng", "99.9% Uptime / Tháng", "99.99% Uptime (Zero-Downtime)"],
+            ["Thời Gian Phản Hồi Sự Cố P0 (Khẩn Cấp)", "< 4 Giờ Làm Việc", "< 1 Giờ Làm Việc", "< 15 Phút Phản Hồi 24/7"],
+            ["Tần Suất Sao Lưu & Phục Hồi Dữ Liệu", "Hàng Tuần (Weekly)", "Hàng Ngày (Daily)", "Thời Gian Thực (Continuous RPO=0)"],
+            ["Kênh Tiếp Nhận Hỗ Trợ Kỹ Thuật", "Web Ticket", "Email + Chat Trực Tuyến", "Kênh Thoại Riêng + Dedicated Engineer"],
+            ["Bồi Thường Vi Phạm Cam Kết Dịch Vụ", "10% Giá Trị Hợp Đồng", "25% Giá Trị Hợp Đồng", "50% - 100% Giá Trị Gói Dịch Vụ"]
+        ])
+
+        num_rows = len(rows) + 1
+        num_cols = len(headers)
+        table_shape = slide.Shapes.AddTable(num_rows, num_cols, left, top, width, height)
+        table_shape.Name = "!!Stage_Hero_Container!!"
+        tbl = table_shape.Table
+
+        tbl.Columns(1).Width = width * 0.34
+        tbl.Columns(2).Width = width * 0.22
+        tbl.Columns(3).Width = width * 0.22
+        tbl.Columns(4).Width = width * 0.22
+
+        brand = self._get_token("colors", "brand", "#0284C7")
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        for c_idx, h in enumerate(headers, start=1):
+            bg = "#D97706" if c_idx == 2 else ("#64748B" if c_idx == 3 else "#0284C7")
+            self._apply_header_cell(tbl.Cell(1, c_idx), h, bg, "#FFFFFF", ppAlignCenter if c_idx > 1 else ppAlignLeft)
+
+        for r_idx, row_items in enumerate(rows, start=2):
+            row_bg = surface if (r_idx % 2 == 1) else ("#111C3A" if self.theme == "DARK" else "#F8FAFC")
+            for c_idx, val in enumerate(row_items, start=1):
+                col_bg = "#0C4A6E" if c_idx == 4 else row_bg
+                fg = "#38BDF8" if c_idx == 4 else ink
+                self._apply_body_cell(tbl.Cell(r_idx, c_idx), val, col_bg, fg, msoTrue if c_idx in {1, 4} else msoFalse, ppAlignCenter if c_idx > 1 else ppAlignLeft)
+
+        return table_shape
+

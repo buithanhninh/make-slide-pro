@@ -33,10 +33,17 @@ except ImportError:
     win32com = None
 
 try:
-    from component_library import MasterComponentDispatcher, detect_optimal_archetype
+    from component_library import (
+        MasterComponentDispatcher,
+        detect_optimal_archetype,
+        AppleSlideTransitionOrchestrator,
+        AppleChoreographedEntranceAnimator,
+    )
 except ImportError:
     MasterComponentDispatcher = None
     detect_optimal_archetype = None
+    AppleSlideTransitionOrchestrator = None
+    AppleChoreographedEntranceAnimator = None
 
 # PowerPoint Constants
 ppLayoutBlank = 12
@@ -237,17 +244,23 @@ class NativeDeckAuthor:
             slide.Background.Fill.Solid()
             slide.Background.Fill.ForeColor.RGB = hex_to_bgr(TOKENS["colors"]["base"])
 
-            # Setup Slide Transition (Kinetic Continuity & Morph)
-            trans = slide.SlideShowTransition
+            # Setup Slide Transition (Kinetic Continuity & Morph with Apple Motion Engine)
             role = spec.get("role", "CONTENT").upper()
-            if s_idx == 1 or role == "COVER":
-                trans.EntryEffect = ppTransitionFadeSmoothly
-                trans.Duration = 0.6
+            prev_spec = slides_spec[s_idx - 2] if s_idx > 1 else None
+            if AppleSlideTransitionOrchestrator is not None:
+                AppleSlideTransitionOrchestrator.apply_transition(
+                    slide, s_idx, total_slides, spec, prev_spec
+                )
             else:
-                trans.EntryEffect = ppEffectMorphByObject
-                trans.Duration = 0.85
-            trans.AdvanceOnClick = msoTrue
-            trans.AdvanceOnTime = msoFalse
+                trans = slide.SlideShowTransition
+                if s_idx == 1 or role == "COVER":
+                    trans.EntryEffect = ppTransitionFadeSmoothly
+                    trans.Duration = 0.65
+                else:
+                    trans.EntryEffect = ppEffectMorphByObject
+                    trans.Duration = 0.85
+                trans.AdvanceOnClick = msoTrue
+                trans.AdvanceOnTime = msoFalse
 
             if role == "COVER":
                 self._render_cover_slide(slide, spec, lesson_idx, s_idx == total_slides)
@@ -543,16 +556,27 @@ class NativeDeckAuthor:
 
         if rendered_shapes is not None and len(rendered_shapes) > 0:
             # Successfully rendered by Master Component Library
+            active_shapes = rendered_shapes
             if not any(getattr(s, "Name", "") == "!!Stage_Hero_Container!!" for s in rendered_shapes):
                 names = [s.Name for s in rendered_shapes if s is not None]
                 if len(names) > 1:
                     try:
                         grp = slide.Shapes.Range(names).Group()
                         grp.Name = "!!Stage_Hero_Container!!"
+                        active_shapes = [grp]
                     except Exception:
                         pass
                 elif len(names) == 1:
                     rendered_shapes[0].Name = "!!Stage_Hero_Container!!"
+                    active_shapes = rendered_shapes
+
+            # Apple Keynote-Grade Choreographed Micro-Animations
+            if AppleChoreographedEntranceAnimator is not None:
+                AppleChoreographedEntranceAnimator.animate_slide_components(
+                    slide,
+                    rendered_shapes=active_shapes,
+                    header_shapes=[title_box, kicker_box]
+                )
         elif has_table_data or visual_job in {"DATA_TABLE", "TABLE_MATRIX", "TABLE"}:
             self._render_data_table_layout(slide, spec, atoms, content_top, content_height)
         elif chart_type or visual_job == "CHART_AND_INSIGHTS":

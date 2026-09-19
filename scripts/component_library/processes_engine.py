@@ -1500,3 +1500,447 @@ class ProcessesEngine:
             shapes.append(tb)
 
         return shapes
+
+    # 21. PROCESS_CIRCULAR_LOOP_6STEP (Chu Trình Tuần Hoàn 6 Bước)
+    def render_circular_loop_6step(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        brand = self._get_token("colors", "brand", "#0284C7")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        # Center Core
+        core_r = min(width, height) * 0.28
+        cx = left + (width - core_r) / 2.0
+        cy = top + (height - core_r) / 2.0
+        core = slide.Shapes.AddShape(msoShapeOval, cx, cy, core_r, core_r)
+        core.Fill.Solid()
+        core.Fill.ForeColor.RGB = hex_to_bgr(brand)
+        core.Line.Visible = msoFalse
+        shapes.append(core)
+        tr = core.TextFrame.TextRange
+        tr.Text = "CHU TRÌNH\n6 BƯỚC\nLIÊN TỤC"
+        tr.Font.Size = 11.0
+        tr.Font.Bold = msoTrue
+        tr.Font.Color.RGB = hex_to_bgr("#FFFFFF")
+        tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        # 6 Satellite Step Nodes in Ring
+        steps = [
+            ("1. Khảo Sát", "#38BDF8"), ("2. Thiết Kế", "#10B981"),
+            ("3. Xây Dựng", "#059669"), ("4. Kiểm Thử", "#F59E0B"),
+            ("5. Triển Khai", "#8B5CF6"), ("6. Tối Ưu", "#EC4899")
+        ]
+        import math
+        center_x = left + width / 2.0
+        center_y = top + height / 2.0
+        orbit_r = min(width, height) * 0.38
+        node_w = width * 0.18
+        node_h = height * 0.18
+
+        for i, (title, color) in enumerate(steps):
+            angle = i * (2 * math.pi / 6) - (math.pi / 2)
+            nx = center_x + orbit_r * math.cos(angle) - node_w / 2.0
+            ny = center_y + orbit_r * math.sin(angle) - node_h / 2.0
+
+            node = slide.Shapes.AddShape(msoShapeRoundedRectangle, nx, ny, node_w, node_h)
+            node.Fill.Solid()
+            node.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            node.Line.Visible = msoTrue
+            node.Line.ForeColor.RGB = hex_to_bgr(color)
+            node.Line.Weight = 1.5
+            shapes.append(node)
+
+            ntr = node.TextFrame.TextRange
+            ntr.Text = title
+            ntr.Font.Size = 10.5
+            ntr.Font.Bold = msoTrue
+            ntr.Font.Color.RGB = hex_to_bgr(ink)
+            ntr.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+
+    # 22. PROCESS_SPIRAL_GROWTH (Vòng Xoắn Ốc Tăng Trưởng)
+    def render_spiral_growth(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        levels = [
+            ("CẤP 1: THỬ NGHIỆM Ý TƯỞNG (PoC)", "Thử nghiệm 30 mẫu sơ khai và kiểm tra phản hồi người dùng", 0.40, "#64748B"),
+            ("CẤP 2: MỞ RỘNG TÍNH NĂNG (MVP)", "Mở rộng 112 archetypes, tích hợp 100% Native Tables/Charts", 0.60, "#0284C7"),
+            ("CẤP 3: HOÀN THIỆN ĐỈNH CAO (SCALE)", "165+ Archetypes chuẩn thế giới kèm Apple Morph Motion mượt mà", 0.82, "#38BDF8"),
+            ("CẤP 4: DẪN ĐẦU HỆ SINH THÁI (MASTERY)", "Hội đồng 16 tác tử MACC tự động tối ưu hóa mọi ấn phẩm", 1.00, "#10B981")
+        ]
+
+        row_h = (height - 18.0) / len(levels)
+        for i, (title, desc, scale, color) in enumerate(levels):
+            ry = top + i * (row_h + 6.0)
+            rw = width * scale
+            rx = left
+
+            sh = slide.Shapes.AddShape(msoShapeRoundedRectangle, rx, ry, rw, row_h)
+            sh.Fill.Solid()
+            sh.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            sh.Line.Visible = msoTrue
+            sh.Line.ForeColor.RGB = hex_to_bgr(color)
+            sh.Line.Weight = 2.0
+            shapes.append(sh)
+
+            tr = sh.TextFrame.TextRange
+            tr.Text = f"{title}\n{desc}"
+            tr.Font.Size = 10.5
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignLeft
+
+        return shapes
+
+    # 23. PROCESS_HOURGLASS_WORKFLOW (Quy Trình Đồng Hồ Cát)
+    def render_hourglass_workflow(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        stages = [
+            ("1. THU NẬP Ý TƯỞNG DIỆN RỘNG (WIDE INPUT)", "Phân tích 1,000+ template slide thế giới, thu thập hàng triệu biến thể bố cục", 1.00, "#0284C7"),
+            ("2. CHỌN LỌC TIÊU CHUẨN (SCREENING)", "Lọc ra 165+ cấu trúc tinh hoa nhất có tính ứng dụng cao", 0.75, "#38BDF8"),
+            ("3. THẮT NÚT CHUYỂN HÓA (CORE SYNTHESIS)", "Chuẩn hóa thuật toán vẽ Native COM & Apple Motion Engine", 0.50, "#10B981"),
+            ("4. ĐÓNG GÓI MODULE HÓA (PACKAGING)", "Tổ chức 6 Module Engines độc lập và cơ chế tự nhận dạng", 0.75, "#F59E0B"),
+            ("5. PHÁT HÀNH ĐA KÊNH TOÀN CẦU (EXPANSION)", "Xuất bản Web Studio SaaS, Desktop API, Presentation PPTX", 1.00, "#8B5CF6")
+        ]
+
+        row_h = (height - 20.0) / len(stages)
+        for i, (title, desc, scale, color) in enumerate(stages):
+            ry = top + i * (row_h + 5.0)
+            rw = width * scale
+            rx = left + (width - rw) / 2.0
+
+            sh = slide.Shapes.AddShape(msoShapeRoundedRectangle, rx, ry, rw, row_h)
+            sh.Fill.Solid()
+            sh.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            sh.Line.Visible = msoTrue
+            sh.Line.ForeColor.RGB = hex_to_bgr(color)
+            sh.Line.Weight = 1.5
+            shapes.append(sh)
+
+            tr = sh.TextFrame.TextRange
+            tr.Text = f"{title}: {desc}"
+            tr.Font.Size = 10.5
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+
+    # 24. PROCESS_PARALLEL_STREAMS (3 Luồng Công Việc Chạy Song Song)
+    def render_parallel_streams(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        streams = [
+            ("LUỒNG 1: DỮ LIỆU & NATIVE COM", "Quản lý Shapes.AddTable và AddChart nhúng Excel không dùng ảnh tĩnh", "#0284C7"),
+            ("LUỒNG 2: THỊ GIÁC & 165+ ARCHETYPES", "Xây dựng 6 Engine đồ họa vector thuần túy tự động co giãn tham số", "#10B981"),
+            ("LUỒNG 3: CHUYỂN ĐỘNG APPLE MOTION", "Bộ điều phối Morph ma thuật và hiệu ứng so le thác nước Staggered", "#8B5CF6")
+        ]
+
+        row_h = (height - 24.0) / 3.0
+        for i, (title, desc, color) in enumerate(streams):
+            ry = top + i * (row_h + 12.0)
+            sh = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, ry, width, row_h)
+            sh.Fill.Solid()
+            sh.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            sh.Line.Visible = msoTrue
+            sh.Line.ForeColor.RGB = hex_to_bgr(color)
+            sh.Line.Weight = 2.0
+            shapes.append(sh)
+
+            tr = sh.TextFrame.TextRange
+            tr.Text = f"{title}\n{desc}"
+            tr.Font.Size = 11.5
+            tr.Font.Bold = msoTrue
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignLeft
+
+        return shapes
+
+    # 25. PROCESS_STAGED_GATE_PHASES (Quy Trình 5 Giai Đoạn Kèm Cổng Quyết Định)
+    def render_staged_gate_phases(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        brand = self._get_token("colors", "brand", "#0284C7")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        phases = [
+            ("Giai Đoạn 1", "Khảo Sát Nhu Cầu", "Gate 1: Duyệt Phạm Vi"),
+            ("Giai Đoạn 2", "Thiết Kế Kiến Trúc", "Gate 2: Duyệt Cấu Trúc"),
+            ("Giai Đoạn 3", "Lập Trình COM", "Gate 3: Vượt 48/48 Test"),
+            ("Giai Đoạn 4", "Kiểm Định MACC", "Gate 4: Đạt Điểm 100"),
+            ("Giai Đoạn 5", "Bàn Giao & Vận Hành", "Gate 5: Nghiệm Thu")
+        ]
+
+        card_w = (width - 32.0) / 5.0
+        card_h = height * 0.70
+        gate_h = height * 0.22
+
+        for i, (g_title, g_desc, gate) in enumerate(phases):
+            cx = left + i * (card_w + 8.0)
+
+            # Phase Card
+            c = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, top, card_w, card_h)
+            c.Fill.Solid()
+            c.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            c.Line.Visible = msoTrue
+            c.Line.ForeColor.RGB = hex_to_bgr(brand)
+            c.Line.Weight = 1.5
+            shapes.append(c)
+
+            tr = c.TextFrame.TextRange
+            tr.Text = f"{g_title}\n\n{g_desc}"
+            tr.Font.Size = 10.5
+            tr.Font.Bold = msoTrue
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignCenter
+
+            # Gate Diamond / Pill Below
+            g = slide.Shapes.AddShape(msoShapeDiamond, cx + card_w * 0.15, top + card_h + 8.0, card_w * 0.70, gate_h)
+            g.Fill.Solid()
+            g.Fill.ForeColor.RGB = hex_to_bgr("#065F46" if i < 4 else "#1E293B")
+            g.Line.Visible = msoTrue
+            g.Line.ForeColor.RGB = hex_to_bgr("#10B981" if i < 4 else "#64748B")
+            g.Line.Weight = 1.2
+            shapes.append(g)
+
+            gtr = g.TextFrame.TextRange
+            gtr.Text = gate
+            gtr.Font.Size = 8.5
+            gtr.Font.Color.RGB = hex_to_bgr("#FFFFFF")
+            gtr.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+
+    # 26. PROCESS_SERPENTINE_ROADMAP (Lộ Trình Uốn Lượn Chữ S)
+    def render_serpentine_roadmap(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        # 6 Points in S-Curve pattern (Row 1 left-to-right, Row 2 right-to-left)
+        points = [
+            ("Q1/2026: Kiến Trúc Nền Tảng", "#0284C7"),
+            ("Q2/2026: Kho 112 Archetypes", "#38BDF8"),
+            ("Q3/2026: 100% Native COM", "#10B981"),
+            ("Q4/2026: Kho Mega 165+ Mẫu", "#059669"),
+            ("Q1/2027: Apple Morph Motion", "#F59E0B"),
+            ("Q2/2027: Hệ Sinh Thái Đa Tác Tử", "#8B5CF6")
+        ]
+
+        card_w = (width - 32.0) / 3.0
+        card_h = (height - 24.0) / 2.0
+
+        # Row 1 (Items 0, 1, 2)
+        for i in range(3):
+            cx = left + i * (card_w + 16.0)
+            title, color = points[i]
+            c = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, top, card_w, card_h)
+            c.Fill.Solid()
+            c.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            c.Line.Visible = msoTrue
+            c.Line.ForeColor.RGB = hex_to_bgr(color)
+            c.Line.Weight = 2.0
+            shapes.append(c)
+            tr = c.TextFrame.TextRange
+            tr.Text = f"MỐC {i+1} →\n\n{title}"
+            tr.Font.Size = 11.0
+            tr.Font.Bold = msoTrue
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        # Row 2 (Items 5, 4, 3 reversed)
+        for i in range(3):
+            cx = left + (2 - i) * (card_w + 16.0)
+            title, color = points[3 + i]
+            c = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, top + card_h + 24.0, card_w, card_h)
+            c.Fill.Solid()
+            c.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            c.Line.Visible = msoTrue
+            c.Line.ForeColor.RGB = hex_to_bgr(color)
+            c.Line.Weight = 2.0
+            shapes.append(c)
+            tr = c.TextFrame.TextRange
+            tr.Text = f"← MỐC {4+i}\n\n{title}"
+            tr.Font.Size = 11.0
+            tr.Font.Bold = msoTrue
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+
+    # 27. PROCESS_PIPELINE_FILTRATION (Đường Ống Lọc Đa Tầng)
+    def render_pipeline_filtration(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        filters = [
+            ("TẦNG 1: TỔNG QUAN DỮ LIỆU ĐẦU VÀO", "1,000 Tài liệu / Blueprints thô cần chuyển hóa", 1.00, "#0284C7"),
+            ("TẦNG 2: BỘ LỌC CÚ PHÁP & NGUYÊN TỬ", "850 Đơn vị thông tin đạt chuẩn Pedagogical Chunking", 0.80, "#38BDF8"),
+            ("TẦNG 3: BỘ LỌC ĐỊNH DẠNG NATIVE COM", "500 Slide thỏa mãn không dùng ảnh tĩnh", 0.60, "#10B981"),
+            ("TẦNG 4: BỘ LỌC KIỂM TOÁN TÁC TỬ MACC", "100 Slide đạt chuẩn không lỗi hồi quy P0/P1", 0.40, "#F59E0B")
+        ]
+
+        row_h = (height - 18.0) / len(filters)
+        for i, (title, desc, scale, color) in enumerate(filters):
+            ry = top + i * (row_h + 6.0)
+            rw = width * scale
+            rx = left + (width - rw) / 2.0
+
+            sh = slide.Shapes.AddShape(msoShapeRoundedRectangle, rx, ry, rw, row_h)
+            sh.Fill.Solid()
+            sh.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            sh.Line.Visible = msoTrue
+            sh.Line.ForeColor.RGB = hex_to_bgr(color)
+            sh.Line.Weight = 2.0
+            shapes.append(sh)
+
+            tr = sh.TextFrame.TextRange
+            tr.Text = f"{title}: {desc}"
+            tr.Font.Size = 10.5
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+
+    # 28. PROCESS_CONTINUOUS_IMPROVEMENT_PDCA (Chu Trình Cải Tiến Liên Tục PDCA)
+    def render_continuous_improvement_pdca(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        qw = (width - 16.0) / 2.0
+        qh = (height - 16.0) / 2.0
+
+        quads = [
+            (left, top, qw, qh, "P - KẾ HOẠCH (PLAN)\n\n• Nghiên cứu 1,000 template hàng đầu\n• Thiết kế 165+ Archetypes chuẩn quốc tế\n• Lập bản đồ điều phối chuyển động Apple Morph", "#0284C7"),
+            (left + qw + 16.0, top, qw, qh, "D - THỰC HIỆN (DO)\n\n• Lập trình 6 Module Component Engines\n• Xây dựng module motion_engine.py\n• Tích hợp vào pipeline author_native_com.py", "#10B981"),
+            (left, top + qh + 16.0, qw, qh, "C - KIỂM TRA (CHECK)\n\n• Chạy bộ test tự động 48/48 tiêu chí\n• Hội đồng 16 tác tử MACC duyệt không lỗi\n• Xuất slide mẫu kiểm tra thị giác 1080p", "#F59E0B"),
+            (left + qw + 16.0, top + qh + 16.0, qw, qh, "A - HÀNH ĐỘNG (ACT)\n\n• Chuẩn hóa tài liệu kiến trúc V8.6\n• Commit toàn bộ mã nguồn vào nhánh main\n• Phát hành phiên bản chính thức cho người dùng", "#8B5CF6")
+        ]
+
+        for qx, qy, qwidth, qheight, text, color in quads:
+            q = slide.Shapes.AddShape(msoShapeRoundedRectangle, qx, qy, qwidth, qheight)
+            q.Fill.Solid()
+            q.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            q.Line.Visible = msoTrue
+            q.Line.ForeColor.RGB = hex_to_bgr(color)
+            q.Line.Weight = 2.0
+            shapes.append(q)
+
+            tr = q.TextFrame.TextRange
+            tr.Text = text
+            tr.Font.Size = 11.0
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignLeft
+
+        return shapes
+
+    # 29. PROCESS_DEVSECOPS_INFINITY_LOOP (Vòng Lặp Số 8 Vô Cực DevSecOps)
+    def render_devsecops_infinity_loop(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        half_w = (width - 24.0) / 2.0
+
+        # Left Loop (Dev)
+        dev = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, top, half_w, height)
+        dev.Fill.Solid()
+        dev.Fill.ForeColor.RGB = hex_to_bgr(surface)
+        dev.Line.Visible = msoTrue
+        dev.Line.ForeColor.RGB = hex_to_bgr("#0284C7")
+        dev.Line.Weight = 2.5
+        shapes.append(dev)
+        t_dev = dev.TextFrame.TextRange
+        t_dev.Text = "PHÁT TRIỂN (DEVELOPMENT)\n\n1. Lập Kế Hoạch (Plan)\n2. Viết Mã Nguồn (Code)\n3. Đóng Gói (Build)\n4. Kiểm Thử Tự Động (Test)\n\n[AN NINH LỒNG GHÉP - DEVSECOPS]"
+        t_dev.Font.Size = 11.5
+        t_dev.Font.Bold = msoTrue
+        t_dev.Font.Color.RGB = hex_to_bgr(ink)
+        t_dev.ParagraphFormat.Alignment = ppAlignCenter
+
+        # Right Loop (Ops)
+        ops = slide.Shapes.AddShape(msoShapeRoundedRectangle, left + half_w + 24.0, top, half_w, height)
+        ops.Fill.Solid()
+        ops.Fill.ForeColor.RGB = hex_to_bgr(surface)
+        ops.Line.Visible = msoTrue
+        ops.Line.ForeColor.RGB = hex_to_bgr("#10B981")
+        ops.Line.Weight = 2.5
+        shapes.append(ops)
+        t_ops = ops.TextFrame.TextRange
+        t_ops.Text = "VẬN HÀNH (OPERATIONS)\n\n5. Phát Hành (Release)\n6. Triển Khai (Deploy)\n7. Vận Hành Hệ Thống (Operate)\n8. Giám Sát Liên Tục (Monitor)\n\n[ĐẢM BẢO CHẤT LƯỢNG KHÔNG DOWNTIME]"
+        t_ops.Font.Size = 11.5
+        t_ops.Font.Bold = msoTrue
+        t_ops.Font.Color.RGB = hex_to_bgr(ink)
+        t_ops.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+
+    # 30. PROCESS_CRITICAL_PATH_CPM (Sơ Đồ Đường Găng PERT/CPM)
+    def render_critical_path_cpm(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        # 5 Nodes across time with Critical Path highlighted in red/accent
+        nodes = [
+            ("NÚT 1: BẮT ĐẦU", "Khởi động dự án V8.6", True, "#EF4444"),
+            ("NÚT 2: KIẾN TRÚC", "Thiết kế 165+ Archetypes", True, "#EF4444"),
+            ("NÚT 2B: THIẾT KẾ PHỤ", "Tối ưu icon & bảng màu", False, "#0284C7"),
+            ("NÚT 3: ENGINE CHUYỂN ĐỘNG", "Lập trình Apple Motion", True, "#EF4444"),
+            ("NÚT 4: BÀN GIAO", "Nghiệm thu toàn hệ thống", True, "#EF4444")
+        ]
+
+        node_w = width * 0.17
+        node_h = height * 0.38
+        gap = (width - (4 * node_w)) / 3.0
+
+        # Main critical sequence (Nodes 0, 1, 3, 4)
+        c_indices = [0, 1, 3, 4]
+        for i, idx in enumerate(c_indices):
+            title, desc, is_crit, color = nodes[idx]
+            cx = left + i * (node_w + gap)
+            cy = top + height * 0.15
+
+            n = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, cy, node_w, node_h)
+            n.Name = f"CPM_Node_Badge_{i}"
+            n.Fill.Solid()
+            n.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            n.Line.Visible = msoTrue
+            n.Line.ForeColor.RGB = hex_to_bgr(color)
+            n.Line.Weight = 2.5 if is_crit else 1.5
+            shapes.append(n)
+
+            tr = n.TextFrame.TextRange
+            tr.Text = f"{title}\n\n{desc}\n\n[ĐƯỜNG GĂNG]"
+            tr.Font.Size = 11.0
+            tr.Font.Bold = msoTrue
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        # Off-critical parallel node (Node 2B) below Node 1
+        t2b, d2b, _, c2b = nodes[2]
+        cx2b = left + 1 * (node_w + gap)
+        cy2b = top + height * 0.60
+        n2b = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx2b, cy2b, node_w, node_h * 0.85)
+        n2b.Name = "CPM_Branch_Badge_2B"
+        n2b.Fill.Solid()
+        n2b.Fill.ForeColor.RGB = hex_to_bgr(surface)
+        n2b.Line.Visible = msoTrue
+        n2b.Line.ForeColor.RGB = hex_to_bgr(c2b)
+        n2b.Line.Weight = 1.5
+        shapes.append(n2b)
+        tr2b = n2b.TextFrame.TextRange
+        tr2b.Text = f"{t2b}\n\n{d2b}\n[NHÁNH PHỤ]"
+        tr2b.Font.Size = 11.0
+        tr2b.Font.Color.RGB = hex_to_bgr(ink)
+        tr2b.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+

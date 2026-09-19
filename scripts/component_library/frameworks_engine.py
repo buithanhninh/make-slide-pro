@@ -1372,3 +1372,402 @@ class StrategicFrameworksEngine:
         d2.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
 
         return shapes
+
+    # 26. FRAMEWORK_STEEPLE (Mô Hình STEEPLE 7 Yếu Tố Vĩ Mô)
+    def render_steeple(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+        items = spec.get("framework_items", [
+            {"label": "S - Xã Hội (Social)", "desc": "Xu hướng già hóa dân số & lối sống số hóa"},
+            {"label": "T - Công Nghệ (Tech)", "desc": "Bùng nổ trí tuệ nhân tạo tạo sinh AI & Tự động hóa"},
+            {"label": "E - Kinh Tế (Economic)", "desc": "Áp lực lạm phát, lãi suất & chi phí vốn"},
+            {"label": "E - Môi Trường (Env)", "desc": "Tiêu chuẩn xanh ESG & cam kết Net Zero 2050"},
+            {"label": "P - Chính Trị (Political)", "desc": "Chính sách ưu đãi chuyển đổi số quốc gia"},
+            {"label": "L - Pháp Lý (Legal)", "desc": "Luật an ninh mạng & bảo vệ dữ liệu cá nhân"},
+            {"label": "E - Đạo Đức (Ethical)", "desc": "Minh bạch thuật toán & trách nhiệm xã hội"}
+        ])
+
+        n = len(items)
+        gap = 10.0
+        card_w = (width - gap * (n - 1)) / float(n)
+        steeple_colors = ["#0284C7", "#38BDF8", "#10B981", "#059669", "#F59E0B", "#8B5CF6", "#EC4899"]
+
+        for i, item in enumerate(items):
+            cx = left + i * (card_w + gap)
+            color = steeple_colors[i % len(steeple_colors)]
+
+            card = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, top, card_w, height)
+            card.Name = f"Steeple_Card_Tag_{i}"
+            card.Fill.Solid()
+            card.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            card.Line.Visible = msoTrue
+            card.Line.ForeColor.RGB = hex_to_bgr(color)
+            card.Line.Weight = 1.5
+            shapes.append(card)
+
+            tr = card.TextFrame.TextRange
+            tr.Text = f"{item.get('label', '')}\n\n{item.get('desc', '')}"
+            tr.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+            tr.Font.Size = 11.0
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+
+    # 27. FRAMEWORK_KANO_MODEL (Mô Hình Kano Phân Loại Tính Năng)
+    def render_kano_model(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        # 3 Curved/Horizontal feature classification lanes
+        lane_h = (height - 24.0) / 3.0
+        lanes = [
+            {"tier": "1. ĐỘT PHÁ GÂY THÍCH THÚ (DELIGHTERS)", "color": "#10B981", "desc": "Apple Morph Motion & 165+ Archetypes (Khách hàng bất ngờ vượt mong đợi)"},
+            {"tier": "2. TỶ LỆ THUẬN HIỆU NĂNG (PERFORMANCE)", "color": "#0284C7", "desc": "100% Native Editable Tables & Office Charts (Càng mượt trải nghiệm càng cao)"},
+            {"tier": "3. TÍNH NĂNG BẮT BUỘC (MUST-BE / BASIC)", "color": "#F59E0B", "desc": "Độ chính xác dữ liệu, không lỗi hồi quy, xuất file PPTX chuẩn 16:9"}
+        ]
+
+        for idx, lane in enumerate(lanes):
+            ly = top + idx * (lane_h + 12.0)
+            sh = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, ly, width, lane_h)
+            sh.Fill.Solid()
+            sh.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            sh.Line.Visible = msoTrue
+            sh.Line.ForeColor.RGB = hex_to_bgr(lane["color"])
+            sh.Line.Weight = 2.0
+            shapes.append(sh)
+
+            tr = sh.TextFrame.TextRange
+            tr.Text = f"{lane['tier']}\n{lane['desc']}"
+            tr.Font.Size = 12.0
+            tr.Font.Bold = msoTrue
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignLeft
+
+        return shapes
+
+    # 28. FRAMEWORK_LEAN_CANVAS (Mô Hình Kinh Doanh Tinh Gọn 9 Ô)
+    def render_lean_canvas(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        brand = self._get_token("colors", "brand", "#0284C7")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        # 5 upper columns, 2 lower rows
+        col_w = width / 5.0
+        upper_h = height * 0.65
+        lower_h = height * 0.32
+        gap = 4.0
+
+        boxes = [
+            # Upper row (5 primary sectors)
+            (left, top, col_w - gap, upper_h, "1. VẤN ĐỀ (PROBLEM)\n\n• Slide ảnh tĩnh khó sửa\n• Ít mẫu bảng biểu\n• Hiệu ứng đơn điệu"),
+            (left + col_w, top, col_w - gap, upper_h * 0.48, "2. GIẢI PHÁP\n• 165+ Archetypes\n• 100% Native COM"),
+            (left + col_w, top + upper_h * 0.52, col_w - gap, upper_h * 0.48, "8. CHỈ SỐ THEN CHỐT\n• 48/48 Tests Pass\n• < 25s Render"),
+            (left + 2 * col_w, top, col_w - gap, upper_h, "3. TUYÊN BỐ GIÁ TRỊ\n\nSlide đẳng cấp quốc tế, hoàn toàn có thể chỉnh sửa & chuyển động Apple"),
+            (left + 3 * col_w, top, col_w - gap, upper_h * 0.48, "9. LỢI THẾ ĐỘC QUYỀN\n• 16 Tác Tử MACC\n• Apple Morph"),
+            (left + 3 * col_w, top + upper_h * 0.52, col_w - gap, upper_h * 0.48, "4. KÊNH TIẾP CẬN\n• Web Studio SaaS\n• Desktop API"),
+            (left + 4 * col_w, top, col_w - gap, upper_h, "5. PHÂN KHÚC KH\n\n• Giảng viên, chuyên gia\n• C-Level, Startup Pitch\n• Doanh nghiệp Enterprise"),
+            # Lower row (Cost structure & Revenue streams)
+            (left, top + upper_h + 8.0, width * 0.5 - gap, lower_h, "7. CƠ CẤU CHI PHÍ (COST STRUCTURE)\n• R&D GPU Đám Mây • Chi phí bản quyền dữ liệu • Vận hành máy chủ"),
+            (left + width * 0.5, top + upper_h + 8.0, width * 0.5, lower_h, "6. DÒNG DOANH THU (REVENUE STREAMS)\n• Gói thuê bao Pro / Team / Enterprise • Dịch vụ thiết kế theo yêu cầu")
+        ]
+
+        for bx, by, bw, bh, text in boxes:
+            b = slide.Shapes.AddShape(msoShapeRoundedRectangle, bx, by, bw, bh)
+            b.Fill.Solid()
+            b.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            b.Line.Visible = msoTrue
+            b.Line.ForeColor.RGB = hex_to_bgr(brand)
+            b.Line.Weight = 1.0
+            shapes.append(b)
+
+            tr = b.TextFrame.TextRange
+            tr.Text = text
+            tr.Font.Size = 9.5
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignLeft
+
+        return shapes
+
+    # 29. FRAMEWORK_VALUE_PROPOSITION_CANVAS (Bản Đồ Đề Xuất Giá Trị)
+    def render_value_proposition_canvas(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        brand = self._get_token("colors", "brand", "#0284C7")
+        accent = self._get_token("colors", "accent", "#38BDF8")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        side_w = (width - 40.0) / 2.0
+
+        # Left: Square (Value Map - Sản phẩm/Giải pháp)
+        sq = slide.Shapes.AddShape(msoShapeRectangle, left, top, side_w, height)
+        sq.Fill.Solid()
+        sq.Fill.ForeColor.RGB = hex_to_bgr(surface)
+        sq.Line.Visible = msoTrue
+        sq.Line.ForeColor.RGB = hex_to_bgr(brand)
+        sq.Line.Weight = 2.0
+        shapes.append(sq)
+        t_sq = sq.TextFrame.TextRange
+        t_sq.Text = "BẢN ĐỒ GIÁ TRỊ (VALUE MAP)\n\n1. Sản Phẩm / Dịch Vụ: Bộ công cụ Make Slide Pro V8.6\n\n2. Thuốc Giảm Đau (Pain Relievers): 100% Native PPT, không còn nỗi lo ảnh vỡ hay biểu đồ cứng nhắc\n\n3. Yếu Tố Tạo Lợi Ích (Gain Creators): Chuyển động Apple Morph ma thuật, 165+ Archetypes dẫn đầu"
+        t_sq.Font.Size = 11.0
+        t_sq.Font.Color.RGB = hex_to_bgr(ink)
+
+        # Right: Circle (Customer Profile - Hồ sơ khách hàng)
+        cr = slide.Shapes.AddShape(msoShapeOval, left + side_w + 40.0, top, side_w, height)
+        cr.Fill.Solid()
+        cr.Fill.ForeColor.RGB = hex_to_bgr(surface)
+        cr.Line.Visible = msoTrue
+        cr.Line.ForeColor.RGB = hex_to_bgr(accent)
+        cr.Line.Weight = 2.0
+        shapes.append(cr)
+        t_cr = cr.TextFrame.TextRange
+        t_cr.Text = "HỒ SƠ KHÁCH HÀNG (CUSTOMER PROFILE)\n\n• Việc Cần Làm: Thuyết trình trước C-Level, gọi vốn đầu tư\n\n• Nỗi Đau (Pains): Mất hàng giờ căn chỉnh slide, hình ảnh thô sơ\n\n• Kỳ Vọng (Gains): Slide ấn tượng chuẩn McKinsey & Apple"
+        t_cr.Font.Size = 11.0
+        t_cr.Font.Color.RGB = hex_to_bgr(ink)
+
+        return shapes
+
+    # 30. FRAMEWORK_CYNEFIN (Khung Ra Quyết Định Cynefin)
+    def render_cynefin(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        qw = (width - 16.0) / 2.0
+        qh = (height - 16.0) / 2.0
+
+        quads = [
+            (left, top, qw, qh, "RẮC RỐI (COMPLEX)\n\n• Thăm dò -> Cảm nhận -> Ứng phó\n• Thực tiễn mới xuất hiện (Emergent Practice)\n• Áp dụng: Phát triển AI tự động & chuyển động mới", "#3B82F6"),
+            (left + qw + 16.0, top, qw, qh, "PHỨC TẠP (COMPLICATED)\n\n• Cảm nhận -> Phân tích -> Ứng phó\n• Thực tiễn tối ưu (Good Practice)\n• Áp dụng: Kiến trúc 165+ Archetypes & Tối ưu COM", "#10B981"),
+            (left, top + qh + 16.0, qw, qh, "HỖN LOẠN (CHAOTIC)\n\n• Hành động -> Cảm nhận -> Ứng phó\n• Thực tiễn đổi mới đột phá (Novel Practice)\n• Áp dụng: Ứng phó sự cố P0 & Khắc phục thời gian thực", "#EF4444"),
+            (left + qw + 16.0, top + qh + 16.0, qw, qh, "RÕ RÀNG (CLEAR / SIMPLE)\n\n• Cảm nhận -> Phân loại -> Ứng phó\n• Thực tiễn tốt nhất (Best Practice)\n• Áp dụng: Quy chuẩn định dạng 16:9 & Bảng màu Dark Luxury", "#F59E0B")
+        ]
+
+        for qx, qy, qwidth, qheight, text, color in quads:
+            q = slide.Shapes.AddShape(msoShapeRoundedRectangle, qx, qy, qwidth, qheight)
+            q.Fill.Solid()
+            q.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            q.Line.Visible = msoTrue
+            q.Line.ForeColor.RGB = hex_to_bgr(color)
+            q.Line.Weight = 2.0
+            shapes.append(q)
+
+            tr = q.TextFrame.TextRange
+            tr.Text = text
+            tr.Font.Size = 11.0
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignLeft
+
+        return shapes
+
+    # 31. FRAMEWORK_BOW_TIE (Mô Hình Quản Lý Rủi Ro Nơ Bướm)
+    def render_bow_tie(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        wing_w = width * 0.38
+        knot_w = width * 0.20
+        gap = 8.0
+
+        # Left Wing (Threats & Preventive Barriers)
+        lw = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, top, wing_w, height)
+        lw.Fill.Solid()
+        lw.Fill.ForeColor.RGB = hex_to_bgr(surface)
+        lw.Line.Visible = msoTrue
+        lw.Line.ForeColor.RGB = hex_to_bgr("#F59E0B")
+        lw.Line.Weight = 2.0
+        shapes.append(lw)
+        t_lw = lw.TextFrame.TextRange
+        t_lw.Text = "NGUYÊN NHÂN & RÀO CHẮN PHÒNG NGỪA\n\n• Mối đe dọa: Slide xuất ra bị vỡ hình hoặc lỗi font\n• Rào chắn 1: Khởi tạo font dự phòng Segoe UI\n• Rào chắn 2: Kiểm toán tĩnh kích thước Canvas 960x540\n• Rào chắn 3: Tự động điều chỉnh kích cỡ font co giãn"
+        t_lw.Font.Size = 10.5
+        t_lw.Font.Color.RGB = hex_to_bgr(ink)
+
+        # Center Knot (Top Critical Event)
+        knot = slide.Shapes.AddShape(msoShapeOval, left + wing_w + gap, top + height * 0.15, knot_w, height * 0.70)
+        knot.Fill.Solid()
+        knot.Fill.ForeColor.RGB = hex_to_bgr("#DC2626")
+        knot.Line.Visible = msoTrue
+        knot.Line.ForeColor.RGB = hex_to_bgr("#F87171")
+        knot.Line.Weight = 2.5
+        shapes.append(knot)
+        t_k = knot.TextFrame.TextRange
+        t_k.Text = "SỰ CỐ TRỌNG YẾU\n(TOP EVENT)\n\nXuất Slide Bị Lỗi\nTrình Chiếu"
+        t_k.Font.Size = 11.5
+        t_k.Font.Bold = msoTrue
+        t_k.Font.Color.RGB = hex_to_bgr("#FFFFFF")
+        t_k.ParagraphFormat.Alignment = ppAlignCenter
+
+        # Right Wing (Mitigation Barriers & Consequences)
+        rw = slide.Shapes.AddShape(msoShapeRoundedRectangle, left + wing_w + knot_w + 2 * gap, top, wing_w, height)
+        rw.Fill.Solid()
+        rw.Fill.ForeColor.RGB = hex_to_bgr(surface)
+        rw.Line.Visible = msoTrue
+        rw.Line.ForeColor.RGB = hex_to_bgr("#10B981")
+        rw.Line.Weight = 2.0
+        shapes.append(rw)
+        t_rw = rw.TextFrame.TextRange
+        t_rw.Text = "RÀO CHẮN GIẢM THIỂU & HẬU QUẢ\n\n• Rào chắn 4: Hội đồng 16 tác tử MACC tự động quét P0\n• Rào chắn 5: Cơ chế fallback render an toàn\n• Kết quả bảo vệ: 100% Deck đạt chất lượng phát hành\n• Không gây gián đoạn buổi thuyết trình quan trọng"
+        t_rw.Font.Size = 10.5
+        t_rw.Font.Color.RGB = hex_to_bgr(ink)
+
+        return shapes
+
+    # 32. FRAMEWORK_BLUE_OCEAN_ERRC (Ma Trận Đại Dương Xanh ERRC)
+    def render_blue_ocean_errc(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        qw = (width - 16.0) / 2.0
+        qh = (height - 16.0) / 2.0
+
+        quads = [
+            (left, top, qw, qh, "LOẠI BỎ (ELIMINATE)\n\n• Loại bỏ hình ảnh tĩnh chụp màn hình bảng biểu\n• Loại bỏ các bố cục đơn điệu thiếu tính co giãn\n• Loại bỏ thao tác thủ công định dạng lại slide", "#EF4444"),
+            (left + qw + 16.0, top, qw, qh, "NÂNG CAO (RAISE)\n\n• Nâng số lượng Archetypes lên 165+ mẫu chuẩn quốc tế\n• Nâng tính linh hoạt với khả năng sửa trực tiếp Excel\n• Nâng tốc độ xuất file hoàn chỉnh xuống dưới 25 giây", "#10B981"),
+            (left, top + qh + 16.0, qw, qh, "CẮT GIẢM (REDUCE)\n\n• Cắt giảm tối đa thời gian dàn trang thủ công\n• Cắt giảm lỗi tràn chữ và lỗi sai lệch tỷ lệ đồ họa\n• Cắt giảm chi phí thuê chuyên gia thiết kế bên ngoài", "#F59E0B"),
+            (left + qw + 16.0, top + qh + 16.0, qw, qh, "TẠO MỚI (CREATE)\n\n• Tạo mới chuyển động chuyển tiếp Morph chuẩn Apple\n• Tạo mới hội đồng kiểm định 16 tác tử MACC đa chiều\n• Tạo mới cơ chế nhận dạng ngữ nghĩa bố cục tự động", "#0284C7")
+        ]
+
+        for qx, qy, qwidth, qheight, text, color in quads:
+            q = slide.Shapes.AddShape(msoShapeRoundedRectangle, qx, qy, qwidth, qheight)
+            q.Fill.Solid()
+            q.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            q.Line.Visible = msoTrue
+            q.Line.ForeColor.RGB = hex_to_bgr(color)
+            q.Line.Weight = 2.0
+            shapes.append(q)
+
+            tr = q.TextFrame.TextRange
+            tr.Text = text
+            tr.Font.Size = 11.0
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignLeft
+
+        return shapes
+
+    # 33. FRAMEWORK_NORTH_STAR_METRIC (Cây Chỉ Số Bắc Đẩu)
+    def render_north_star_metric(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        brand = self._get_token("colors", "brand", "#0284C7")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        # Top Star Node
+        star_w = width * 0.55
+        star_h = height * 0.32
+        star_x = left + (width - star_w) / 2.0
+        sn = slide.Shapes.AddShape(msoShapeRoundedRectangle, star_x, top, star_w, star_h)
+        sn.Fill.Solid()
+        sn.Fill.ForeColor.RGB = hex_to_bgr(brand)
+        sn.Line.Visible = msoTrue
+        sn.Line.ForeColor.RGB = hex_to_bgr("#38BDF8")
+        sn.Line.Weight = 2.5
+        shapes.append(sn)
+        t_sn = sn.TextFrame.TextRange
+        t_sn.Text = "★ CHỈ SỐ BẮC ĐẨU (NORTH STAR METRIC)\n\nSố Lượng Slide Trình Chiếu Chuẩn Đẳng Cấp Quốc Tế\nĐược Xuất Thành Công Mỗi Tuần"
+        t_sn.Font.Size = 12.5
+        t_sn.Font.Bold = msoTrue
+        t_sn.Font.Color.RGB = hex_to_bgr("#FFFFFF")
+        t_sn.ParagraphFormat.Alignment = ppAlignCenter
+
+        # 3 Driver Pillars Below
+        card_w = (width - 32.0) / 3.0
+        card_h = height * 0.60
+        card_y = top + star_h + 18.0
+
+        drivers = [
+            {"title": "ĐỘ PHỦ THỊ GIÁC\n(VISUAL BREADTH)", "metric": "Kho 165+ Archetypes", "desc": "Bảo đảm đáp ứng mọi nhu cầu từ kinh doanh đến công nghệ"},
+            {"title": "TÍNH LINH HOẠT\n(EDITABILITY)", "metric": "100% Native & Excel", "desc": "Người dùng tự do chỉnh sửa bảng biểu và biểu đồ trực tiếp"},
+            {"title": "TRẢI NGHIỆM CHUYỂN ĐỘNG\n(MOTION DELIGHT)", "metric": "Apple Morph Motion", "desc": "Hiệu ứng chuyển cảnh ma thuật tạo cảm xúc mạnh mẽ"}
+        ]
+
+        for i, d in enumerate(drivers):
+            cx = left + i * (card_w + 16.0)
+            c = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, card_y, card_w, card_h)
+            c.Fill.Solid()
+            c.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            c.Line.Visible = msoTrue
+            c.Line.ForeColor.RGB = hex_to_bgr(brand)
+            c.Line.Weight = 1.5
+            shapes.append(c)
+
+            tr = c.TextFrame.TextRange
+            tr.Text = f"{d['title']}\n\nChỉ số: {d['metric']}\n\n{d['desc']}"
+            tr.Font.Size = 11.0
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+
+    # 34. FRAMEWORK_GROW_COACHING (Mô Hình Huấn Luyện GROW)
+    def render_grow_coaching(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        steps = [
+            ("G - MỤC TIÊU (GOAL)", "Xây dựng công cụ tạo slide dẫn đầu thế giới về độ phong phú và tính thẩm mỹ", "#0284C7"),
+            ("R - THỰC TẾ (REALITY)", "Đã có 112 archetypes, người dùng mong muốn bổ sung thêm nhiều biểu mẫu cao cấp", "#F59E0B"),
+            ("O - LỰA CHỌN (OPTIONS)", "Rà soát 1,000 template hàng đầu để mở rộng lên 165+ archetypes và tích hợp Apple Motion", "#10B981"),
+            ("W - Ý CHÍ HÀNH ĐỘNG (WILL)", "Triển khai ngay lập tức, chạy kiểm thử tự động 48/48 và xuất bản phiên bản V8.6", "#8B5CF6")
+        ]
+
+        card_w = (width - 36.0) / 4.0
+        for i, (title, desc, color) in enumerate(steps):
+            cx = left + i * (card_w + 12.0)
+            c = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, top, card_w, height)
+            c.Fill.Solid()
+            c.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            c.Line.Visible = msoTrue
+            c.Line.ForeColor.RGB = hex_to_bgr(color)
+            c.Line.Weight = 2.0
+            shapes.append(c)
+
+            tr = c.TextFrame.TextRange
+            tr.Text = f"{title}\n\n{desc}"
+            tr.Font.Size = 11.0
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+
+    # 35. FRAMEWORK_PIRATE_AARRR (Phễu Tăng Trưởng Khởi Nghiệp AARRR)
+    def render_pirate_aarrr(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
+        shapes = []
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+
+        stages = [
+            ("1. ACQUISITION (TIẾP CẬN)", "Người dùng biết đến Make Slide Pro qua bài trình chiếu mẫu xuất sắc", "#0284C7", 1.00),
+            ("2. ACTIVATION (KÍCH HOẠT)", "Trải nghiệm lần đầu xuất slide thành công với 100% Native Tables/Charts", "#38BDF8", 0.88),
+            ("3. RETENTION (GIỮ CHÂN)", "Sử dụng thường xuyên cho các báo cáo định kỳ tuần, tháng, quý", "#10B981", 0.76),
+            ("4. REVENUE (DOANH THU)", "Nâng cấp lên gói Business hoặc Enterprise để mở khóa 165+ Archetypes", "#F59E0B", 0.64),
+            ("5. REFERRAL (LAN TỎA)", "Giới thiệu cho đồng nghiệp và đối tác nhờ chuyển động Apple Morph ma thuật", "#EC4899", 0.52)
+        ]
+
+        row_h = (height - 20.0) / 5.0
+        for i, (title, desc, color, w_factor) in enumerate(stages):
+            ry = top + i * (row_h + 5.0)
+            rw = width * w_factor
+            rx = left + (width - rw) / 2.0
+
+            s = slide.Shapes.AddShape(msoShapeRoundedRectangle, rx, ry, rw, row_h)
+            s.Fill.Solid()
+            s.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            s.Line.Visible = msoTrue
+            s.Line.ForeColor.RGB = hex_to_bgr(color)
+            s.Line.Weight = 2.0
+            shapes.append(s)
+
+            tr = s.TextFrame.TextRange
+            tr.Text = f"{title}: {desc}"
+            tr.Font.Size = 10.5
+            tr.Font.Color.RGB = hex_to_bgr(ink)
+            tr.ParagraphFormat.Alignment = ppAlignCenter
+
+        return shapes
+
