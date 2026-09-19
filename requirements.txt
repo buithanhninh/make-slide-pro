@@ -1,4 +1,4 @@
-# Make Slide Pro V8.2.0 - Final Enterprise Edition Requirements
+# Make Slide Pro V8.3.0 - Final Enterprise Edition Requirements
 
 # Office & Document Intake
 python-docx>=1.1.0

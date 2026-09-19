@@ -1,6 +1,6 @@
 """
 tests/test_web_studio.py
-End-to-end API verification suite for Make Slide Pro Web Studio V8.2.0.
+End-to-end API verification suite for Make Slide Pro Web Studio V8.3.0.
 """
 
 import os

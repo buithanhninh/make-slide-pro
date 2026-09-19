@@ -1,4 +1,4 @@
-# MAKE SLIDE PRO V8.2.0 - HỆ THỐNG KIẾN TRÚC DOANH NGHIỆP (CANONICAL ENTERPRISE ARCHITECTURE)
+# MAKE SLIDE PRO V8.3.0 - HỆ THỐNG KIẾN TRÚC DOANH NGHIỆP (CANONICAL ENTERPRISE ARCHITECTURE)
 
 Tài liệu này quy định chi tiết cấu trúc phân tầng, luồng dữ liệu, cơ chế hàng đợi bất đồng bộ, giải pháp cô lập Microsoft Office COM và kịch bản triển khai container hóa cho ứng dụng Web App SaaS Make Slide Pro.
 

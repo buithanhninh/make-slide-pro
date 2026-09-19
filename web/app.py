@@ -93,9 +93,9 @@ except ImportError:
     MultiAgentQABoard = None
 
 app = FastAPI(
-    title="Make Slide Pro Web Studio V8.2",
+    title="Make Slide Pro Web Studio V8.3",
     description="Universal Document-to-PowerPoint Publishing & 16-Agent Quality Council Studio",
-    version="8.2.0",
+    version="8.3.0",
 )
 
 app.add_middleware(
@@ -253,7 +253,7 @@ async def serve_studio():
     index_path = STATIC_DIR / "index.html"
     if index_path.exists():
         return HTMLResponse(content=index_path.read_text(encoding="utf-8"))
-    return HTMLResponse(content="<h1>Make Slide Pro Web Studio V8.2 is running.</h1>")
+    return HTMLResponse(content="<h1>Make Slide Pro Web Studio V8.3 is running.</h1>")
 
 
 @app.get("/healthz")
@@ -263,7 +263,7 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "make-slide-pro-saas",
-        "version": "7.3.0",
+        "version": "8.3.0",
         "timestamp": time.time(),
     }
 

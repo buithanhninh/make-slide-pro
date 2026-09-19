@@ -1,5 +1,5 @@
 /**
- * Make Slide Pro Web Studio V8.2.0
+ * Make Slide Pro Web Studio V8.3.0
  * Client-side State Machine & Interactive Studio Controller
  */
 

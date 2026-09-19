@@ -51,14 +51,14 @@ def run_batch_pipeline(input_dir: Path, output_root: Path, pattern: Optional[str
 
     master_results = {
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "pipeline_version": "Make Slide Pro V8.2.0 (Omniscient 16-Agent MACC-QA Council & Kinetic Motion Architecture)",
+        "pipeline_version": "Make Slide Pro V8.3.0 (Omniscient 16-Agent MACC-QA Council & Kinetic Motion Architecture)",
         "total_lessons": len(docx_files),
         "lessons": []
     }
 
     # Pre-render demographic charts for visual anchor injection
     print("================================================================================")
-    print("   MAKE SLIDE PRO V8.2 - 16-AGENT COUNCIL & KINETIC MOTION PIPELINE (DARK & LIGHT) ")
+    print("   MAKE SLIDE PRO V8.3 - 16-AGENT COUNCIL & KINETIC MOTION PIPELINE (DARK & LIGHT) ")
     print("================================================================================")
     print("Generating high-resolution demographic infographic charts...")
     render_all_demographic_charts(Path("assets/charts"))
@@ -97,7 +97,7 @@ def run_batch_pipeline(input_dir: Path, output_root: Path, pattern: Optional[str
 
         print(f"      ✔ Blueprints: {blueprints['total_slides']} slides created ('{blueprints['deck_title']}')")
 
-        # Step 2.5: MACC-QA V8.0 16-Agent Omniscient Council Dialectical Review & Auto-Remediation
+        # Step 2.5: MACC-QA V8.3 16-Agent Omniscient Council Dialectical Review & Auto-Remediation
         orchestrator = MultiRoundCouncilOrchestrator()
         canonical_text = " ".join(
             sec.get("title", "")
@@ -126,7 +126,7 @@ def run_batch_pipeline(input_dir: Path, output_root: Path, pattern: Optional[str
         with open(lesson_out_dir / "macc-council-report.json", "w", encoding="utf-8") as f:
             json.dump(council_report.model_dump(), f, ensure_ascii=False, indent=2)
 
-        print(f"      ✔ MACC-QA V8.0 Council: Converged Score = {council_report.final_score:.1f}/100 in {council_report.total_rounds} rounds | P0={council_report.p0_count}, P1={council_report.p1_count}, P2={council_report.p2_count}")
+        print(f"      ✔ MACC-QA V8.3 Council: Converged Score = {council_report.final_score:.1f}/100 in {council_report.total_rounds} rounds | P0={council_report.p0_count}, P1={council_report.p1_count}, P2={council_report.p2_count}")
 
         # Step 3: Native PowerPoint Authoring (Dual-Theme: DARK & LIGHT)
         import shutil

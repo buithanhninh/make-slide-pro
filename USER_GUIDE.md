@@ -1,11 +1,11 @@
-# SÁCH HƯỚNG DẪN SỬ DỤNG PHẦN MỀM MAKE SLIDE PRO (V8.2)
+# SÁCH HƯỚNG DẪN SỬ DỤNG PHẦN MỀM MAKE SLIDE PRO (V8.3)
 ### Universal Document-to-PowerPoint Publishing, 16-Agent Quality Council & Kinetic Motion System
 
 ---
 
 ## 1. Giới Thiệu Tổng Quan
 
-**Make Slide Pro V8.2** là hệ sinh thái phần mềm tự động hóa biên dịch bài giảng và bài trình chiếu chuyên nghiệp, chuyển hóa bất kỳ tệp tài liệu nguồn nào (`.docx`, `.pdf`, `.txt`, `.md`) thành bài thuyết trình Microsoft PowerPoint (.pptx) chuẩn Executive, được bảo hộ chất lượng bởi Hội đồng Thẩm định Pháp y 16 Tác tử (MACC-QA V8.0) và động cơ chuyển động điện ảnh Apple Keynote (4-Layer Kinetic Motion).
+**Make Slide Pro V8.3** là hệ sinh thái phần mềm tự động hóa biên dịch bài giảng và bài trình chiếu chuyên nghiệp, chuyển hóa bất kỳ tệp tài liệu nguồn nào (`.docx`, `.pdf`, `.txt`, `.md`) thành bài thuyết trình Microsoft PowerPoint (.pptx) chuẩn Executive, được bảo hộ chất lượng bởi Hội đồng Thẩm định Pháp y 16 Tác tử (MACC-QA V8.3) và động cơ chuyển động điện ảnh Apple Keynote (4-Layer Kinetic Motion).
 
 ### Các Tính Năng Đột Phá Đã Được Chuẩn Hóa:
 1. **Hội đồng Thẩm định 16-Agent (MACC-QA V8.0)**: Kiểm duyệt qua 5 Cổng độc lập, vượt qua 160/160 ca thử nghiệm đối kháng khắc nghiệt, tự phục hồi đa vòng lặp chống ảo giác và chuẩn hóa từ mồ côi tiếng Việt (`\u00A0`).

@@ -1,6 +1,6 @@
 """
 ingest_content.py
-Universal Content Ingestion & Structuring Engine for Make Slide Pro V8.2.0.
+Universal Content Ingestion & Structuring Engine for Make Slide Pro V8.3.0.
 Parses DOCX, PDF, TXT, or MD documents into canonical content, claims, and data ledgers.
 Supports table extraction, mathematical formula detection, and pedagogical hierarchy mapping.
 """

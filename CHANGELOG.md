@@ -1,5 +1,21 @@
 # Changelog
 
+## 8.3.0 - 2026-09-19 (Harden 16-Agent Architecture & Complete Production Suite)
+
+- **Gia Cố Kiến Trúc Hội Đồng 16-Agent (MACC-QA V8.3)**:
+  - **Sửa Lỗi Crash CLI**: Khắc phục triệt để `TypeError: unexpected keyword argument 'max_rounds'` trong `MultiRoundCouncilOrchestrator`, bổ sung alias `run_council()` và đồng bộ chính xác biến `total_slides`.
+  - **Phá Vỡ Deadlock Vòng Lặp Bố Cục (Agent 11)**: Sửa hàm `_recommend_archetype` trả về `process_flow_4` cho quy trình 2 bước và nới lỏng rule `ARCHETYPE_ATOM_RULES["process_flow_4"] = (2, 4)`, giúp slide quy trình hội tụ 0 lỗi ở Vòng 1.
+  - **Xóa Bỏ Điểm Mù Tự Phục Hồi Sư Phạm (Agent 05)**: Mở rộng `auto_remediate` duyệt qua `assertion_title`, `primary_claim`, `speaker_notes`, `atoms`, `cards`, `table_data` để chuẩn hóa 100% đơn vị chuyên ngành (TFR, Tuổi thọ, GDP, Nợ xấu).
+  - **Bảo Vệ PII Toàn Diện (Agent 01 & 02)**: Mở rộng tự động sửa lỗi và che giấu thông tin định danh (CCCD, SĐT, Số thẻ) xuyên suốt các container `cards`, `content_items`, `boxes`, `table_data`.
+  - **Bảo Đảm Tính Tương Thích PowerPoint COM (Agent 03 & 04)**: Tự động gán đầy đủ `visual_job`, `visual_anchor`, `role`, `source_footer`, tuần tự hóa `slide_id` và cập nhật `total_slides` cho slide Mục lục và Kết luận tự sinh; hỗ trợ `visual_job` khi đa dạng hóa nhịp thở thị giác.
+  - **Kiểm Định Biểu Đồ Nhân Khẩu Học (Agent 12)**: Bổ sung danh mục 22 biểu đồ chuẩn hóa `NATIVE_CHART_TYPES` (`POPULATION_PYRAMID`, `FERTILITY_TRENDS`, v.v.) và tự động tiêm thẻ insight đi kèm để tránh biểu đồ mồ côi.
+  - **Bảo Vệ Slide Phân Đoạn & Quy Trình 5 Bước (Agent 08)**: Miễn trừ phạt tiêu đề dạng nhãn đối với slide có `role == "SECTION"` hoặc `visual_job == "SECTION_DIVIDER"`; bảo toàn nguyên vẹn 5 thẻ cho slide quy trình `process_flow_5`.
+  - **Kết Nối Thuật Toán Phát Hiện Dao Động (Orchestrator & Agent 16)**: Lưu vết `round_history` và tự động kích hoạt `agent16.detect_oscillation` để ngắt các chu kỳ lặp lặp lại ($N == N-1$) hoặc luân phiên ($N == N-2$).
+  - **Toàn Vẹn Văn Bản Nguồn (Batch Pipeline)**: Trích xuất đầy đủ `atom["verbatim"]` vào `canonical_text` để chống phạt oan số liệu.
+  - **Trích Xuất Bảng Số Liệu (Base Council Agent)**: Bổ sung duyệt `table_data` vào `extract_slide_text()` của tất cả 16 tác tử.
+- **Nâng Cấp Đồng Bộ Toàn Bộ Giao Diện & Khởi Chạy Lên V8.3**:
+  - Đồng bộ `make_slide_pro.py`, `run_make_slide_pro.bat`, `run_web_studio.bat`, `run_web_studio.py`, `web/app.py`, `index.html`.
+
 ## 8.2.0 - 2026-09-18 (Omniscient 16-Agent MACC-QA Council & Apple Keynote Kinetic Motion Architecture)
 
 - **Hội Đồng Thẩm Định Pháp Y 16-Agent (MACC-QA V8.0)**:

@@ -1,13 +1,14 @@
-# Make Slide Pro (V8.2 - Enterprise Production Suite)
+# Make Slide Pro (V8.3 - Enterprise Production Suite)
 
 **Make Slide Pro** là hệ sinh thái phần mềm tự động hóa biên dịch, thẩm định đa tác tử và xuất bản slide thuyết trình PowerPoint chất lượng cao chuẩn Executive trực tiếp từ bất kỳ nguồn tài liệu nào (`.docx`, `.pdf`, `.txt`, `.md`).
 
 ---
 
-## 1. Điểm Đột Phá Ở Bản Đóng Gói V8.2
+## 1. Điểm Đột Phá Ở Bản Đóng Gói V8.3
 
-- **Hội Đồng Thẩm Định Pháp Y 16-Agent (MACC-QA V8.0)**: 
+- **Hội Đồng Thẩm Định Pháp Y 16-Agent Vững Chắc (MACC-QA V8.3)**: 
   - Quy tụ 16 chuyên gia và thẩm phán độc lập chia thành 5 Cổng (Gates): Thẩm định nguồn tin & tuân thủ, đạo diễn cốt truyện Minto, học giả chuyên ngành & toán học OMML, kiến trúc hình học & công thái học WCAG AAA, và Thẩm phán Tối cao hội tụ đa vòng lặp.
+  - Xử lý triệt để 10 lỗi biên kiến trúc (chống deadlock dao động vô tận trong quy trình 2 bước, che giấu PII toàn diện trong thẻ và bảng biểu, tự động sửa đơn vị chuyên ngành xuyên suốt tiêu đề và luận đề, đồng bộ schema slide tự sinh với PowerPoint COM).
   - Vượt qua **160/160 ca kiểm thử đối kháng khắc nghiệt** (100% Pass, 0 False Positive, 0 False Negative).
   - Tự động thanh trừng ảo giác số liệu, triệt tiêu từ sáo rỗng AI và xử lý dứt điểm từ mồ côi tiếng Việt (`\u00A0`).
 - **Kiến Trúc Chuyển Động Điện Ảnh Apple Keynote (4-Layer Kinetic Motion)**:

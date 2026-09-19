@@ -1,5 +1,5 @@
 # ==============================================================================
-# Make Slide Pro V8.2.0 - Multi-Stage Production Dockerfile
+# Make Slide Pro V8.3.0 - Multi-Stage Production Dockerfile
 # ==============================================================================
 
 FROM python:3.11-slim as base

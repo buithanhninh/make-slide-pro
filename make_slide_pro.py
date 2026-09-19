@@ -1,6 +1,6 @@
 """
 make_slide_pro.py
-MAKE SLIDE PRO V8.2.0 - CANONICAL FINAL ENTERPRISE SUITE
+MAKE SLIDE PRO V8.3.0 - CANONICAL FINAL ENTERPRISE SUITE
 Universal Document-to-PowerPoint Publishing, Omniscient 16-Agent MACC-QA Council & Keynote Motion Architecture.
 
 Transforms ANY source document (.docx, .pdf, .txt, .md) into executive,
@@ -55,7 +55,7 @@ def slugify(text: str) -> str:
 def print_banner():
     banner = """
 ================================================================================
-           ★ MAKE SLIDE PRO V8.2 - PRODUCTION SUITE ★
+           ★ MAKE SLIDE PRO V8.3 - PRODUCTION SUITE ★
    Universal Document-to-PowerPoint Publishing & 16-Agent Quality Council
 ================================================================================
 """
@@ -134,7 +134,7 @@ def process_single_document(
     with open(dest_dir / "macc-council-report.json", "w", encoding="utf-8") as f:
         json.dump(council_report.model_dump(), f, ensure_ascii=False, indent=2)
 
-    print(f"    ✔ MACC-QA V8.2 Council: Converged Score = {council_report.final_score:.1f}/100 in {council_report.total_rounds} rounds | P0={council_report.p0_count}, P1={council_report.p1_count}, P2={council_report.p2_count}")
+    print(f"    ✔ MACC-QA V8.3 Council: Converged Score = {council_report.final_score:.1f}/100 in {council_report.total_rounds} rounds | P0={council_report.p0_count}, P1={council_report.p1_count}, P2={council_report.p2_count}")
 
     # Step 3: Native PowerPoint COM Authoring
     print("\n[Step 3/4] Native PowerPoint COM Authoring (Kinetic Motion Engine)...")
@@ -259,7 +259,7 @@ def run_interactive():
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Make Slide Pro V8.2 - Production Suite (16-Agent & Kinetic Motion)")
+    parser = argparse.ArgumentParser(description="Make Slide Pro V8.3 - Production Suite (16-Agent & Kinetic Motion)")
     parser.add_argument("--input", "-i", type=Path, help="Path to input document (.docx, .pdf, .txt, .md) or folder")
     parser.add_argument("--output", "-o", default=Path("Du_An_Outputs"), type=Path, help="Output root directory")
     parser.add_argument("--theme", "-t", default="ALL", choices=["DARK", "LIGHT", "ALL"], help="Slide color theme")

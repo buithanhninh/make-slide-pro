@@ -1,6 +1,6 @@
 """
 curriculum_blueprints_data.py
-Exhaustive Deep-Curriculum Slide Blueprints for Make Slide Pro V8.2.0.
+Exhaustive Deep-Curriculum Slide Blueprints for Make Slide Pro V8.3.0.
 Contains full academic coverage (106 slides total across 5 core modules):
 - Bai 1 (Nhap Mon DSH): 14 slides
 - Bai 2 (Quy Mo, Co Cau, Chat Luong DS): 28 slides
