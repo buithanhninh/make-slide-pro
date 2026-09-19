@@ -1,17 +1,19 @@
 """
 make_slide_pro.py
-MAKE SLIDE PRO V7.3 - UNIFIED PRODUCTION SUITE
-Universal Document-to-PowerPoint Publishing & Multi-Agent Quality Certification System.
+MAKE SLIDE PRO V8.2.0 - CANONICAL FINAL ENTERPRISE SUITE
+Universal Document-to-PowerPoint Publishing, Omniscient 16-Agent MACC-QA Council & Keynote Motion Architecture.
 
 Transforms ANY source document (.docx, .pdf, .txt, .md) into executive,
 pedagogically rich, Dual-Theme (Dark & Light) PowerPoint presentations.
 Features:
 - Exhaustive content preservation (no compression of 30-40 page documents into 5 slides)
+- Omniscient 16-Agent MACC-QA forensic council & 160/160 adversarial stress tests
+- Apple Keynote-grade 4-layer kinetic motion (Presenter Click Sequencing & Continuous Morph)
 - Pure 16:9 AI illustrations (0px mismatch, rounded corners, takeaway cards)
 - Native mathematical formula cards (FORMULA_CARD)
 - Native interactive data tables (DATA_TABLE)
 - 22 publication-grade demographic & analytical charts (CHART_AND_INSIGHTS)
-- MACC-QA 5-agent content review & forensic compliance certification
+- Dialectical Self-Healing Convergence & Vietnamese orphan text eradication (\u00A0)
 """
 
 from __future__ import annotations

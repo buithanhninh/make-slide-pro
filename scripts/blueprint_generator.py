@@ -1007,7 +1007,7 @@ def extract_card_concept_title(atom: Dict[str, Any], idx: int) -> str:
 
 def generate_generic_blueprints(canonical: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Exhaustive Deep-Curriculum Pedagogical Blueprint Generator for Make Slide Pro V7.3.
+    Exhaustive Deep-Curriculum Pedagogical Blueprint Generator for Make Slide Pro V8.2.0.
     Processes any generic document (.docx, .pdf, .txt, .md) without information loss:
     - Slices long sections into sequential 2-3 concept thematic slides.
     - Automatically routes tables to DATA_TABLE.

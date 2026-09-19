@@ -69,7 +69,7 @@ class SourceFidelityFactChecker(BaseCouncilAgent):
     def _split_clauses(self, text: str) -> List[str]:
         """Splits text into logical clauses without breaking decimal numbers (1,2 or 3.8)."""
         return [
-            c.strip() for c in re.split(r"(?<!\d),(?!\d)|[;\n]|\btrong khi\b|\bnhưng\b", text)
+            c.strip() for c in re.split(r"(?<!\d)\.(?!\d)|(?<!\d),(?!\d)|[;\n]|\btrong khi\b|\bnhưng\b", text)
             if c.strip()
         ]
 

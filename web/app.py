@@ -176,6 +176,11 @@ def sync_broadcast(session_id: str, stage: str, percent: int, message: str, leve
 # ---------------------------------------------------------------------------
 # Session Helper Utilities
 # ---------------------------------------------------------------------------
+def slugify(text: str) -> str:
+    cleaned = "".join(c if c.isalnum() or c in (" ", "_", "-") else "_" for c in text)
+    return "_".join(cleaned.split())
+
+
 def get_session_dir(session_id: str) -> Path:
     s_dir = SESSIONS_DIR / session_id
     s_dir.mkdir(parents=True, exist_ok=True)
@@ -569,7 +574,8 @@ async def upload_file(
     
     # Save uploaded file
     file_suffix = Path(file.filename).suffix.lower()
-    saved_filename = f"source{file_suffix}"
+    clean_stem = slugify(Path(file.filename).stem) or "document"
+    saved_filename = f"{clean_stem}{file_suffix}"
     saved_path = s_dir / saved_filename
     
     with open(saved_path, "wb") as buffer:
