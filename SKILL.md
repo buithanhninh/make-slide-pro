@@ -49,6 +49,7 @@ Default mode is `CERTIFIED`. Do not silently downgrade verification.
 14. A receipt SHA-256 detects post-creation modification; it does not prove signer identity or cryptographic authenticity.
 15. Validate a versioned `job-contract.json` before capability checks. Its primary operation, modifiers, preservation mode, and certification mode are authoritative for routing; a conflicting CLI operation is `BLOCKED`.
 16. Validate every machine artifact against its approved local schema. Unknown properties, missing `schema_version=1.0`, count mismatches, or schema/runtime disagreement are `BLOCKED`.
+17. **CANONICAL VERSION MANDATE:** Make Slide Pro V8.6.0 is the sole, permanent, and default production standard across all workflows (165+ Mega Archetypes, 100% Pure Apple Morph, Atomic Shape Presenter Sequencing, High-Contrast Native Charts, Zero Dead Space). Never fall back to earlier versions unless explicitly ordered by the user.
 
 ## Status Contract
 

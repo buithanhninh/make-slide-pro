@@ -9,6 +9,8 @@ from __future__ import annotations
 import math
 from typing import Any, Dict, List, Optional
 
+from .utils import safe_group, add_vector_connector
+
 # Win32 Constants
 msoShapeRectangle = 1
 msoShapeTrapezoid = 3
@@ -1213,30 +1215,162 @@ class ArchitecturesEngine:
         shapes = []
         surface = self._get_token("colors", "surface", "#0B132B")
         ink = self._get_token("colors", "ink", "#FFFFFF")
+        muted = self._get_token("colors", "muted", "#94A3B8")
 
         tiers = [
-            ("TẦNG BRONZE (RAW INGESTION)", "Dữ liệu thô chưa qua xử lý, lưu trữ nguyên bản toàn bộ log slide và prompt", "#78350F", "#B45309"),
-            ("TẦNG SILVER (CURATED & CLEANED)", "Dữ liệu đã chuẩn hóa cấu trúc, lọc bỏ lỗi cú pháp và gán nhãn Archetype", "#475569", "#94A3B8"),
-            ("TẦNG GOLD (BUSINESS AGGREGATED)", "Báo cáo phân tích cao cấp, dữ liệu sẵn sàng cho BI và bài thuyết trình C-Level", "#713F12", "#EAB308")
+            {
+                "tier": "TẦNG 01: BRONZE",
+                "sub": "RAW DATA INGESTION",
+                "color": "#B45309",
+                "bg_tint": "#2A1705" if self.theme == "DARK" else "#FEF3C7",
+                "specs": [
+                    "• Nguồn: Streaming logs, Kafka, CDC, S3 files",
+                    "• Định dạng: JSON/Parquet nguyên bản chưa lọc",
+                    "• Lưu trữ: Append-only, cam kết Zero data loss"
+                ],
+                "chip": "Trạng Thái: Dữ Liệu Thô Sơ"
+            },
+            {
+                "tier": "TẦNG 02: SILVER",
+                "sub": "CURATED & CLEANED",
+                "color": "#94A3B8",
+                "bg_tint": "#1E293B" if self.theme == "DARK" else "#F1F5F9",
+                "specs": [
+                    "• Tiền xử lý: Khử trùng lặp, lọc schema & null",
+                    "• Cấu trúc hóa: Bảng Dimension & Fact chuẩn hóa",
+                    "• Bảo toàn: Delta Lake ACID Transactions"
+                ],
+                "chip": "Trạng Thái: Đã Chuẩn Hóa"
+            },
+            {
+                "tier": "TẦNG 03: GOLD",
+                "sub": "BUSINESS AGGREGATED",
+                "color": "#EAB308",
+                "bg_tint": "#2D2200" if self.theme == "DARK" else "#FEF9C3",
+                "specs": [
+                    "• Tổng hợp: Star Schema, Data Marts theo ngành",
+                    "• Tiêu thụ: BI Dashboards, C-Level KPI & AI/ML",
+                    "• SLA: Độ chính xác 100%, truy vấn < 1s"
+                ],
+                "chip": "Trạng Thái: Sẵn Sàng BI & AI"
+            }
         ]
 
-        card_w = (width - 24.0) / 3.0
-        for i, (title, desc, bg_tint, border_col) in enumerate(tiers):
-            cx = left + i * (card_w + 12.0)
-            c = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, top, card_w, height)
-            c.Fill.Solid()
-            c.Fill.ForeColor.RGB = hex_to_bgr(bg_tint)
-            c.Line.Visible = msoTrue
-            c.Line.ForeColor.RGB = hex_to_bgr(border_col)
-            c.Line.Weight = 2.5
-            shapes.append(c)
+        card_gap = 42.0
+        card_w = (width - 2 * card_gap) / 3.0
+        card_h = min(height - 40.0, 275.0)
+        card_y = top + 10.0
 
-            tr = c.TextFrame.TextRange
-            tr.Text = f"{title}\n\n{desc}"
-            tr.Font.Size = 11.5
-            tr.Font.Bold = msoTrue
-            tr.Font.Color.RGB = hex_to_bgr("#FFFFFF")
-            tr.ParagraphFormat.Alignment = ppAlignCenter
+        card_coords = []
+        for i, item in enumerate(tiers):
+            t_shapes = []
+            cx = left + i * (card_w + card_gap)
+            card_coords.append((cx, card_y))
+            color = item["color"]
+
+            card = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, card_y, card_w, card_h)
+            card.Fill.Solid()
+            card.Fill.ForeColor.RGB = hex_to_bgr(item["bg_tint"])
+            card.Line.Visible = msoTrue
+            card.Line.ForeColor.RGB = hex_to_bgr(color)
+            card.Line.Weight = 2.0
+            t_shapes.append(card)
+
+            # Top Header Pill
+            pill = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx + 12, card_y + 12, card_w - 24, 26)
+            pill.Fill.Solid()
+            pill.Fill.ForeColor.RGB = hex_to_bgr(color)
+            pill.Line.Visible = msoFalse
+            pt = pill.TextFrame.TextRange
+            pt.Text = item["tier"]
+            pt.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
+            pt.Font.Size = 11.0
+            pt.Font.Bold = msoTrue
+            pt.Font.Color.RGB = hex_to_bgr("#0F172A" if color == "#EAB308" else "#FFFFFF")
+            pill.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
+            t_shapes.append(pill)
+
+            # Subtitle
+            tb_sub = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 10, card_y + 42, card_w - 20, 24)
+            stf = tb_sub.TextFrame
+            stf.WordWrap = msoTrue
+            stf.MarginLeft = 0
+            stf.MarginRight = 0
+            stt = stf.TextRange
+            stt.Text = item["sub"]
+            stt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+            stt.Font.Size = 10.5
+            stt.Font.Bold = msoTrue
+            stt.Font.Color.RGB = hex_to_bgr(color)
+            stt.ParagraphFormat.Alignment = ppAlignCenter
+            t_shapes.append(tb_sub)
+
+            # Divider line
+            div = slide.Shapes.AddShape(msoShapeRectangle, cx + 16, card_y + 70, card_w - 32, 1.5)
+            div.Fill.Solid()
+            div.Fill.ForeColor.RGB = hex_to_bgr(color)
+            div.Line.Visible = msoFalse
+            t_shapes.append(div)
+
+            # Specs Bullets
+            tb_spec = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 12, card_y + 78, card_w - 24, card_h - 120)
+            btf = tb_spec.TextFrame
+            btf.WordWrap = msoTrue
+            btf.MarginLeft = 0
+            btf.MarginRight = 0
+            btt = btf.TextRange
+            btt.Text = "\n\n".join(item["specs"])
+            btt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+            btt.Font.Size = 10.0
+            btt.Font.Color.RGB = hex_to_bgr(ink if self.theme == "DARK" else "#334155")
+            btt.ParagraphFormat.Alignment = ppAlignLeft
+            t_shapes.append(tb_spec)
+
+            # Bottom Status Chip
+            chip = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx + 14, card_y + card_h - 32, card_w - 28, 22)
+            chip.Fill.Solid()
+            chip.Fill.ForeColor.RGB = hex_to_bgr("#1E293B" if self.theme == "DARK" else "#E2E8F0")
+            chip.Line.Visible = msoFalse
+            ct = chip.TextFrame.TextRange
+            ct.Text = item["chip"]
+            ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+            ct.Font.Size = 9.0
+            ct.Font.Bold = msoTrue
+            ct.Font.Color.RGB = hex_to_bgr(color)
+            chip.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
+            t_shapes.append(chip)
+
+            tier_grp = safe_group(slide, t_shapes, f"Medallion_Tier_{i+1}")
+            shapes.append(tier_grp)
+
+        # Flow Arrows between Bronze -> Silver and Silver -> Gold
+        for i in range(2):
+            x_start = card_coords[i][0] + card_w
+            y_mid = card_y + card_h / 2.0
+            x_end = card_coords[i+1][0]
+            conn = add_vector_connector(slide, x_start, y_mid, x_end, y_mid, color="#38BDF8", weight=2.5, arrowhead=True)
+            if conn:
+                shapes.append(conn)
+
+        # Bottom Architecture Summary Strip
+        sum_shapes = []
+        sum_y = card_y + card_h + 14.0
+        sum_bar = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, sum_y, width, 26)
+        sum_bar.Fill.Solid()
+        sum_bar.Fill.ForeColor.RGB = hex_to_bgr("#1E293B" if self.theme == "DARK" else "#E2E8F0")
+        sum_bar.Line.Visible = msoFalse
+        sum_shapes.append(sum_bar)
+
+        st = sum_bar.TextFrame.TextRange
+        st.Text = "HẠ TẦNG DỮ LIỆU ĐỒNG BỘ: DELTA LAKE / APACHE ICEBERG TRÊN ĐÁM MÂY HYBRID • ACID GUARANTEED"
+        st.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+        st.Font.Size = 10.0
+        st.Font.Bold = msoTrue
+        st.Font.Color.RGB = hex_to_bgr("#38BDF8")
+        sum_bar.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
+
+        sum_grp = safe_group(slide, sum_shapes, "Medallion_Summary_Strip")
+        shapes.append(sum_grp)
 
         return shapes
 
@@ -1400,36 +1534,159 @@ class ArchitecturesEngine:
 
         return shapes
 
-    # 23. ARCH_RAG_LLM_PIPELINE (Đường Ống RAG Cho Mô Hình Ngôn Ngữ Lớn)
+    # 23. ARCH_RAG_LLM_PIPELINE (Đường Ống RAG Cho Mô Hình Ngôn Ngữ Lớn Có Mũi Tên Vector)
     def render_rag_llm_pipeline(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
         shapes = []
         surface = self._get_token("colors", "surface", "#0B132B")
         ink = self._get_token("colors", "ink", "#FFFFFF")
+        muted = self._get_token("colors", "muted", "#94A3B8")
 
         steps = [
-            ("1. NẠP TÀI LIỆU (INGESTION)", "Phân tách tài liệu giáo trình thành các khối kiến thức nhỏ", "#64748B"),
-            ("2. CƠ SỞ VECTOR (EMBEDDING)", "Tạo vector nhúng và lưu vào cơ sở dữ liệu tri thức", "#0284C7"),
-            ("3. TRUY XUẤT (RETRIEVER)", "Tìm kiếm ngữ nghĩa các thông tin phù hợp nhất với chủ đề", "#38BDF8"),
-            ("4. TỔNG HỢP LLM (GENERATOR)", "Sinh nội dung slide chuẩn xác và điều phối layout tự động", "#10B981")
+            {
+                "step": "GIAI ĐOẠN 01",
+                "title": "Nạp & Tiền Xử Lý",
+                "sub": "DOCUMENT INGESTION",
+                "color": "#64748B",
+                "specs": [
+                    "• Phân rã PDF, DOCX, Web, Markdown",
+                    "• Recursive Chunking 512 tokens",
+                    "• Trích xuất metadata & ngữ cảnh"
+                ],
+                "chip": "Nguồn Tri Thức Thô"
+            },
+            {
+                "step": "GIAI ĐOẠN 02",
+                "title": "Nhúng & Vector DB",
+                "sub": "EMBEDDING & INDEX",
+                "color": "#0284C7",
+                "specs": [
+                    "• Mô hình OpenAI text-embedding-3",
+                    "• Lưu trữ Milvus / Qdrant HNSW",
+                    "• Đánh chỉ mục Dense Vector đa chiều"
+                ],
+                "chip": "Không Gian Vector"
+            },
+            {
+                "step": "GIAI ĐOẠN 03",
+                "title": "Truy Xuất Ngữ Nghĩa",
+                "sub": "HYBRID RETRIEVER",
+                "color": "#38BDF8",
+                "specs": [
+                    "• Tìm kiếm kết hợp BM25 + Vector",
+                    "• Cross-Encoder Re-ranking Top-5",
+                    "• Lọc lọc ngưỡng tin cậy tương đồng"
+                ],
+                "chip": "Top-K Ngữ Cảnh Chuẩn"
+            },
+            {
+                "step": "GIAI ĐOẠN 04",
+                "title": "Tổng Hợp & Sinh Slide",
+                "sub": "LLM GENERATOR",
+                "color": "#10B981",
+                "specs": [
+                    "• Ghép nối Prompt & Context đã lọc",
+                    "• LLM kiểm chứng nguồn trích dẫn",
+                    "• Điều phối xuất 100% Native PPT"
+                ],
+                "chip": "Slide Chuẩn Xác 100%"
+            }
         ]
 
-        card_w = (width - 36.0) / 4.0
-        for i, (title, desc, color) in enumerate(steps):
-            cx = left + i * (card_w + 12.0)
-            c = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, top, card_w, height)
-            c.Fill.Solid()
-            c.Fill.ForeColor.RGB = hex_to_bgr(surface)
-            c.Line.Visible = msoTrue
-            c.Line.ForeColor.RGB = hex_to_bgr(color)
-            c.Line.Weight = 2.0
-            shapes.append(c)
+        card_gap = 26.0
+        card_w = (width - 3 * card_gap) / 4.0
+        card_h = min(height - 30.0, 275.0)
+        card_y = top + 10.0
 
-            tr = c.TextFrame.TextRange
-            tr.Text = f"{title}\n\n{desc}"
-            tr.Font.Size = 11.0
-            tr.Font.Bold = msoTrue
-            tr.Font.Color.RGB = hex_to_bgr(ink)
-            tr.ParagraphFormat.Alignment = ppAlignCenter
+        card_coords = []
+        for i, item in enumerate(steps):
+            s_shapes = []
+            cx = left + i * (card_w + card_gap)
+            card_coords.append((cx, card_y))
+            color = item["color"]
+
+            card = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, card_y, card_w, card_h)
+            card.Fill.Solid()
+            card.Fill.ForeColor.RGB = hex_to_bgr(surface)
+            card.Line.Visible = msoTrue
+            card.Line.ForeColor.RGB = hex_to_bgr(color)
+            card.Line.Weight = 2.0
+            s_shapes.append(card)
+
+            # Top Header Pill
+            pill = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx + 8, card_y + 10, card_w - 16, 22)
+            pill.Fill.Solid()
+            pill.Fill.ForeColor.RGB = hex_to_bgr(color)
+            pill.Line.Visible = msoFalse
+            pt = pill.TextFrame.TextRange
+            pt.Text = item["step"]
+            pt.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
+            pt.Font.Size = 9.5
+            pt.Font.Bold = msoTrue
+            pt.Font.Color.RGB = hex_to_bgr("#FFFFFF")
+            pill.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
+            s_shapes.append(pill)
+
+            # Title
+            tb_title = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 6, card_y + 34, card_w - 12, 34)
+            ttf = tb_title.TextFrame
+            ttf.WordWrap = msoTrue
+            ttf.MarginLeft = 0
+            ttf.MarginRight = 0
+            ttt = ttf.TextRange
+            ttt.Text = item["title"]
+            ttt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+            ttt.Font.Size = 11.5
+            ttt.Font.Bold = msoTrue
+            ttt.Font.Color.RGB = hex_to_bgr(ink)
+            ttt.ParagraphFormat.Alignment = ppAlignCenter
+            s_shapes.append(tb_title)
+
+            # Divider line
+            div = slide.Shapes.AddShape(msoShapeRectangle, cx + 12, card_y + 70, card_w - 24, 1.5)
+            div.Fill.Solid()
+            div.Fill.ForeColor.RGB = hex_to_bgr(color)
+            div.Line.Visible = msoFalse
+            s_shapes.append(div)
+
+            # Specs Bullets
+            tb_spec = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 8, card_y + 78, card_w - 16, card_h - 118)
+            btf = tb_spec.TextFrame
+            btf.WordWrap = msoTrue
+            btf.MarginLeft = 0
+            btf.MarginRight = 0
+            btt = btf.TextRange
+            btt.Text = "\n\n".join(item["specs"])
+            btt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+            btt.Font.Size = 9.5
+            btt.Font.Color.RGB = hex_to_bgr(muted)
+            btt.ParagraphFormat.Alignment = ppAlignLeft
+            s_shapes.append(tb_spec)
+
+            # Bottom Status Chip
+            chip = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx + 10, card_y + card_h - 30, card_w - 20, 20)
+            chip.Fill.Solid()
+            chip.Fill.ForeColor.RGB = hex_to_bgr("#1E293B" if self.theme == "DARK" else "#E2E8F0")
+            chip.Line.Visible = msoFalse
+            ct = chip.TextFrame.TextRange
+            ct.Text = item["chip"]
+            ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+            ct.Font.Size = 8.5
+            ct.Font.Bold = msoTrue
+            ct.Font.Color.RGB = hex_to_bgr(color)
+            chip.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
+            s_shapes.append(chip)
+
+            step_grp = safe_group(slide, s_shapes, f"RAG_Step_{i+1}")
+            shapes.append(step_grp)
+
+        # Flow Arrows between Stages
+        for i in range(3):
+            x_start = card_coords[i][0] + card_w
+            y_mid = card_y + card_h / 2.0
+            x_end = card_coords[i+1][0]
+            conn = add_vector_connector(slide, x_start, y_mid, x_end, y_mid, color="#38BDF8", weight=2.2, arrowhead=True)
+            if conn:
+                shapes.append(conn)
 
         return shapes
 

@@ -218,21 +218,8 @@ class NativeDeckAuthor:
         slides_spec = blueprints.get("slides", [])
         total_slides = len(slides_spec)
 
-        # Route Flagship Lesson 1 to CinematicKeynoteEngine ONLY if specifically restricted to <= 6 slides;
-        # otherwise, when comprehensive curriculum slides (>6) are requested, use full native authoring.
-        if total_slides <= 6 and (lesson_idx == 1 or "nhập môn" in deck_title or "bài 1" in deck_title or "bai_1" in lesson_slug or "bai_1" in output_pptx.name.lower()):
-            try:
-                from author_cinematic_keynote import CinematicKeynoteEngine
-                png_dir = output_pptx.parent / f"rendered_slides_{self.theme.lower()}"
-                cine_engine = CinematicKeynoteEngine(theme=self.theme)
-                try:
-                    cine_engine.render_and_save(output_pptx, png_dir)
-                    print(f"      [OK] Definitive Cinematic Spatial Keynote ({self.theme}) Generated: {output_pptx.name}")
-                    return output_pptx
-                finally:
-                    cine_engine.close()
-            except Exception as e:
-                print(f"Warning: Cinematic fallback error: {e}, falling back to standard native authoring")
+        # V8.6.0: Always author 100% native PowerPoint decks with genuine vector shapes,
+        # native Office tables, and embedded Excel charts via MasterComponentDispatcher.
 
         self.presentation = self.app.Presentations.Add(WithWindow=msoTrue)
         self.presentation.PageSetup.SlideWidth = CANVAS_WIDTH
@@ -416,26 +403,33 @@ class NativeDeckAuthor:
             st.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["accent"])
 
             # Title
-            title_box = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, MARGIN_LEFT, MARGIN_TOP + 78, left_w, 130)
+            title_font_size = 28 if len(title_text) > 50 else (30 if len(title_text) > 35 else 34)
+            title_box = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, MARGIN_LEFT, MARGIN_TOP + 78, left_w, 120)
             tt = title_box.TextFrame.TextRange
             tt.Text = title_text
             tt.Font.Name = TOKENS["fonts"]["primary"]
-            tt.Font.Size = 34
+            tt.Font.Size = title_font_size
             tt.Font.Bold = msoTrue
             tt.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["white"])
             title_box.TextFrame.WordWrap = msoTrue
             title_box.TextFrame.MarginLeft = 0
+            title_box.TextFrame.MarginTop = 0
+            title_box.TextFrame.MarginRight = 0
 
             # Subtitle
             if subtitle_text:
-                sub_box = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, MARGIN_LEFT, MARGIN_TOP + 215, left_w, 100)
+                est_lines = max(1, len(title_text) // 22 + 1)
+                est_title_h = est_lines * (title_font_size * 1.25)
+                sub_top = max(MARGIN_TOP + 215, MARGIN_TOP + 78 + est_title_h + 16)
+                sub_box = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, MARGIN_LEFT, sub_top, left_w, 100)
                 sub_t = sub_box.TextFrame.TextRange
                 sub_t.Text = subtitle_text
                 sub_t.Font.Name = TOKENS["fonts"]["primary"]
-                sub_t.Font.Size = 16
+                sub_t.Font.Size = 15
                 sub_t.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["line"])
                 sub_box.TextFrame.WordWrap = msoTrue
                 sub_box.TextFrame.MarginLeft = 0
+                sub_box.TextFrame.MarginTop = 0
 
             # Right Editorial Illustration: Exact 16:9 native aspect ratio, direct rounded corners & brand border (0px mismatch)
             pic = slide.Shapes.AddPicture(str(ill_file.resolve()), False, True, right_left, img_top, right_w, img_h)
@@ -548,34 +542,45 @@ class NativeDeckAuthor:
         rendered_shapes = None
 
         if hasattr(self, "dispatcher") and self.dispatcher:
-            if has_table_data:
-                table_vjob = visual_job if visual_job.startswith("TABLE_") else (detect_optimal_archetype(spec) if detect_optimal_archetype else "TABLE_METRIC_MATRIX")
-                rendered_shapes = self.dispatcher.render(slide, spec, table_vjob, MARGIN_LEFT, content_top, USABLE_WIDTH, content_height)
-            elif self.dispatcher.can_handle(visual_job):
-                rendered_shapes = self.dispatcher.render(slide, spec, visual_job, MARGIN_LEFT, content_top, USABLE_WIDTH, content_height)
+            resolved_archetype = None
+            if self.dispatcher.can_handle(visual_job):
+                resolved_archetype = visual_job
+            elif has_table_data:
+                resolved_archetype = detect_optimal_archetype(spec) if detect_optimal_archetype else "TABLE_METRIC_MATRIX"
+            elif spec.get("chart_data") or spec.get("chart_type"):
+                resolved_archetype = detect_optimal_archetype(spec) if detect_optimal_archetype else "CHART_COLUMN_CLUSTERED"
+            elif detect_optimal_archetype:
+                candidate = detect_optimal_archetype(spec)
+                if self.dispatcher.can_handle(candidate):
+                    resolved_archetype = candidate
+
+            if resolved_archetype and self.dispatcher.can_handle(resolved_archetype):
+                rendered_shapes = self.dispatcher.render(slide, spec, resolved_archetype, MARGIN_LEFT, content_top, USABLE_WIDTH, content_height)
 
         if rendered_shapes is not None and len(rendered_shapes) > 0:
             # Successfully rendered by Master Component Library
             active_shapes = rendered_shapes
-            if not any(getattr(s, "Name", "") == "!!Stage_Hero_Container!!" for s in rendered_shapes):
-                names = [s.Name for s in rendered_shapes if s is not None]
-                if len(names) > 1:
-                    try:
-                        grp = slide.Shapes.Range(names).Group()
-                        grp.Name = "!!Stage_Hero_Container!!"
-                        active_shapes = [grp]
-                    except Exception:
-                        pass
-                elif len(names) == 1:
-                    rendered_shapes[0].Name = "!!Stage_Hero_Container!!"
-                    active_shapes = rendered_shapes
+            if self.motion_mode != "presenter_click":
+                if not any(getattr(s, "Name", "") == "!!Stage_Hero_Container!!" for s in rendered_shapes):
+                    names = [s.Name for s in rendered_shapes if s is not None]
+                    if len(names) > 1:
+                        try:
+                            grp = slide.Shapes.Range(names).Group()
+                            grp.Name = "!!Stage_Hero_Container!!"
+                            active_shapes = [grp]
+                        except Exception:
+                            pass
+                    elif len(names) == 1:
+                        rendered_shapes[0].Name = "!!Stage_Hero_Container!!"
+                        active_shapes = rendered_shapes
 
-            # Apple Keynote-Grade Choreographed Micro-Animations
+            # Apple Keynote-Grade Choreographed Micro-Animations (Presenter Click Sequence)
             if AppleChoreographedEntranceAnimator is not None:
                 AppleChoreographedEntranceAnimator.animate_slide_components(
                     slide,
                     rendered_shapes=active_shapes,
-                    header_shapes=[title_box, kicker_box]
+                    header_shapes=[title_box, kicker_box],
+                    motion_mode=self.motion_mode
                 )
         elif has_table_data or visual_job in {"DATA_TABLE", "TABLE_MATRIX", "TABLE"}:
             self._render_data_table_layout(slide, spec, atoms, content_top, content_height)

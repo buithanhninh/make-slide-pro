@@ -23,6 +23,7 @@ from component_library.motion_engine import (
     msoAnimEffectFade,
     msoAnimEffectZoom,
     msoAnimTriggerWithPrevious,
+    msoAnimTriggerOnPageClick,
     msoTrue,
     msoFalse,
 )
@@ -55,6 +56,7 @@ class MockEffect:
         self.effectId = effect_id
         self.trigger = trigger
         self.Timing = MockTiming()
+        self.Timing.TriggerType = trigger
 
 
 class MockMainSequence:
@@ -107,46 +109,46 @@ def test_transition_closing_slide():
 
 
 def test_transition_roadmap_process():
-    """Verify roadmap/process slides use Directional Push Left with 0.65s duration."""
+    """Verify roadmap/process slides use 100% pure Apple Morph Object (3954, 0.85s) for spatial continuity."""
     slide = MockSlide()
     res = AppleSlideTransitionOrchestrator.apply_transition(
         slide, 3, 10, {"role": "CONTENT", "visual_job": "PROCESS_DEVSECOPS_INFINITY_LOOP"}
     )
-    assert res["transition_name"] == "DIRECTIONAL_PUSH_LEFT"
-    assert res["effect_code"] == ppEffectPushLeft
-    assert res["duration"] == 0.65
+    assert res["transition_name"] == "APPLE_MORPH_OBJECT"
+    assert res["effect_code"] == ppEffectMorphByObject
+    assert res["duration"] == 0.85
 
 
 def test_transition_architecture():
-    """Verify architecture slides use Directional Push Up with 0.60s duration."""
+    """Verify architecture slides use 100% pure Apple Morph Object (3954, 0.85s)."""
     slide = MockSlide()
     res = AppleSlideTransitionOrchestrator.apply_transition(
         slide, 4, 10, {"role": "CONTENT", "visual_job": "ARCH_DATA_LAKEHOUSE_MEDALLION"}
     )
-    assert res["transition_name"] == "DIRECTIONAL_PUSH_UP"
-    assert res["effect_code"] == ppEffectPushUp
-    assert res["duration"] == 0.60
+    assert res["transition_name"] == "APPLE_MORPH_OBJECT"
+    assert res["effect_code"] == ppEffectMorphByObject
+    assert res["duration"] == 0.85
 
 
 def test_transition_charts_and_tables():
-    """Verify chart and table slides use Smooth Reveal with 0.55s duration."""
+    """Verify chart and table slides use 100% pure Apple Morph Object (3954, 0.85s)."""
     slide = MockSlide()
     res = AppleSlideTransitionOrchestrator.apply_transition(
         slide, 5, 10, {"role": "CONTENT", "visual_job": "CHART_PARETO_ANALYSIS"}
     )
-    assert res["transition_name"] == "SMOOTH_REVEAL"
-    assert res["effect_code"] == ppEffectReveal
-    assert res["duration"] == 0.55
+    assert res["transition_name"] == "APPLE_MORPH_OBJECT"
+    assert res["effect_code"] == ppEffectMorphByObject
+    assert res["duration"] == 0.85
 
 
 def test_transition_morph_word_matching_title():
-    """Verify consecutive slides with matching titles trigger Apple Morph Word."""
+    """Verify consecutive slides default to pure Apple Morph Object (3954, 0.85s) for seamless continuous shape flow."""
     slide = MockSlide()
     prev = {"assertion_title": "Tăng Trưởng Doanh Số Quý 3 Toàn Diện"}
     curr = {"assertion_title": "Tăng Trưởng Doanh Số Quý 4 Dự Báo", "role": "CONTENT", "visual_job": "CONTAINER_KPI_STAT_DELTA"}
     res = AppleSlideTransitionOrchestrator.apply_transition(slide, 6, 10, curr, prev)
-    assert res["transition_name"] == "APPLE_MORPH_WORD"
-    assert res["effect_code"] == ppEffectMorphByWord
+    assert res["transition_name"] == "APPLE_MORPH_OBJECT"
+    assert res["effect_code"] == ppEffectMorphByObject
     assert res["duration"] == 0.85
 
 
@@ -162,7 +164,7 @@ def test_transition_default_morph_object():
 
 
 def test_choreographed_entrance_animator_timing_and_curves():
-    """Verify entrance animator applies staggered delays, proper durations, and ease-in-out curves."""
+    """Verify entrance animator applies proper triggers, durations, and smooth easing."""
     slide = MockSlide()
     title = MockShape("!!Anchor_Assertion_Title!!")
     kicker = MockShape("!!Anchor_Kicker!!")
@@ -170,43 +172,41 @@ def test_choreographed_entrance_animator_timing_and_curves():
     badge1 = MockShape("Badge_Icon_1")
     card2 = MockShape("Card_Bg_2")
 
+    # Mode 1: presenter_click (Default)
     count = AppleChoreographedEntranceAnimator.animate_slide_components(
         slide,
         rendered_shapes=[card1, badge1, card2],
-        header_shapes=[title, kicker]
+        header_shapes=[title, kicker],
+        motion_mode="presenter_click"
     )
 
-    assert count == 5
+    # Headers remain static to avoid Morph blinking, content cards enter on click
+    assert count == 3
     seq = slide.TimeLine.MainSequence
-    assert seq.Count == 5
+    assert seq.Count == 3
 
-    # Check header animations (Fade, 0.40s duration, 0.05s delay)
-    h1 = seq(1)
-    assert h1.effectId == msoAnimEffectFade
-    assert h1.Timing.Duration == 0.40
-    assert h1.Timing.TriggerDelayTime == 0.05
-    assert h1.Timing.SmoothStart == msoTrue
-    assert h1.Timing.SmoothEnd == msoTrue
+    # Check cards have on page click trigger and smooth easing
+    for i in range(1, 4):
+        c = seq(i)
+        assert c.effectId == msoAnimEffectFade
+        assert c.Timing.Duration == 0.40
+        assert c.Timing.TriggerType == msoAnimTriggerOnPageClick
+        assert c.Timing.SmoothStart == msoTrue
+        assert c.Timing.SmoothEnd == msoTrue
 
-    # Check card 1 (Fade, 0.45s duration, 0.20s delay)
-    c1 = seq(3)
-    assert c1.effectId == msoAnimEffectFade
-    assert c1.Timing.Duration == 0.45
-    assert c1.Timing.TriggerDelayTime == pytest.approx(0.20)
-
-    # Check badge 1 (Zoom, 0.35s duration, 0.30s delay)
-    b1 = seq(4)
-    assert b1.effectId == msoAnimEffectZoom
-    assert b1.Timing.Duration == 0.35
-    assert b1.Timing.TriggerDelayTime == pytest.approx(0.30)
-
-    # Check card 2 (Fade, 0.45s duration, 0.40s delay)
-    c2 = seq(5)
-    assert c2.effectId == msoAnimEffectFade
-    assert c2.Timing.Duration == 0.45
-    assert c2.Timing.TriggerDelayTime == pytest.approx(0.40)
+    # Mode 2: kinetic_cascade
+    slide_cascade = MockSlide()
+    count_cascade = AppleChoreographedEntranceAnimator.animate_slide_components(
+        slide_cascade,
+        rendered_shapes=[card1, badge1, card2],
+        header_shapes=[title, kicker],
+        motion_mode="kinetic_cascade"
+    )
+    assert count_cascade == 5
+    seq_c = slide_cascade.TimeLine.MainSequence
+    assert seq_c.Count == 5
 
     # Invariant: all durations must strictly be between 0.15s and 1.5s for QA compliance
-    for i in range(1, seq.Count + 1):
-        eff = seq(i)
+    for i in range(1, seq_c.Count + 1):
+        eff = seq_c(i)
         assert 0.15 <= eff.Timing.Duration <= 1.5

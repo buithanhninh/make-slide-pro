@@ -1,19 +1,7 @@
 """
 make_slide_pro.py
-MAKE SLIDE PRO V8.3.0 - CANONICAL FINAL ENTERPRISE SUITE
-Universal Document-to-PowerPoint Publishing, Omniscient 16-Agent MACC-QA Council & Keynote Motion Architecture.
-
-Transforms ANY source document (.docx, .pdf, .txt, .md) into executive,
-pedagogically rich, Dual-Theme (Dark & Light) PowerPoint presentations.
-Features:
-- Exhaustive content preservation (no compression of 30-40 page documents into 5 slides)
-- Omniscient 16-Agent MACC-QA forensic council & 160/160 adversarial stress tests
-- Apple Keynote-grade 4-layer kinetic motion (Presenter Click Sequencing & Continuous Morph)
-- Pure 16:9 AI illustrations (0px mismatch, rounded corners, takeaway cards)
-- Native mathematical formula cards (FORMULA_CARD)
-- Native interactive data tables (DATA_TABLE)
-- 22 publication-grade demographic & analytical charts (CHART_AND_INSIGHTS)
-- Dialectical Self-Healing Convergence & Vietnamese orphan text eradication (\u00A0)
+MAKE SLIDE PRO V8.6.0 - CANONICAL OFFICIAL ENTERPRISE RELEASE
+Universal Document-to-PowerPoint Publishing, 165+ Mega Archetypes, Pure Morph & MACC-QA Council.
 """
 
 from __future__ import annotations
@@ -26,6 +14,24 @@ import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+try:
+    from colorama import init as colorama_init, Fore, Style
+    colorama_init(autoreset=True)
+    CYAN = Fore.CYAN
+    GREEN = Fore.GREEN
+    YELLOW = Fore.YELLOW
+    RED = Fore.RED
+    RESET = Style.RESET_ALL
+    BOLD = Style.BRIGHT
+except ImportError:
+    CYAN = GREEN = YELLOW = RED = RESET = BOLD = ""
+
+BANNER = f"""{CYAN}{BOLD}
+================================================================================
+           ★ MAKE SLIDE PRO V8.6.0 - CANONICAL OFFICIAL RELEASE ★
+    165+ Mega Archetypes | 100% Apple Morph | Atomic Presenter Sequencing
+================================================================================{RESET}"""
 
 try:
     sys.stdout.reconfigure(encoding="utf-8")
@@ -259,7 +265,7 @@ def run_interactive():
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Make Slide Pro V8.3 - Production Suite (16-Agent & Kinetic Motion)")
+    parser = argparse.ArgumentParser(description="Make Slide Pro V8.6.0 - Canonical Official Release (165+ Archetypes & Apple Keynote Motion)")
     parser.add_argument("--input", "-i", type=Path, help="Path to input document (.docx, .pdf, .txt, .md) or folder")
     parser.add_argument("--output", "-o", default=Path("Du_An_Outputs"), type=Path, help="Output root directory")
     parser.add_argument("--theme", "-t", default="ALL", choices=["DARK", "LIGHT", "ALL"], help="Slide color theme")

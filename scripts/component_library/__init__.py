@@ -1005,7 +1005,7 @@ def detect_optimal_archetype(slide_spec: Dict[str, Any]) -> str:
         return "FRAMEWORK_VALUE_CHAIN"
     elif any(kw in full_text for kw in ["swot", "điểm mạnh", "điểm yếu", "cơ hội", "thách thức"]):
         return "FRAMEWORK_SWOT_ANALYSIS"
-    elif any(kw in full_text for kw in ["pestel", "chính trị", "kinh tế", "xã hội", "pháp lý"]):
+    elif any(kw in full_text for kw in ["pestel", "pestle", "khung pestel", "mô hình pestel"]):
         return "FRAMEWORK_PESTEL_HEX"
     elif any(kw in full_text for kw in ["thẻ điểm cân bằng", "balanced scorecard", "bsc"]):
         return "FRAMEWORK_BALANCED_SCORECARD"

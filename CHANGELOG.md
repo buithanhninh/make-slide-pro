@@ -1,5 +1,30 @@
 # Changelog
 
+## 8.6.0 - 2026-09-20 (Canonical Official Release - 165+ Mega Archetypes & Apple Keynote Kinetic Motion)
+
+- **Kho Thư Viện Mega 165+ Archetypes Chuẩn Toàn Cầu**:
+  - Triển khai đầy đủ 6 phân hệ cốt lõi: 25 Tables, 35 Strategic Frameworks, 30 Processes & Timelines, 25 System Architectures, 20 Native Office Charts, 30 Keynote Containers & Dashboards.
+  - Phân rã sư phạm và cấu trúc trực quan dựa trên nghiên cứu chuyên sâu các mẫu slide hàng đầu thế giới (McKinsey, BCG, Apple Keynote, Bain, Y Combinator).
+  - 100% Native Editable: Toàn bộ bảng biểu và biểu đồ nhúng Excel Worksheet thật, hỗ trợ người dùng chuột phải mở trực tiếp trong Excel.
+- **Chuẩn Hóa 100% Chuyển Động Apple Keynote Continuous Morph**:
+  - Triệt tiêu hoàn toàn các hiệu ứng gây rối mắt (Push, Reveal, Wipe).
+  - Áp dụng **100% Pure Continuous Morph** (`ppEffectMorphByObject` = 3954, `Duration = 0.85s`) cho toàn bộ slide nội dung, đem lại trải nghiệm trượt biến hình không gian liền mạch, mượt mà chuẩn Apple Keynote.
+  - Sử dụng Cinematic Smooth Fade (`ppTransitionFadeSmoothly` = 3849, 0.65s) cho Slide Bìa và Slide Kết Luận.
+- **Kiểm Soát Nhịp Trình Chiếu Nguyên Khối (Atomic Card Presenter Sequencing)**:
+  - Khắc phục triệt để lỗi click hiện khung rỗng hoặc chữ bay rời rạc qua cơ chế `safe_group`.
+  - Mỗi lần click chuột (`msoAnimTriggerOnPageClick`) mở ra trọn vẹn 1 thẻ thông tin hoàn chỉnh (Khung + Badge + Tiêu đề + Phân cách + Nội dung + Chip KPI).
+  - Giữ cố định ray tiêu đề và số trang để Morph giữa các slide không bị giật nháy.
+- **Xóa Bỏ 100% Khoảng Trống Thừa (Zero Dead Space) & Cân Bằng Tỷ Lệ Vàng**:
+  - Tái thiết kế chiều cao các khối thẻ tự nhiên theo phân cấp thị giác (250–300pt), căn giữa trục Y.
+  - Bổ sung hệ thống Vector Connectors (`add_vector_connector`) với mũi tên tam giác cho sơ đồ DevSecOps, Critical Path CPM, Hồ dữ liệu Lakehouse Medallion, Đường ống RAG AI.
+- **Tự Động Chuẩn Hóa Biểu Đồ Tương Phản Cao (Auto-Themed High-Contrast Charts)**:
+  - Tự động gán font chữ sáng `#E2E8F0` cho trục X, trục Y, đường gióng và chú giải trên nền tối.
+  - Xóa bỏ viền xám và nền mờ mặc định của Excel, đồng bộ hoàn hảo với Dark Obsidian Canvas.
+- **Co Giãn Typography Tiêu Đề Bìa Slide Tự Động**:
+  - Dynamic font size (28–34pt) và tính toán tọa độ phụ đề động theo chiều cao thực của tiêu đề.
+- **Quy Chuẩn Mặc Định Vĩnh Viễn (Canonical Default Mandate)**:
+  - V8.6.0 là phiên bản chính thức, duy nhất và mặc định cho toàn bộ các cuộc trò chuyện và phiên làm việc tiếp theo.
+
 ## 8.3.0 - 2026-09-19 (Harden 16-Agent Architecture & Complete Production Suite)
 
 - **Gia Cố Kiến Trúc Hội Đồng 16-Agent (MACC-QA V8.3)**:

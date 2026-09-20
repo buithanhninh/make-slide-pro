@@ -110,6 +110,61 @@ class NativeChartsEngine:
                     pass
         except Exception as e:
             print(f"Warning: Chart Excel worksheet update error: {e}")
+        
+        # Automatically apply high-contrast theme styling to all charts
+        self._style_chart_text(chart)
+
+    def _style_chart_text(self, chart: Any) -> None:
+        """Styles chart axes, tick labels, legend, and background with high-contrast colors matching theme."""
+        try:
+            axis_color = hex_to_bgr("#E2E8F0" if self.theme == "DARK" else "#1E293B")
+            font_name = self.tokens.get("fonts", {}).get("primary", "Segoe UI")
+
+            # Chart Area overall font and transparency
+            try:
+                chart.ChartArea.Font.Color = axis_color
+                chart.ChartArea.Font.Name = font_name
+                chart.ChartArea.Format.Fill.Visible = msoFalse
+                chart.ChartArea.Format.Line.Visible = msoFalse
+            except Exception:
+                pass
+
+            try:
+                chart.PlotArea.Format.Fill.Visible = msoFalse
+                chart.PlotArea.Format.Line.Visible = msoFalse
+            except Exception:
+                pass
+
+            # xlCategory = 1
+            try:
+                ax = chart.Axes(1)
+                ax.TickLabels.Font.Color = axis_color
+                ax.TickLabels.Font.Size = 10
+                ax.TickLabels.Font.Name = font_name
+            except Exception:
+                pass
+
+            # xlValue = 2
+            try:
+                ay = chart.Axes(2)
+                ay.TickLabels.Font.Color = axis_color
+                ay.TickLabels.Font.Size = 9.5
+                ay.TickLabels.Font.Name = font_name
+            except Exception:
+                pass
+
+            # Legend
+            try:
+                if chart.HasLegend:
+                    chart.Legend.Font.Color = axis_color
+                    chart.Legend.Font.Size = 10
+                    chart.Legend.Font.Name = font_name
+                    chart.Legend.Format.Fill.Visible = msoFalse
+                    chart.Legend.Format.Line.Visible = msoFalse
+            except Exception:
+                pass
+        except Exception as e:
+            pass
 
     # -------------------------------------------------------------
     # 1. CLUSTERED COLUMN CHART (Cột Nhóm)
@@ -129,6 +184,7 @@ class NativeChartsEngine:
         chart.HasLegend = True
 
         self._populate_worksheet_data(chart, categories, series)
+        self._style_chart_text(chart)
         return [shape]
 
     # -------------------------------------------------------------
