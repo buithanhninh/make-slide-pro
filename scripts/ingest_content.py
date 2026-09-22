@@ -119,7 +119,51 @@ class ContentIngestor:
         sec_counter = 0
         atom_counter = 0
 
+        # Extract embedded media from docx (DMEA Engine V9.4)
+        doc_slug = re.sub(r"[^\w\-_]", "_", file_path.stem)
+        doc_slug = "_".join(doc_slug.split())
+        extracted_media = {}
+        out_media_dir = Path("assets/extracted_media") / doc_slug
+        out_media_dir.mkdir(parents=True, exist_ok=True)
+        if hasattr(doc.part, "rels"):
+            for rel_id, rel in doc.part.rels.items():
+                if "image" in rel.target_ref:
+                    try:
+                        img_part = rel.target_part
+                        fname = Path(rel.target_ref).name
+                        out_path = out_media_dir / fname
+                        with open(out_path, "wb") as f:
+                            f.write(img_part.blob)
+                        extracted_media[rel_id] = out_path
+                    except Exception:
+                        pass
+
         for p in doc.paragraphs:
+            # Check for embedded drawings/images in paragraph
+            if hasattr(p, "_p"):
+                drawings = p._p.xpath('.//w:drawing')
+                for d in drawings:
+                    blips = d.xpath('.//a:blip')
+                    for b in blips:
+                        rId = b.get('{http://schemas.openxmlformats.org/officeDocument/2006/relationships}embed')
+                        if rId in extracted_media:
+                            img_path = extracted_media[rId]
+                            atom_counter += 1
+                            current_section["atoms"].append({
+                                "atom_id": f"ATOM_{atom_counter:03d}",
+                                "section_id": current_section["section_id"],
+                                "priority": "P0",
+                                "semantic_role": "DOCUMENT_CHART_IMAGE",
+                                "verbatim": f"Biểu đồ trích xuất từ tài liệu gốc: {current_section['title']}",
+                                "normalized": f"Biểu đồ {current_section['title']}",
+                                "sha256": sha256_text(str(img_path)),
+                                "is_media": True,
+                                "is_chart_image": True,
+                                "image_path": str(img_path.resolve()),
+                                "image_file": img_path.name,
+                                "destination": "VISIBLE_SLIDE"
+                            })
+
             text = clean_source_text(p.text)
             if not text:
                 continue

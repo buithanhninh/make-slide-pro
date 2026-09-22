@@ -45,10 +45,22 @@ SLOP_PATTERNS = [
     r"delta\s*lake",
     r"apache\s*iceberg",
     r"acid\s*guaranteed",
+    r"doanh thu thuần",
+    r"giá vốn hàng bán",
+    r"\bcogs\b",
+    r"lợi nhuận gộp",
+    r"lợi nhuận trước thuế",
+    r"lợi nhuận sau thuế",
+    r"gold sla",
+    r"bronze sla",
+    r"silver sla",
+    r"scrum master",
 ]
 
 
 def audit_deck(pptx_path: Path) -> Dict[str, Any]:
+    import pythoncom
+    pythoncom.CoInitialize()
     ppt_app = win32com.client.DispatchEx("PowerPoint.Application")
     deck = None
     results = {

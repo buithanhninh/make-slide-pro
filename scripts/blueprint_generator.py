@@ -1018,13 +1018,14 @@ def pick_domain_archetype(chunk: List[Dict[str, Any]], sec_title: str, chunk_idx
     sec_lower = sec_title.lower()
     combined = chunk_text + " " + sec_lower
 
-    # 1. Tech & Systems Architecture (Module 4)
-    if any(k in combined for k in ["kiến trúc", "hệ thống", "microservices", "cloud", "api", "database", "lakehouse", "medallion", "pipeline", "rag", "agent", "bảo mật", "zero trust", "iot"]):
+    # 1. Tech & Systems Architecture (Module 4) - only for authentic software/IT docs
+    is_software_doc = any(k in combined for k in ["microservices", "kubernetes", "devsecops", "ci/cd", "rest api", "zero trust", "lakehouse medallion"])
+    if is_software_doc:
         if "medallion" in combined or "lakehouse" in combined or "kho dữ liệu" in combined:
             return "ARCH_DATA_LAKEHOUSE_MEDALLION"
-        elif "rag" in combined or "llm" in combined or "ai" in combined or "agent" in combined:
+        elif re.search(r"\b(rag|llm|genai|gpt)\b", combined):
             return "ARCH_RAG_LLM_PIPELINE"
-        elif "devsecops" in combined or "ci/cd" in combined or "vòng lặp vô cực" in combined:
+        elif "devsecops" in combined or "ci/cd" in combined:
             return "PROCESS_DEVSECOPS_INFINITY_LOOP"
         elif "microservices" in combined or "service mesh" in combined:
             return "ARCH_MICROSERVICES_MESH"
@@ -1045,11 +1046,13 @@ def pick_domain_archetype(chunk: List[Dict[str, Any]], sec_title: str, chunk_idx
         return "FRAMEWORK_MATRIX_2X2"
 
     # 3. Economics, Finance & Quantitative Metrics (Modules 1 & 5)
-    if any(k in combined for k in ["doanh thu", "chi phí", "lợi nhuận", "p&l", "ngân sách", "tài chính", "ebitda", "báo cáo tài chính"]):
+    # ACVDA V9.4: Only route to TABLE_FINANCIAL_PL if explicit corporate accounting P&L terms exist.
+    # General mentions of "chi phí" or "ngân sách" in policy/demography route to executive containers!
+    if any(k in combined for k in ["báo cáo tài chính", "doanh thu thuần", "lợi nhuận gộp", "p&l", "ebitda"]):
         return "TABLE_FINANCIAL_PL"
     if any(k in combined for k in ["pareto", "80/20"]):
         return "CHART_PARETO_ANALYSIS"
-    if any(k in combined for k in ["kpi", "chỉ số", "delta", "đo lường", "tăng trưởng", "thống kê"]):
+    if any(k in combined for k in ["kpi", "chỉ số", "delta", "đo lường", "tăng trưởng", "thống kê", "chi phí", "ngân sách"]):
         return "CONTAINER_KPI_STAT_DELTA"
 
     # 4. Comparison & Contrast (Modules 1 & 6)
@@ -1112,26 +1115,28 @@ def generate_generic_blueprints(canonical: Dict[str, Any], target_slides: int = 
     else:
         primary_cover_claim = f"Hệ thống hóa cơ sở lý luận, phương pháp luận nghiên cứu và phân tích chuyên sâu của {title_text}."
 
-    # Asset Pools for Generic Documents
-    AI_ILLUSTRATIONS = [
-        "illustration_bai_1.jpg", "ai_bai_1_community.jpg", "ai_bai_1_policy.jpg",
-        "cinematic_bai_1_hero.jpg", "illustration_bai_2_structure.jpg", "ai_bai_2_golden.jpg",
-        "ai_bai_2_aging.jpg", "ai_bai_2_quality.jpg", "ai_bai_3_fertility.jpg",
-        "cinematic_bai_3_health.jpg", "ai_bai_4_distribution.jpg", "ai_bai_4_industrial.jpg",
-        "cinematic_bai_4_megacity.jpg", "cinematic_bai_4_urban.jpg", "cinematic_bai_5_forecast.jpg",
-        "ai_bai_5_sustainability.jpg"
-    ]
-    DEMO_CHARTS = [
-        "POPULATION_PYRAMID", "AGE_STRUCTURE_RADAR", "SEX_RATIO_BIRTH_HEATMAP",
-        "FERTILITY_TRENDS", "MORTALITY_CURVE_GOMPERTZ", "LIFE_EXPECTANCY_WATERFALL",
-        "POPULATION_FORECAST_SCENARIOS", "URBANIZATION_SCURVE", "REGIONAL_DENSITY",
-        "DEMOGRAPHIC_DIVIDEND_STACKED_AREA", "LABOR_FORCE_DONUT", "HDI_DIMENSIONS",
-        "MATH_MODELS"
-    ]
+    # Asset Pools for Generic Documents (ACVDA V9.4 - Strict Per-Document Asset Sandboxing)
+    doc_slug = re.sub(r"[^\w\-_]", "_", source_path.stem)
+    doc_slug = "_".join(doc_slug.split())
+    doc_ill_dir = Path("assets/illustrations") / doc_slug
+    doc_media_dir = Path("assets/extracted_media") / doc_slug
+
+    import unicodedata
+    if not doc_ill_dir.exists():
+        nfkd = unicodedata.normalize('NFKD', doc_slug)
+        ascii_slug = "".join([c for c in nfkd if not unicodedata.combining(c)]).replace('đ', 'd').replace('Đ', 'D')
+        if (Path("assets/illustrations") / ascii_slug).exists():
+            doc_ill_dir = Path("assets/illustrations") / ascii_slug
+    if not doc_media_dir.exists():
+        nfkd = unicodedata.normalize('NFKD', doc_slug)
+        ascii_slug = "".join([c for c in nfkd if not unicodedata.combining(c)]).replace('đ', 'd').replace('Đ', 'D')
+        if (Path("assets/extracted_media") / ascii_slug).exists():
+            doc_media_dir = Path("assets/extracted_media") / ascii_slug
+
     ICONS_PALETTE = ["activity", "target", "trending-up", "book-open", "shield", "users", "award", "zap", "calculator", "sliders"]
 
     slides = []
-    # 1. Cover Slide (V8.6.0: Smooth Fade 0.65s)
+    # 1. Cover Slide (V9.4: Smooth Fade 0.65s, Contextual Hero Image)
     slides.append({
         "slide_id": "SLIDE_01",
         "role": "COVER",
@@ -1142,14 +1147,15 @@ def generate_generic_blueprints(canonical: Dict[str, Any], target_slides: int = 
         "visual_anchor": "BRAND_COVER",
         "transition": "fade",
         "transition_duration": 0.65,
-        "illustration": "illustration_bai_1.jpg",
+        "illustration": "cover_hero.png",
+        "image_path": str((doc_ill_dir / "cover_hero.png").resolve()) if (doc_ill_dir / "cover_hero.png").exists() else "",
         "speaker_notes": f"Kính chào quý học viên, hôm nay chúng ta nghiên cứu chuyên đề {title_text}.",
         "source_footer": f"Tài liệu đào tạo chuẩn hóa: {source_path.name}"
     })
 
     # Pre-calculate counts across sections for dynamic chunking
     all_narrative_atoms_count = sum(
-        len([a for a in sec.get("atoms", []) if not (a.get("is_table") or a.get("is_formula"))])
+        len([a for a in sec.get("atoms", []) if not (a.get("is_table") or a.get("is_formula") or a.get("is_chart_image"))])
         for sec in sections
     )
     all_tables_count = sum(
@@ -1160,9 +1166,13 @@ def generate_generic_blueprints(canonical: Dict[str, Any], target_slides: int = 
         len([a for a in sec.get("atoms", []) if a.get("is_formula") or a.get("semantic_role") == "MATHEMATICAL_FORMULA"])
         for sec in sections
     )
+    all_media_count = sum(
+        len([a for a in sec.get("atoms", []) if a.get("is_chart_image")])
+        for sec in sections
+    )
 
     if target_slides > 0:
-        needed_narrative = max(1, target_slides - 2 - all_tables_count - all_formulas_count)
+        needed_narrative = max(1, target_slides - 2 - all_tables_count - all_formulas_count - all_media_count)
         if all_narrative_atoms_count > 0:
             optimal_chunk_size = max(1, all_narrative_atoms_count // needed_narrative)
         else:
@@ -1171,8 +1181,6 @@ def generate_generic_blueprints(canonical: Dict[str, Any], target_slides: int = 
         optimal_chunk_size = 3
 
     slide_counter = 1
-    ill_idx = 1
-    chart_idx = 0
 
     first_content_sec = True
     for sec in sections:
@@ -1188,10 +1196,44 @@ def generate_generic_blueprints(canonical: Dict[str, Any], target_slides: int = 
                 sec_clean = f"Bối Cảnh & {sec_clean}"
                 sec_title = f"BỐI CẢNH & {sec_title}"
 
-        # Separate tables, formulas, and general narrative atoms
+        # Separate tables, formulas, media, and general narrative atoms
         table_atoms = [a for a in atoms if a.get("is_table") or a.get("table_data")]
         formula_atoms = [a for a in atoms if a.get("is_formula") or a.get("semantic_role") == "MATHEMATICAL_FORMULA"]
-        narrative_atoms = [a for a in atoms if not (a.get("is_table") or a.get("is_formula"))]
+        media_atoms = [a for a in atoms if a.get("is_chart_image") or a.get("semantic_role") == "DOCUMENT_CHART_IMAGE"]
+        narrative_atoms = [a for a in atoms if not (a.get("is_table") or a.get("is_formula") or a.get("is_chart_image") or a.get("semantic_role") == "DOCUMENT_CHART_IMAGE")]
+
+        # 2.0 Render Document Extracted Media / Chart Slides (DMEA Engine)
+        for m_atom in media_atoms:
+            slide_counter += 1
+            slides.append({
+                "slide_id": f"SLIDE_{slide_counter:02d}",
+                "role": "CONTENT",
+                "section": sec_title.upper()[:30],
+                "assertion_title": clean_title(f"Biểu Đồ Thực Chứng: {sec_clean}", 14),
+                "primary_claim": clean_summary(m_atom.get("verbatim", f"Số liệu và xu hướng phát triển được trích xuất từ tài liệu gốc {sec_clean}."), 22),
+                "visual_job": "CHART_AND_INSIGHTS",
+                "visual_anchor": "DATA_CHART_HERO",
+                "chart_file": m_atom.get("image_file", ""),
+                "image_path": m_atom.get("image_path", ""),
+                "transition": "morph",
+                "transition_duration": 0.85,
+                "atomic_card": True,
+                "safe_group": True,
+                "atoms": [
+                    {
+                        "title": "Dữ Liệu Thực Chứng",
+                        "text": clean_summary(f"Dữ liệu khảo sát và thống kê thực chứng của {sec_clean}.", 25),
+                        "icon": "trending-up"
+                    },
+                    {
+                        "title": "Hàm Ý Chính Sách",
+                        "text": clean_summary(f"Cơ sở thực tiễn then chốt phục vụ công tác điều hành và hoạch định chính sách dân số {sec_clean.lower()}.", 25),
+                        "icon": "bar-chart-2"
+                    }
+                ],
+                "speaker_notes": f"Phân tích biểu đồ số liệu thực chứng của {sec_clean}.",
+                "source_footer": f"Nguồn trích dẫn: {source_path.name}"
+            })
 
         # 2.1 Render Table Slides
         for t_atom in table_atoms:
@@ -1268,16 +1310,13 @@ def generate_generic_blueprints(canonical: Dict[str, Any], target_slides: int = 
                 chunk_text = " ".join([a.get("verbatim", "") for a in chunk])
                 detected = detect_optimal_archetype({"assertion_title": sec_clean, "primary_claim": chunk_text, "atoms": chunk})
 
-            if detected and "BENTO" not in detected:
-                vjob = detected
-            elif slide_counter % 6 == 4:
+            current_ill = None
+            if slide_counter % 8 == 4 and doc_ill_dir.exists() and any(doc_ill_dir.glob("editorial_*.png")):
                 vjob = "EDITORIAL_HERO"
-                current_ill = AI_ILLUSTRATIONS[ill_idx % len(AI_ILLUSTRATIONS)]
-                ill_idx += 1
-            elif has_metric and DEMO_CHARTS:
-                vjob = "CHART_AND_INSIGHTS"
-                current_chart = DEMO_CHARTS[chart_idx % len(DEMO_CHARTS)]
-                chart_idx += 1
+                ed_candidates = sorted(list(doc_ill_dir.glob("editorial_*.png")))
+                current_ill = ed_candidates[(slide_counter // 8) % len(ed_candidates)].name
+            elif has_metric:
+                vjob = "CONTAINER_KPI_STAT_DELTA"
             else:
                 vjob = pick_domain_archetype(chunk, sec_clean, chunk_idx, slide_counter)
 
@@ -1318,13 +1357,9 @@ def generate_generic_blueprints(canonical: Dict[str, Any], target_slides: int = 
 
             primary_claim = clean_summary(chunk[0].get("verbatim", sec_title), 22)
             
-            # Assertion title
-            if len(narrative_atoms) > chunk_size:
-                part_num = (chunk_idx // chunk_size) + 1
-                total_parts = (len(narrative_atoms) + chunk_size - 1) // chunk_size
-                assertion_title = clean_title(f"{sec_clean}: {card_atoms[0]['title']} (Phần {part_num}/{total_parts})", 16)
-            else:
-                assertion_title = clean_title(f"{sec_clean}: {card_atoms[0]['title']}", 16)
+            # Clean pedagogical assertion title (Zero robotic '(Phần X/Y)' serial slop)
+            card_lead = card_atoms[0]['title'] if card_atoms else "Trọng Tâm"
+            assertion_title = clean_title(f"{sec_clean}: {card_lead}", 16)
 
             slide_spec = {
                 "slide_id": f"SLIDE_{slide_counter:02d}",
@@ -1343,10 +1378,9 @@ def generate_generic_blueprints(canonical: Dict[str, Any], target_slides: int = 
                 "source_footer": f"Tài liệu chuẩn hóa: {source_path.name}"
             }
 
-            if vjob == "EDITORIAL_HERO":
+            if vjob == "EDITORIAL_HERO" and current_ill:
                 slide_spec["illustration"] = current_ill
-            elif vjob == "CHART_AND_INSIGHTS":
-                slide_spec["chart_type"] = current_chart
+                slide_spec["image_path"] = str((doc_ill_dir / current_ill).resolve()) if (doc_ill_dir / current_ill).exists() else ""
 
             slides.append(slide_spec)
 
@@ -1425,11 +1459,13 @@ def generate_blueprints_from_canonical(canonical: Dict[str, Any], doc_name: str 
 
     if is_course_2:
         raw_bp = get_course2_blueprints(doc_name or check_str, target_slides=target_slides)
+    elif ("chuyên đề" in check_str or "điều chỉnh mức sinh" in check_str or target_slides > 50):
+        raw_bp = generate_generic_blueprints(canonical, target_slides=target_slides)
     elif any(k in check_str for k in ["nhap mon", "nhập môn"]):
         raw_bp = cbd.get_lesson_blueprints_bai_1()
     elif any(k in check_str for k in ["quy mo-co cau", "qui mô", "chất lượng ds", "chat luong ds"]):
         raw_bp = cbd.get_lesson_blueprints_bai_2()
-    elif any(k in check_str for k in ["bien dong", "biến động", "mức sinh"]):
+    elif any(k in check_str for k in ["bien dong dan so", "biến động dân số", "biến động tự nhiên"]):
         raw_bp = cbd.get_lesson_blueprints_bai_3()
     elif any(k in check_str for k in ["phan bo", "phân bố", "di dan", "đô thị hóa", "do thi hoa"]):
         raw_bp = cbd.get_lesson_blueprints_bai_4()

@@ -170,15 +170,29 @@ class NativeTablesEngine:
     # 3. TABLE_FINANCIAL_PL (Báo Cáo Tài Chính P&L)
     def render_financial_table(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> Any:
         table_data = spec.get("table_data", {})
-        headers = table_data.get("headers", ["Khoản Mục Tài Chính (Tỷ VNĐ)", "Năm 2022", "Năm 2023", "Năm 2024 (KH)", "Tăng Trưởng YoY"])
-        rows = table_data.get("rows", [
-            ["Doanh Thu Thuần", "1,240.5", "1,580.2", "2,050.0", "+29.7%"],
-            ["  - Giá vốn hàng bán (COGS)", "(720.0)", "(890.5)", "(1,120.0)", "+25.8%"],
-            ["Lợi Nhuận Gộp", "520.5", "689.7", "930.0", "+34.8%"],
-            ["  - Chi phí bán hàng & quản lý", "(210.0)", "(260.4)", "(320.0)", "+22.9%"],
-            ["Lợi Nhuận Trước Thuế (EBT)", "310.5", "429.3", "610.0", "+42.1%"],
-            ["Lợi Nhuận Sau Thuế (Ròng)", "248.4", "343.4", "488.0", "+42.1%"]
-        ])
+        headers = table_data.get("headers")
+        rows = table_data.get("rows")
+        if not rows:
+            atoms = spec.get("atoms", [])
+            if atoms:
+                headers = ["Yếu Tố Trọng Tâm", "Nội Dung Phân Tích Thực Tiễn", "Định Hướng / Hàm Ý"]
+                rows = []
+                for a in atoms[:5]:
+                    t = a.get("title", "Chỉ số / Yếu tố")
+                    txt = a.get("text", a.get("verbatim", ""))
+                    p1 = txt[:50] if len(txt) > 50 else txt
+                    p2 = txt[50:110] if len(txt) > 50 else "Đồng bộ giải pháp thực thi"
+                    rows.append([t, p1, p2])
+            else:
+                headers = ["Khoản Mục Tài Chính (Tỷ VNĐ)", "Năm 2022", "Năm 2023", "Năm 2024 (KH)", "Tăng Trưởng YoY"]
+                rows = [
+                    ["Doanh Thu Thuần", "1,240.5", "1,580.2", "2,050.0", "+29.7%"],
+                    ["  - Giá vốn hàng bán (COGS)", "(720.0)", "(890.5)", "(1,120.0)", "+25.8%"],
+                    ["Lợi Nhuận Gộp", "520.5", "689.7", "930.0", "+34.8%"],
+                    ["  - Chi phí bán hàng & quản lý", "(210.0)", "(260.4)", "(320.0)", "+22.9%"],
+                    ["Lợi Nhuận Trước Thuế (EBT)", "310.5", "429.3", "610.0", "+42.1%"],
+                    ["Lợi Nhuận Sau Thuế (Ròng)", "248.4", "343.4", "488.0", "+42.1%"]
+                ]
 
         num_rows = len(rows) + 1
         num_cols = len(headers)

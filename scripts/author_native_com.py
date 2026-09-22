@@ -235,6 +235,11 @@ class NativeDeckAuthor:
         slides_spec = blueprints.get("slides", [])
         total_slides = len(slides_spec)
 
+        import re
+        clean_stem = re.sub(r"_(Dark|Light)$", "", output_pptx.stem, flags=re.IGNORECASE)
+        clean_stem = re.sub(r" - (Dark|Light)$", "", clean_stem, flags=re.IGNORECASE)
+        self.doc_slug = blueprints.get("doc_slug") or "_".join(re.sub(r"[^\w\-_]", "_", clean_stem).split())
+
         # V8.6.0: Always author 100% native PowerPoint decks with genuine vector shapes,
         # native Office tables, and embedded Excel charts via MasterComponentDispatcher.
 
@@ -279,6 +284,28 @@ class NativeDeckAuthor:
         self.presentation.SaveAs(str(output_pptx.resolve()))
         print(f"Deck saved successfully at: {output_pptx.resolve()}")
         return output_pptx
+
+    def _resolve_asset_dir(self, base_dir: Path) -> Path:
+        doc_slug = getattr(self, "doc_slug", "")
+        if not doc_slug:
+            return base_dir
+        p = base_dir / doc_slug
+        if p.exists():
+            return p
+        import unicodedata
+        nfkd = unicodedata.normalize('NFKD', doc_slug)
+        ascii_slug = "".join([c for c in nfkd if not unicodedata.combining(c)]).replace('đ', 'd').replace('Đ', 'D')
+        p_ascii = base_dir / ascii_slug
+        if p_ascii.exists():
+            return p_ascii
+        clean_target = "".join(c.lower() for c in ascii_slug if c.isalnum())
+        if base_dir.exists():
+            for d in base_dir.iterdir():
+                if d.is_dir():
+                    d_clean = "".join(c.lower() for c in unicodedata.normalize('NFKD', d.name) if not unicodedata.combining(c) and c.isalnum())
+                    if clean_target and (clean_target in d_clean or d_clean in clean_target):
+                        return d
+        return p
 
     def _insert_icon(self, slide: Any, icon_name: str, left: float, top: float, size: float = 24.0):
         clean_name = icon_name.lower().strip()
@@ -398,19 +425,24 @@ class NativeDeckAuthor:
         slide.Background.Fill.Solid()
         slide.Background.Fill.ForeColor.RGB = hex_to_bgr(TOKENS["colors"]["navy"])
 
-        ill_name = spec.get("illustration") or spec.get("image")
+        doc_slug = getattr(self, "doc_slug", "")
+        doc_ill_dir = self._resolve_asset_dir(ILLUSTRATIONS_DIR)
+        ill_name = spec.get("illustration") or spec.get("image") or spec.get("image_path")
         ill_file = None
-        if ill_name and (ILLUSTRATIONS_DIR / ill_name).exists():
-            ill_file = ILLUSTRATIONS_DIR / ill_name
-        elif ill_name and (PROJECT_ROOT / ill_name).exists():
-            ill_file = PROJECT_ROOT / ill_name
-        elif ill_name and Path(ill_name).is_absolute() and Path(ill_name).exists():
+        if ill_name and Path(ill_name).is_absolute() and Path(ill_name).exists():
             ill_file = Path(ill_name)
-        elif (ILLUSTRATIONS_DIR / f"illustration_bai_{lesson_idx}.jpg").exists():
+        elif ill_name and doc_ill_dir.exists() and (doc_ill_dir / ill_name).exists():
+            ill_file = doc_ill_dir / ill_name
+        elif doc_ill_dir.exists() and (doc_ill_dir / "cover_hero.png").exists():
+            ill_file = doc_ill_dir / "cover_hero.png"
+        elif doc_ill_dir.exists() and (doc_ill_dir / "cover_hero.jpg").exists():
+            ill_file = doc_ill_dir / "cover_hero.jpg"
+        elif ill_name and (ILLUSTRATIONS_DIR / ill_name).exists():
+            ill_file = ILLUSTRATIONS_DIR / ill_name
+        elif (ILLUSTRATIONS_DIR / f"illustration_bai_{lesson_idx}.jpg").exists() and lesson_idx in [1, 2, 3, 4, 5, 6] and ("bai_" in doc_slug.lower() or "bài" in doc_slug.lower()):
             ill_file = ILLUSTRATIONS_DIR / f"illustration_bai_{lesson_idx}.jpg"
         else:
-            all_ills = sorted(list(ILLUSTRATIONS_DIR.glob("*.jpg")))
-            ill_file = all_ills[0] if all_ills else (ILLUSTRATIONS_DIR / f"illustration_bai_{lesson_idx}.jpg")
+            ill_file = None
         has_illustration = (ill_file is not None and ill_file.exists()) and not is_summary
 
         if has_illustration:
@@ -776,31 +808,37 @@ class NativeDeckAuthor:
         right_left = MARGIN_LEFT + card_w + 18.0
         right_w = USABLE_WIDTH - card_w - 18.0
 
-        ill_name = spec.get("illustration") or spec.get("image")
+        doc_slug = getattr(self, "doc_slug", "")
+        doc_ill_dir = self._resolve_asset_dir(ILLUSTRATIONS_DIR)
+        doc_media_dir = self._resolve_asset_dir(PROJECT_ROOT / "assets" / "extracted_media")
+        ill_name = spec.get("illustration") or spec.get("image") or spec.get("image_path")
         ill_file = None
-        if ill_name and (ILLUSTRATIONS_DIR / ill_name).exists():
-            ill_file = ILLUSTRATIONS_DIR / ill_name
-        elif ill_name and (PROJECT_ROOT / ill_name).exists():
-            ill_file = PROJECT_ROOT / ill_name
-        elif ill_name and Path(ill_name).is_absolute() and Path(ill_name).exists():
+        if ill_name and Path(ill_name).is_absolute() and Path(ill_name).exists():
             ill_file = Path(ill_name)
-        elif (ILLUSTRATIONS_DIR / f"illustration_bai_{lesson_idx}.jpg").exists():
-            ill_file = ILLUSTRATIONS_DIR / f"illustration_bai_{lesson_idx}.jpg"
+        elif ill_name and doc_ill_dir.exists() and (doc_ill_dir / ill_name).exists():
+            ill_file = doc_ill_dir / ill_name
+        elif ill_name and doc_media_dir.exists() and (doc_media_dir / ill_name).exists():
+            ill_file = doc_media_dir / ill_name
+        elif doc_ill_dir.exists():
+            # Dedicated illustrations in document sandbox
+            cands = list(doc_ill_dir.glob("editorial_*.png")) + list(doc_ill_dir.glob("editorial_*.jpg"))
+            if cands:
+                pick_idx = abs(hash(spec.get("slide_id", "0"))) % len(cands)
+                ill_file = cands[pick_idx]
+            elif (doc_ill_dir / "cover_hero.png").exists():
+                ill_file = doc_ill_dir / "cover_hero.png"
+            elif (doc_ill_dir / "cover_hero.jpg").exists():
+                ill_file = doc_ill_dir / "cover_hero.jpg"
+        elif (ILLUSTRATIONS_DIR / f"illustration_bai_{lesson_idx}.jpg").exists() and lesson_idx in [1, 2, 3, 4, 5, 6] and ("bai_" in doc_slug.lower() or "bài" in doc_slug.lower()):
+            cands = list(ILLUSTRATIONS_DIR.glob(f"*bai_{lesson_idx}*.jpg"))
+            if cands:
+                ill_file = cands[0]
         else:
-            candidates = list(ILLUSTRATIONS_DIR.glob(f"*bai_{lesson_idx}*.jpg"))
-            if candidates:
-                ill_file = candidates[0]
-            else:
-                all_ills = sorted(list(ILLUSTRATIONS_DIR.glob("*.jpg")))
-                if all_ills:
-                    pick_idx = abs(hash(spec.get("slide_id", "0"))) % len(all_ills)
-                    ill_file = all_ills[pick_idx]
-                else:
-                    ill_file = ILLUSTRATIONS_DIR / f"illustration_bai_{lesson_idx}.jpg"
+            ill_file = None
 
         # === 1. Left Image Container & Takeaway Card Group ===
         left_shapes = []
-        if ill_file.exists():
+        if ill_file is not None and ill_file.exists():
             # Exact 16:9 native aspect ratio (1376x768 = 1.792), direct rounded corners and border (0px mismatch)
             img_h = round(card_w / (1376.0 / 768.0), 1)
             pic = slide.Shapes.AddPicture(str(ill_file.resolve()), False, True, MARGIN_LEFT, top, card_w, img_h)
@@ -938,20 +976,37 @@ class NativeDeckAuthor:
 
     def _render_chart_and_insights_layout(self, slide: Any, spec: Dict[str, Any], atoms: List[Any], top: float, height: float):
         theme_suffix = "_light.png" if self.theme == "LIGHT" else "_dark.png"
-        chart_file_spec = spec.get("chart_file")
-        if chart_file_spec and (CHARTS_DIR / chart_file_spec).exists():
+        doc_slug = getattr(self, "doc_slug", "")
+        doc_media_dir = self._resolve_asset_dir(PROJECT_ROOT / "assets" / "extracted_media")
+        chart_file_spec = spec.get("chart_file") or spec.get("image_path") or spec.get("image")
+        chart_file = None
+        if chart_file_spec and Path(chart_file_spec).is_absolute() and Path(chart_file_spec).exists():
+            chart_file = Path(chart_file_spec)
+        elif chart_file_spec and doc_media_dir.exists() and (doc_media_dir / chart_file_spec).exists():
+            chart_file = doc_media_dir / chart_file_spec
+        elif doc_media_dir.exists():
+            # Match Biểu X in section or title
+            sec_t = spec.get("section", "") + " " + spec.get("assertion_title", "")
+            m = re.search(r"biểu\s*([0-9]+)", sec_t, re.IGNORECASE)
+            if m:
+                b_num = int(m.group(1))
+                for ext in [".png", ".jpg", ".emf"]:
+                    cand = doc_media_dir / f"image{b_num}{ext}"
+                    if cand.exists():
+                        chart_file = cand
+                        break
+        elif chart_file_spec and (CHARTS_DIR / chart_file_spec).exists():
             chart_file = CHARTS_DIR / chart_file_spec
-        elif chart_file_spec:
-            base_name = chart_file_spec.replace("_dark.png", "").replace("_light.png", "").replace(".png", "")
-            themed = CHARTS_DIR / f"{base_name}{theme_suffix}"
-            chart_file = themed if themed.exists() else (CHARTS_DIR / chart_file_spec)
-        else:
+        elif ("bai_" in doc_slug.lower() or "bài" in doc_slug.lower()):
+            # Only for legacy Course 1
             chart_type = spec.get("chart_type", "POPULATION_PYRAMID")
             themed_chart_file = CHARTS_DIR / f"chart_{chart_type.lower()}{theme_suffix}"
             if themed_chart_file.exists():
                 chart_file = themed_chart_file
             else:
                 chart_file = CHARTS_DIR / f"chart_{chart_type.lower()}.png"
+        else:
+            chart_file = None
 
         chart_w = USABLE_WIDTH * 0.52
         insights_w = USABLE_WIDTH * 0.45
@@ -959,7 +1014,7 @@ class NativeDeckAuthor:
 
         # === 1. Left Container: Native Themed Chart with Perfect Aspect Ratio ===
         chart_shapes = []
-        if chart_file.exists():
+        if chart_file is not None and chart_file.exists():
             # Exact aspect ratio preservation (1408x1078 = 1.30612), direct rounded corners and border
             ideal_h = round(chart_w / (1408.0 / 1078.0), 1)
             chart_h = min(height, ideal_h)
@@ -978,8 +1033,27 @@ class NativeDeckAuthor:
             chart_bg.Fill.Solid()
             chart_bg.Fill.ForeColor.RGB = hex_to_bgr(TOKENS["colors"]["surface"])
             chart_bg.Line.Visible = msoTrue
-            chart_bg.Line.ForeColor.RGB = hex_to_bgr(TOKENS["colors"]["card_border"])
+            chart_bg.Line.ForeColor.RGB = hex_to_bgr(TOKENS["colors"]["brand"])
+            chart_bg.Line.Weight = 1.5
             chart_shapes.append(chart_bg)
+
+            # Icon badge and metric assertion
+            chart_shapes.extend(self._create_icon_badge(slide, "bar-chart-2", MARGIN_LEFT + 32, top + 36, 42, 24))
+            tb_stat = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, MARGIN_LEFT + 24, top + 70, chart_w - 48, height - 90)
+            tf_stat = tb_stat.TextFrame
+            tf_stat.WordWrap = msoTrue
+            p_s1 = tf_stat.TextRange.Paragraphs(1)
+            p_s1.Text = "CHỈ SỐ THỰC CHỨNG & ĐỊNH LƯỢNG\n"
+            p_s1.Font.Name = TOKENS["fonts"]["primary"]
+            p_s1.Font.Size = 13
+            p_s1.Font.Bold = msoTrue
+            p_s1.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["brand"])
+            p_s2 = tf_stat.TextRange.Paragraphs(2)
+            p_s2.Text = spec.get("primary_claim", "Phân tích số liệu và xu hướng phát triển thực tế.")
+            p_s2.Font.Name = TOKENS["fonts"]["primary"]
+            p_s2.Font.Size = 15
+            p_s2.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["white"])
+            chart_shapes.append(tb_stat)
 
         # Package Chart Container for Continuous Seamless Morph
         names = [s.Name for s in chart_shapes if s is not None]
