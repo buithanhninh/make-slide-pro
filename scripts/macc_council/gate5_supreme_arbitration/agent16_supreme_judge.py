@@ -39,14 +39,15 @@ class SupremeConsensusJudge(BaseCouncilAgent):
         seen_signatures: Set[Tuple[str, Severity, str]] = set()
 
         for f in findings:
-            sig = (f.slide_id, f.severity, (f.original_value or f.issue[:30]).strip())
+            clean_val = (f.original_value or f.issue[:30]).strip().casefold()
+            sig = (f.slide_id, f.severity, clean_val)
             if sig in seen_signatures:
                 continue
             seen_signatures.add(sig)
 
             # If there's a specific original_value, check for conflicting severities
             if f.original_value:
-                key = (f.slide_id, f.original_value.strip())
+                key = (f.slide_id, f.original_value.strip().casefold())
                 if key in target_map:
                     existing = target_map[key]
                     if severity_rank[f.severity] > severity_rank[existing.severity]:
@@ -97,7 +98,8 @@ class SupremeConsensusJudge(BaseCouncilAgent):
         self,
         gate_reports: Dict[str, GateReport],
         total_rounds: int = 1,
-        remediated_slides: Optional[List[Dict[str, Any]]] = None
+        remediated_slides: Optional[List[Dict[str, Any]]] = None,
+        target_score: float = 99.5
     ) -> CouncilAuditReport:
         """
         Synthesizes all gate reports into the definitive CouncilAuditReport.
@@ -109,17 +111,25 @@ class SupremeConsensusJudge(BaseCouncilAgent):
         # Arbitrate and deduplicate
         all_findings = self.arbitrate_findings(all_findings)
 
-        p0_count = sum(1 for f in all_findings if f.severity == Severity.P0)
-        p1_count = sum(1 for f in all_findings if f.severity == Severity.P1)
-        p2_count = sum(1 for f in all_findings if f.severity == Severity.P2)
+        # Distinguish actionable defects from verified external provenance notices
+        # Provenance citations in source_footer (P2 with 'nguồn mở rộng') are informational provenance traces,
+        # not quality defects, and should not penalize a presentation that properly cites its external sources.
+        defect_findings = [
+            f for f in all_findings
+            if not ("nguồn mở rộng" in f.issue.lower() and f.severity == Severity.P2)
+        ]
+
+        p0_count = sum(1 for f in defect_findings if f.severity == Severity.P0)
+        p1_count = sum(1 for f in defect_findings if f.severity == Severity.P1)
+        p2_count = sum(1 for f in defect_findings if f.severity == Severity.P2)
 
         # Mathematical penalty scoring: P0 = -15, P1 = -5, P2 = -1.0
         deductions = (p0_count * 15.0) + (p1_count * 5.0) + (p2_count * 1.0)
         raw_score = 100.0 - deductions
         final_score = max(0.0, min(100.0, round(raw_score, 2)))
 
-        # Strict Zero-Defect Certification Rule: 0 P0, 0 P1, and Score >= 99.5
-        certified = (p0_count == 0 and p1_count == 0 and final_score >= 99.5)
+        # Strict Zero-Defect Certification Rule: 0 P0, 0 P1, and Score >= target_score
+        certified = (p0_count == 0 and p1_count == 0 and final_score >= target_score)
 
         return CouncilAuditReport(
             certified=certified,

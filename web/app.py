@@ -93,9 +93,9 @@ except ImportError:
     MultiAgentQABoard = None
 
 app = FastAPI(
-    title="Make Slide Pro Web Studio V8.3",
+    title="Make Slide Pro Web Studio V8.6.0",
     description="Universal Document-to-PowerPoint Publishing & 16-Agent Quality Council Studio",
-    version="8.3.0",
+    version="8.6.0",
 )
 
 app.add_middleware(
@@ -740,9 +740,9 @@ async def review_qa(payload: Dict[str, str]):
         for a in sec.get("atoms", [])
     )
     
-    # 16-Agent Omniscient Council (MACC-QA V8.0)
+    # 16-Agent Omniscient Council (MACC-QA V8.6.0)
     if MultiRoundCouncilOrchestrator:
-        orchestrator = MultiRoundCouncilOrchestrator()
+        orchestrator = MultiRoundCouncilOrchestrator(max_rounds=5, target_score=99.5)
         
         def on_round(round_idx, rep):
             pct = min(95, round_idx * 30)
@@ -757,7 +757,7 @@ async def review_qa(payload: Dict[str, str]):
         report = orchestrator.run_convergence_loop(
             target=bp,
             context={"source_text": all_text},
-            max_rounds=3,
+            max_rounds=5,
             on_round_callback=on_round
         )
 
@@ -784,7 +784,7 @@ async def review_qa(payload: Dict[str, str]):
             session_id,
             "MACC_COUNCIL",
             100,
-            f"Chứng nhận hoàn tất MACC-QA V8.0! Điểm: {report.final_score:.1f}/100. P0={report.p0_count}, P1={report.p1_count}",
+            f"Chứng nhận hoàn tất MACC-QA V8.6.0! Điểm: {report.final_score:.1f}/100. P0={report.p0_count}, P1={report.p1_count}",
             "success" if report.certified else "warn"
         )
 
@@ -893,7 +893,31 @@ def _execute_render_job(session_id: str, theme: str):
             finally:
                 pythoncom.CoUninitialize()
         except Exception as e:
-            sync_broadcast(session_id, "WARNING", 90, f"Lưu ý trích xuất ảnh xem trước: {str(e)}", "warn")
+            # Fallback for Linux or environments without PowerPoint COM
+            import subprocess
+            try:
+                for th, d_path in deck_paths.items():
+                    if not d_path.exists():
+                        continue
+                    th_folder = s_dir / 'previews' / th.lower()
+                    th_folder.mkdir(parents=True, exist_ok=True)
+                    subprocess.run(
+                        ['libreoffice', '--headless', '--convert-to', 'pdf', str(d_path), '--outdir', str(th_folder)],
+                        capture_output=True, timeout=60
+                    )
+                    pdf_candidates = list(th_folder.glob('*.pdf'))
+                    if pdf_candidates:
+                        pdf_path = pdf_candidates[0]
+                        subprocess.run(
+                            ['pdftoppm', '-png', '-r', '150', str(pdf_path), str(th_folder / 'slide')],
+                            capture_output=True, timeout=60
+                        )
+                        slide_files = []
+                        for img_path in sorted(th_folder.glob('slide-*.png')):
+                            slide_files.append(f'/sessions/{session_id}/previews/{th.lower()}/{img_path.name}')
+                        previews[th] = slide_files
+            except Exception as sub_e:
+                sync_broadcast(session_id, 'WARNING', 90, f'Preview notice: {str(sub_e)}', 'warn')
 
         save_session_json(session_id, "previews.json", previews)
 

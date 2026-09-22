@@ -7,6 +7,12 @@ Simulates a multi-round dialectical review and auto-remediation loop on an adver
 import sys
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 # Add project root to sys.path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 
@@ -120,7 +126,7 @@ def test_full_council_convergence():
     assert len(rem_slides) >= 5, "Conclusion slide must be appended to fix abrupt ending"
     assert rem_slides[-1]["archetype"] == "conclusion_cta", "Last slide must be conclusion_cta"
 
-    print("\n🎉 Full Council E2E Dialectical Convergence Test Passed 100%!")
+    print("\n[SUCCESS] Full Council E2E Dialectical Convergence Test Passed 100%!")
 
 
 if __name__ == "__main__":

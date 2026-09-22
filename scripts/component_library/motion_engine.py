@@ -73,10 +73,10 @@ class AppleSlideTransitionOrchestrator:
             duration = 0.60
             transition_name = "CINEMATIC_SMOOTH_FADE"
         else:
-            # 100% PURE CONTINUOUS MORPH ON ALL CONTENT SLIDES
-            effect = ppEffectMorphByObject
+            # 100% PURE CONTINUOUS MORPH ON ALL CONTENT SLIDES (Word & Shape Interpolation)
+            effect = ppEffectMorphByWord
             duration = 0.85
-            transition_name = "APPLE_MORPH_OBJECT"
+            transition_name = "APPLE_MORPH_WORD"
 
         # Apply to COM
         try:
@@ -120,7 +120,8 @@ class AppleChoreographedEntranceAnimator:
         Adds micro-animations to slide components.
         In 'presenter_click' (default):
         - Header stays static (for continuous Morph stability)
-        - Each component card enters on click (msoAnimTriggerOnPageClick)
+        - Card 0 (Hero / Anchor Card) enters via the Slide Transition Morph directly (NO intra-slide animation)
+        - Subsequent cards (idx >= 1) enter on click (msoAnimTriggerOnPageClick)
         In 'kinetic_cascade':
         - Staggered cascade with msoAnimTriggerWithPrevious
         """
@@ -131,49 +132,65 @@ class AppleChoreographedEntranceAnimator:
         effect_count = 0
         is_click_mode = (motion_mode.lower() == "presenter_click")
 
-        # Phase 1: Header & Kicker
-        # In presenter_click mode, headers stay static so Morph between slides is 100% rock solid.
-        if not is_click_mode and header_shapes:
-            for s in header_shapes:
-                if s is not None:
-                    try:
-                        eff = seq.AddEffect(Shape=s, effectId=msoAnimEffectFade, Level=msoAnimateLevelNone, trigger=msoAnimTriggerWithPrevious)
-                        eff.Timing.Duration = 0.35
-                        eff.Timing.TriggerDelayTime = 0.05
-                        eff.Timing.SmoothStart = msoTrue
-                        eff.Timing.SmoothEnd = msoTrue
-                        effect_count += 1
-                    except Exception:
-                        pass
-
-        # Phase 2: Rendered Component Shapes / Cards
+        # Header and Kicker Rails ALWAYS stay static across all slides
+        # This provides the permanent visual anchor for 100% Zero-Flicker Keynote Morph.
+        # Phase 2: Rendered Component Shapes / Cards (100% Atomic Packaging)
         if rendered_shapes:
-            delay = 0.15
-            stagger_step = 0.10
-            for idx, s in enumerate(rendered_shapes):
+            try:
+                from .utils import cluster_and_group_atomic_cards
+                atomic_cards = cluster_and_group_atomic_cards(slide, rendered_shapes)
+            except Exception:
+                atomic_cards = [s for s in rendered_shapes if s is not None]
+
+            for idx, s in enumerate(atomic_cards):
                 if s is None:
                     continue
 
+                # Enforce Canonical Inter-Slide Kinetic Morph Naming Contract
+                try:
+                    s.Name = f"!!Kinetic_Card_{idx+1}!!"
+                except Exception:
+                    pass
+
                 if is_click_mode:
-                    # PRESENTER CLICK SEQUENCE: Each distinct card enters on click!
+                    # KINETIC MORPH PRESENTER CONTRACT:
+                    # Card 0 (Hero / Anchor Card) enters through the slide transition (Morph 0.85s) directly!
+                    # Adding an intra-slide entrance effect to Card 0 causes PowerPoint to hide it
+                    # during the transition and cancel Morph!
+                    # Therefore, Card 0 has NO entrance animation in MainSequence.
+                    if idx == 0:
+                        continue
+
+                    is_aux_strip = False
                     try:
-                        eff = seq.AddEffect(Shape=s, effectId=msoAnimEffectFade, Level=msoAnimateLevelNone, trigger=msoAnimTriggerOnPageClick)
-                        eff.Timing.Duration = 0.40
+                        if float(s.Width) > 600 and float(s.Height) < 35:
+                            is_aux_strip = True
+                    except Exception:
+                        pass
+
+                    if is_aux_strip:
+                        trigger = msoAnimTriggerWithPrevious
+                        delay = 0.10
+                    else:
+                        trigger = msoAnimTriggerOnPageClick
+                        delay = 0.0
+
+                    try:
+                        eff = seq.AddEffect(Shape=s, effectId=msoAnimEffectFade, Level=msoAnimateLevelNone, trigger=trigger)
+                        eff.Timing.Duration = 0.35
+                        if delay > 0 and trigger == msoAnimTriggerWithPrevious:
+                            eff.Timing.TriggerDelayTime = delay
                         eff.Timing.SmoothStart = msoTrue
                         eff.Timing.SmoothEnd = msoTrue
                         effect_count += 1
                     except Exception:
                         pass
                 else:
-                    # KINETIC CASCADE: Staggered entrance
-                    name = getattr(s, "Name", "")
-                    is_badge = "Delta" in name or "Badge" in name or "Pill" in name
-                    anim_effect = msoAnimEffectZoom if is_badge else msoAnimEffectFade
-                    duration = 0.35 if is_badge else 0.45
-                    current_delay = min(delay + (idx * stagger_step), 1.10)
+                    # KINETIC CASCADE: Staggered waterfall entrance (0.12s, 0.32s, 0.52s...)
+                    current_delay = 0.12 + (idx * 0.20)
                     try:
-                        eff = seq.AddEffect(Shape=s, effectId=anim_effect, Level=msoAnimateLevelNone, trigger=msoAnimTriggerWithPrevious)
-                        eff.Timing.Duration = duration
+                        eff = seq.AddEffect(Shape=s, effectId=msoAnimEffectFade, Level=msoAnimateLevelNone, trigger=msoAnimTriggerWithPrevious)
+                        eff.Timing.Duration = 0.45
                         eff.Timing.TriggerDelayTime = current_delay
                         eff.Timing.SmoothStart = msoTrue
                         eff.Timing.SmoothEnd = msoTrue

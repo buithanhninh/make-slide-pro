@@ -33,63 +33,67 @@ class BaseCouncilAgent(ABC):
         return target
 
     def extract_slide_text(self, slide: Dict[str, Any]) -> str:
-        """Helper to extract all searchable textual content from a slide dictionary across all blueprint schemas."""
-        texts = [
-            slide.get("assertion_title", ""),
-            slide.get("title", ""),
-            slide.get("headline", ""),
-            slide.get("primary_claim", ""),
-            slide.get("subtitle", ""),
-            slide.get("section", ""),
-            slide.get("speaker_notes", "")
-        ]
+        """Helper to extract all searchable textual content safely from a slide dictionary across all blueprint schemas."""
+        if not isinstance(slide, dict):
+            return ""
+
+        texts: List[str] = []
+        for k in ["assertion_title", "title", "headline", "primary_claim", "subtitle", "section", "speaker_notes"]:
+            val = slide.get(k)
+            if val and isinstance(val, str):
+                texts.append(val)
+
         # Blueprint atoms
-        for atom in slide.get("atoms", []):
-            if isinstance(atom, dict):
-                texts.extend([
-                    atom.get("title", ""),
-                    atom.get("text", ""),
-                    atom.get("body", ""),
-                    atom.get("mechanism", ""),
-                    atom.get("kicker", ""),
-                    atom.get("tag", ""),
-                    str(atom.get("metric_value", "")),
-                    atom.get("metric_label", "")
-                ])
-            else:
-                texts.append(str(atom))
+        atoms = slide.get("atoms")
+        if isinstance(atoms, list):
+            for atom in atoms:
+                if isinstance(atom, dict):
+                    for ak in ["title", "text", "body", "mechanism", "kicker", "tag", "metric_label"]:
+                        v = atom.get(ak)
+                        if v and isinstance(v, str):
+                            texts.append(v)
+                    mv = atom.get("metric_value")
+                    if mv is not None:
+                        texts.append(str(mv))
+                elif atom is not None:
+                    texts.append(str(atom))
 
         # Generic content_items / cards / boxes
-        for item in slide.get("content_items", []) + slide.get("cards", []) + slide.get("boxes", []):
-            if isinstance(item, dict):
-                texts.extend([
-                    item.get("title", ""),
-                    item.get("body", ""),
-                    item.get("text", ""),
-                    item.get("description", ""),
-                    item.get("headline", ""),
-                    str(item.get("metric_value", "")),
-                    item.get("metric_label", "")
-                ])
-            else:
-                texts.append(str(item))
+        for col_key in ["content_items", "cards", "boxes", "items"]:
+            col = slide.get(col_key)
+            if isinstance(col, list):
+                for item in col:
+                    if isinstance(item, dict):
+                        for ik in ["title", "body", "text", "description", "headline", "metric_label"]:
+                            v = item.get(ik)
+                            if v and isinstance(v, str):
+                                texts.append(v)
+                        mv = item.get("metric_value")
+                        if mv is not None:
+                            texts.append(str(mv))
+                    elif item is not None:
+                        texts.append(str(item))
 
         # Bullets
-        for b in slide.get("bullets", []) + slide.get("bullet_points", []):
-            texts.append(str(b))
+        for bk in ["bullets", "bullet_points"]:
+            col = slide.get(bk)
+            if isinstance(col, list):
+                for b in col:
+                    if b is not None:
+                        texts.append(str(b))
 
         # Table data
         table = slide.get("table_data")
         if isinstance(table, dict):
-            headers = table.get("headers", [])
+            headers = table.get("headers")
             if isinstance(headers, list):
-                texts.extend(str(h) for h in headers if h)
-            rows = table.get("rows", [])
+                texts.extend(str(h) for h in headers if h is not None)
+            rows = table.get("rows")
             if isinstance(rows, list):
                 for r in rows:
                     if isinstance(r, list):
-                        texts.extend(str(c) for c in r if c)
+                        texts.extend(str(c) for c in r if c is not None)
                     elif isinstance(r, dict):
-                        texts.extend(str(v) for v in r.values() if v)
+                        texts.extend(str(v) for v in r.values() if v is not None)
 
         return "\n".join(t for t in texts if t)

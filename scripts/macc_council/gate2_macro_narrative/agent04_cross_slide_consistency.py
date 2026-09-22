@@ -249,6 +249,8 @@ class CrossSlideConsistencyAuditor(BaseCouncilAgent):
             if finding.severity == Severity.P2 and "Visual Rhythm Fatigue" in finding.issue:
                 for s in slides:
                     if s.get("slide_id") == finding.slide_id:
+                        if s.get("illustration") or s.get("chart_file") or s.get("visual_job") in {"EDITORIAL_HERO", "CHART_AND_INSIGHTS"}:
+                            continue
                         cur_arch = (s.get("archetype") or s.get("visual_job") or "").upper()
                         if cur_arch in ("3_CARDS", "CARDS"):
                             s["archetype"] = "split_comparison"

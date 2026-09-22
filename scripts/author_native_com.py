@@ -160,10 +160,23 @@ def hex_to_bgr(hex_color: str) -> int:
     return r + (g * 256) + (b * 65536)
 
 
+try:
+    from scripts.headless_deck_author import HeadlessDeckAuthor
+except ImportError:
+    try:
+        from headless_deck_author import HeadlessDeckAuthor
+    except ImportError:
+        HeadlessDeckAuthor = None
+
 class NativeDeckAuthor:
     def __init__(self, visible: bool = False, theme: str = "DARK", motion_mode: str = "presenter_click"):
         if win32com is None:
+            if HeadlessDeckAuthor is not None:
+                self._fallback = HeadlessDeckAuthor(visible=visible, theme=theme, motion_mode=motion_mode)
+                self.theme = theme
+                return
             raise RuntimeError("win32com is not available. Please install pywin32.")
+        self._fallback = None
         self.set_theme(theme)
         self.motion_mode = motion_mode.lower()
         self.motion_trigger = msoAnimTriggerOnPageClick if self.motion_mode == "presenter_click" else msoAnimTriggerWithPrevious
@@ -184,6 +197,8 @@ class NativeDeckAuthor:
             self.dispatcher = None
 
     def close(self):
+        if getattr(self, "_fallback", None) is not None:
+            return self._fallback.close()
         if self.presentation:
             try:
                 self.presentation.Close()
@@ -199,6 +214,8 @@ class NativeDeckAuthor:
         pythoncom.CoUninitialize()
 
     def create_deck(self, blueprints_path: Path, output_pptx: Path, theme: Optional[str] = None) -> Path:
+        if getattr(self, "_fallback", None) is not None:
+            return self._fallback.create_deck(blueprints_path, output_pptx, theme)
         if theme:
             self.set_theme(theme)
 
@@ -244,7 +261,7 @@ class NativeDeckAuthor:
                     trans.EntryEffect = ppTransitionFadeSmoothly
                     trans.Duration = 0.65
                 else:
-                    trans.EntryEffect = ppEffectMorphByObject
+                    trans.EntryEffect = ppEffectMorphByWord
                     trans.Duration = 0.85
                 trans.AdvanceOnClick = msoTrue
                 trans.AdvanceOnTime = msoFalse
@@ -328,7 +345,7 @@ class NativeDeckAuthor:
     def _group_and_animate(self, slide: Any, shapes: List[Any], duration: float = 0.45, 
                            trigger: Optional[int] = None, effect: int = msoAnimEffectFly,
                            delay: float = 0.0, direction: int = msoAnimDirectionBottom,
-                           group_name: Optional[str] = None) -> Any:
+                           group_name: Optional[str] = None, is_hero: bool = False) -> Any:
         valid_shapes = [s for s in shapes if s is not None]
         if not valid_shapes:
             return None
@@ -343,6 +360,17 @@ class NativeDeckAuthor:
                 grp.Name = group_name
             except Exception:
                 pass
+
+        # CRITICAL KINETIC MORPH PRESENTER CONTRACT:
+        # In presenter_click mode, Card 0 (Hero / Anchor Card) enters directly via the 0.85s
+        # slide transition Morph. Adding an intra-slide entrance effect suppresses Morph.
+        # Therefore, Card 0 has NO entrance animation in MainSequence.
+        if (is_hero or (group_name and ("Hero" in group_name or group_name == "!!Kinetic_Card_1!!"))) and self.motion_mode == "presenter_click":
+            try:
+                grp.Name = "!!Kinetic_Card_1!!"
+            except Exception:
+                pass
+            return grp
 
         eff_trigger = self.motion_trigger if trigger is None else trigger
         anim = slide.TimeLine.MainSequence.AddEffect(grp, effect, msoAnimateLevelNone, eff_trigger)
@@ -371,14 +399,19 @@ class NativeDeckAuthor:
         slide.Background.Fill.ForeColor.RGB = hex_to_bgr(TOKENS["colors"]["navy"])
 
         ill_name = spec.get("illustration") or spec.get("image")
+        ill_file = None
         if ill_name and (ILLUSTRATIONS_DIR / ill_name).exists():
             ill_file = ILLUSTRATIONS_DIR / ill_name
+        elif ill_name and (PROJECT_ROOT / ill_name).exists():
+            ill_file = PROJECT_ROOT / ill_name
+        elif ill_name and Path(ill_name).is_absolute() and Path(ill_name).exists():
+            ill_file = Path(ill_name)
         elif (ILLUSTRATIONS_DIR / f"illustration_bai_{lesson_idx}.jpg").exists():
             ill_file = ILLUSTRATIONS_DIR / f"illustration_bai_{lesson_idx}.jpg"
         else:
             all_ills = sorted(list(ILLUSTRATIONS_DIR.glob("*.jpg")))
             ill_file = all_ills[0] if all_ills else (ILLUSTRATIONS_DIR / f"illustration_bai_{lesson_idx}.jpg")
-        has_illustration = ill_file.exists() and not is_summary
+        has_illustration = (ill_file is not None and ill_file.exists()) and not is_summary
 
         if has_illustration:
             left_w = USABLE_WIDTH * 0.48
@@ -538,43 +571,38 @@ class NativeDeckAuthor:
         content_height = CANVAS_HEIGHT - content_top - MARGIN_BOTTOM - 20.0
 
         # Dispatch
+        # Dispatch
         has_table_data = bool(spec.get("table_data") and spec["table_data"].get("headers"))
+        has_illustration = bool(spec.get("illustration") or visual_job in {"EDITORIAL_HERO", "ILLUSTRATION_SPLIT"})
+        has_chart = bool(spec.get("chart_file") or chart_type or visual_job == "CHART_AND_INSIGHTS")
+
         rendered_shapes = None
 
-        if hasattr(self, "dispatcher") and self.dispatcher:
+        if has_illustration:
+            self._render_editorial_hero_layout(slide, spec, atoms, content_top, content_height, lesson_idx)
+        elif has_chart:
+            self._render_chart_and_insights_layout(slide, spec, atoms, content_top, content_height)
+        elif hasattr(self, "dispatcher") and self.dispatcher:
             resolved_archetype = None
             if self.dispatcher.can_handle(visual_job):
                 resolved_archetype = visual_job
             elif has_table_data:
                 resolved_archetype = detect_optimal_archetype(spec) if detect_optimal_archetype else "TABLE_METRIC_MATRIX"
-            elif spec.get("chart_data") or spec.get("chart_type"):
+            elif spec.get("chart_data"):
                 resolved_archetype = detect_optimal_archetype(spec) if detect_optimal_archetype else "CHART_COLUMN_CLUSTERED"
-            elif detect_optimal_archetype:
-                candidate = detect_optimal_archetype(spec)
-                if self.dispatcher.can_handle(candidate):
-                    resolved_archetype = candidate
 
             if resolved_archetype and self.dispatcher.can_handle(resolved_archetype):
                 rendered_shapes = self.dispatcher.render(slide, spec, resolved_archetype, MARGIN_LEFT, content_top, USABLE_WIDTH, content_height)
 
         if rendered_shapes is not None and len(rendered_shapes) > 0:
             # Successfully rendered by Master Component Library
-            active_shapes = rendered_shapes
-            if self.motion_mode != "presenter_click":
-                if not any(getattr(s, "Name", "") == "!!Stage_Hero_Container!!" for s in rendered_shapes):
-                    names = [s.Name for s in rendered_shapes if s is not None]
-                    if len(names) > 1:
-                        try:
-                            grp = slide.Shapes.Range(names).Group()
-                            grp.Name = "!!Stage_Hero_Container!!"
-                            active_shapes = [grp]
-                        except Exception:
-                            pass
-                    elif len(names) == 1:
-                        rendered_shapes[0].Name = "!!Stage_Hero_Container!!"
-                        active_shapes = rendered_shapes
+            try:
+                from scripts.component_library.utils import cluster_and_group_atomic_cards
+                active_shapes = cluster_and_group_atomic_cards(slide, rendered_shapes)
+            except Exception:
+                active_shapes = rendered_shapes
 
-            # Apple Keynote-Grade Choreographed Micro-Animations (Presenter Click Sequence)
+            # Apple Keynote-Grade Choreographed Micro-Animations (Atomic Presenter Sequencing)
             if AppleChoreographedEntranceAnimator is not None:
                 AppleChoreographedEntranceAnimator.animate_slide_components(
                     slide,
@@ -582,24 +610,21 @@ class NativeDeckAuthor:
                     header_shapes=[title_box, kicker_box],
                     motion_mode=self.motion_mode
                 )
-        elif has_table_data or visual_job in {"DATA_TABLE", "TABLE_MATRIX", "TABLE"}:
-            self._render_data_table_layout(slide, spec, atoms, content_top, content_height)
-        elif chart_type or visual_job == "CHART_AND_INSIGHTS":
-            self._render_chart_and_insights_layout(slide, spec, atoms, content_top, content_height)
-        elif visual_job in {"FORMULA_CARD", "FORMULA_HERO", "FORMULA", "MATH_FORMULA"}:
-            self._render_formula_hero_layout(slide, spec, atoms, content_top, content_height)
-        elif visual_job in {"EDITORIAL_HERO", "ILLUSTRATION_SPLIT"}:
-            self._render_editorial_hero_layout(slide, spec, atoms, content_top, content_height, lesson_idx)
-        elif visual_job in {"BENTO", "BENTO_GRID"}:
-            self._render_bento_grid_layout(slide, spec, atoms, content_top, content_height)
-        elif visual_job in {"PROCESS", "ROADMAP", "TIMELINE"}:
-            self._render_process_layout(slide, atoms, content_top, content_height)
-        elif visual_job in {"COMPARISON", "VERSUS", "TWO_PILLARS"}:
-            self._render_comparison_layout(slide, atoms, content_top, content_height)
-        elif visual_job in {"METRIC", "METRIC_HERO"}:
-            self._render_metric_layout(slide, spec, atoms, content_top, content_height)
-        else:
-            self._render_cards_layout(slide, atoms, content_top, content_height)
+        elif not has_illustration and not has_chart:
+            if has_table_data or visual_job in {"DATA_TABLE", "TABLE_MATRIX", "TABLE", "TABLE_MULTI_ROW_DYNAMIC"}:
+                self._render_data_table_layout(slide, spec, atoms, content_top, content_height)
+            elif visual_job in {"FORMULA_CARD", "FORMULA_HERO", "FORMULA", "MATH_FORMULA"}:
+                self._render_formula_hero_layout(slide, spec, atoms, content_top, content_height)
+            elif "BENTO" in visual_job:
+                self._render_bento_grid_layout(slide, spec, atoms, content_top, content_height)
+            elif "PROCESS" in visual_job or visual_job in {"PROCESS_STEPS_HORIZONTAL", "PROCESS_DEVSECOPS_PIPELINE", "ROADMAP", "TIMELINE", "STEPS"}:
+                self._render_process_layout(slide, atoms, content_top, content_height)
+            elif visual_job in {"COMPARISON", "VERSUS", "TWO_PILLARS"}:
+                self._render_comparison_layout(slide, atoms, content_top, content_height)
+            elif visual_job in {"METRIC", "METRIC_HERO"}:
+                self._render_metric_layout(slide, spec, atoms, content_top, content_height)
+            else:
+                self._render_cards_layout(slide, atoms, content_top, content_height)
 
         # Footer (Visual Anchor)
         if footer_source:
@@ -675,11 +700,15 @@ class NativeDeckAuthor:
 
         # Package Hero Group for Continuous Seamless Morph
         names = [s.Name for s in hero_shapes if s is not None]
+        hero_grp = None
         if len(names) > 1:
-            grp = slide.Shapes.Range(names).Group()
-            grp.Name = "!!Stage_Hero_Container!!"
+            hero_grp = slide.Shapes.Range(names).Group()
+            hero_grp.Name = "!!Kinetic_Card_1!!"
         elif len(names) == 1:
-            hero_shapes[0].Name = "!!Stage_Hero_Container!!"
+            hero_grp = hero_shapes[0]
+            hero_grp.Name = "!!Kinetic_Card_1!!"
+        if hero_grp is not None:
+            self._group_and_animate(slide, [hero_grp], duration=0.45, group_name="!!Kinetic_Card_1!!", is_hero=True)
 
         # === 2. Right Stacked Cards ===
         count = len(sub_atoms)
@@ -740,7 +769,7 @@ class NativeDeckAuthor:
             sub_shapes.append(stb)
 
             # Animate Sub Card as Staggered Kinetic Cascade
-            self._group_and_animate(slide, sub_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Stage_Sub_Card_{i+1}!!")
+            self._group_and_animate(slide, sub_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Kinetic_Card_{i+2}!!")
 
     def _render_editorial_hero_layout(self, slide: Any, spec: Dict[str, Any], atoms: List[Any], top: float, height: float, lesson_idx: int):
         card_w = USABLE_WIDTH * 0.49
@@ -751,6 +780,10 @@ class NativeDeckAuthor:
         ill_file = None
         if ill_name and (ILLUSTRATIONS_DIR / ill_name).exists():
             ill_file = ILLUSTRATIONS_DIR / ill_name
+        elif ill_name and (PROJECT_ROOT / ill_name).exists():
+            ill_file = PROJECT_ROOT / ill_name
+        elif ill_name and Path(ill_name).is_absolute() and Path(ill_name).exists():
+            ill_file = Path(ill_name)
         elif (ILLUSTRATIONS_DIR / f"illustration_bai_{lesson_idx}.jpg").exists():
             ill_file = ILLUSTRATIONS_DIR / f"illustration_bai_{lesson_idx}.jpg"
         else:
@@ -826,17 +859,42 @@ class NativeDeckAuthor:
 
         # Package Left Image Container for Continuous Seamless Morph
         names = [s.Name for s in left_shapes if s is not None]
+        hero_grp = None
         if len(names) > 1:
-            grp = slide.Shapes.Range(names).Group()
-            grp.Name = "!!Stage_Hero_Container!!"
+            hero_grp = slide.Shapes.Range(names).Group()
+            hero_grp.Name = "!!Kinetic_Card_1!!"
         elif len(names) == 1:
-            left_shapes[0].Name = "!!Stage_Hero_Container!!"
+            hero_grp = left_shapes[0]
+            hero_grp.Name = "!!Kinetic_Card_1!!"
+        if hero_grp is not None:
+            self._group_and_animate(slide, [hero_grp], duration=0.45, group_name="!!Kinetic_Card_1!!", is_hero=True)
 
         # === 2. Right Column Insight Cards ===
-        count = max(1, min(len(atoms), 3))
+        # Resilience Fallback: If atoms is empty, auto-recover from matrix_data, cards, or synthesize from primary_claim
+        effective_atoms = list(atoms) if atoms else []
+        if not effective_atoms:
+            m_quads = spec.get("matrix_data", {}).get("quadrants", [])
+            if m_quads:
+                for q in m_quads:
+                    effective_atoms.append({
+                        "title": q.get("title", ""),
+                        "text": q.get("desc", ""),
+                        "icon": "shield"
+                    })
+            elif spec.get("cards"):
+                effective_atoms = list(spec.get("cards"))
+            else:
+                claim = spec.get("primary_claim", "Nội dung phân tích bối cảnh và định hướng trọng tâm.")
+                effective_atoms = [
+                    {"title": "Định Hướng Can Thiệp", "text": claim, "icon": "trending-up"},
+                    {"title": "Mục Tiêu Chuẩn Hóa", "text": "Bảo đảm đồng bộ các quy chuẩn chuyên môn và chỉ số đầu ra.", "icon": "award"},
+                    {"title": "Giải Pháp Bền Vững", "text": "Kết nối chặt chẽ giữa tuyến chuyên sâu và mạng lưới cơ sở.", "icon": "shield"}
+                ]
+
+        count = max(1, min(len(effective_atoms), 3))
         card_h = (height - (12.0 * (count - 1))) / count
 
-        for i, atom in enumerate(atoms[:count]):
+        for i, atom in enumerate(effective_atoms[:count]):
             card_shapes = []
             c_top = top + i * (card_h + 12.0)
 
@@ -876,17 +934,24 @@ class NativeDeckAuthor:
             card_shapes.append(tb)
 
             # Animate each insight card sequentially with staggered kinetic cascade
-            self._group_and_animate(slide, card_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Stage_Sub_Card_{i+1}!!")
+            self._group_and_animate(slide, card_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Kinetic_Card_{i+2}!!")
 
     def _render_chart_and_insights_layout(self, slide: Any, spec: Dict[str, Any], atoms: List[Any], top: float, height: float):
-        chart_type = spec.get("chart_type", "POPULATION_PYRAMID")
-        # Load theme-specific chart (Dark vs Light)
         theme_suffix = "_light.png" if self.theme == "LIGHT" else "_dark.png"
-        themed_chart_file = CHARTS_DIR / f"chart_{chart_type.lower()}{theme_suffix}"
-        if themed_chart_file.exists():
-            chart_file = themed_chart_file
+        chart_file_spec = spec.get("chart_file")
+        if chart_file_spec and (CHARTS_DIR / chart_file_spec).exists():
+            chart_file = CHARTS_DIR / chart_file_spec
+        elif chart_file_spec:
+            base_name = chart_file_spec.replace("_dark.png", "").replace("_light.png", "").replace(".png", "")
+            themed = CHARTS_DIR / f"{base_name}{theme_suffix}"
+            chart_file = themed if themed.exists() else (CHARTS_DIR / chart_file_spec)
         else:
-            chart_file = CHARTS_DIR / f"chart_{chart_type.lower()}.png"
+            chart_type = spec.get("chart_type", "POPULATION_PYRAMID")
+            themed_chart_file = CHARTS_DIR / f"chart_{chart_type.lower()}{theme_suffix}"
+            if themed_chart_file.exists():
+                chart_file = themed_chart_file
+            else:
+                chart_file = CHARTS_DIR / f"chart_{chart_type.lower()}.png"
 
         chart_w = USABLE_WIDTH * 0.52
         insights_w = USABLE_WIDTH * 0.45
@@ -918,11 +983,15 @@ class NativeDeckAuthor:
 
         # Package Chart Container for Continuous Seamless Morph
         names = [s.Name for s in chart_shapes if s is not None]
+        chart_hero_grp = None
         if len(names) > 1:
-            grp = slide.Shapes.Range(names).Group()
-            grp.Name = "!!Stage_Hero_Container!!"
+            chart_hero_grp = slide.Shapes.Range(names).Group()
+            chart_hero_grp.Name = "!!Kinetic_Card_1!!"
         elif len(names) == 1:
-            chart_shapes[0].Name = "!!Stage_Hero_Container!!"
+            chart_hero_grp = chart_shapes[0]
+            chart_hero_grp.Name = "!!Kinetic_Card_1!!"
+        if chart_hero_grp is not None:
+            self._group_and_animate(slide, [chart_hero_grp], duration=0.45, group_name="!!Kinetic_Card_1!!", is_hero=True)
 
         # === 2. Right Column: Insights Cards ===
         right_left = MARGIN_LEFT + chart_w + gutter
@@ -969,7 +1038,7 @@ class NativeDeckAuthor:
             card_shapes.append(tb)
 
             # Animate each insight card sequentially with staggered kinetic cascade
-            self._group_and_animate(slide, card_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Stage_Sub_Card_{i+1}!!")
+            self._group_and_animate(slide, card_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Kinetic_Card_{i+2}!!")
 
     def _render_cards_layout(self, slide: Any, atoms: List[Any], top: float, height: float):
         count = max(1, min(len(atoms), 3))
@@ -1026,14 +1095,9 @@ class NativeDeckAuthor:
             card_shapes.append(tb)
 
             if i == 0:
-                names = [s.Name for s in card_shapes if s is not None]
-                if len(names) > 1:
-                    grp = slide.Shapes.Range(names).Group()
-                    grp.Name = "!!Stage_Hero_Container!!"
-                elif len(names) == 1:
-                    card_shapes[0].Name = "!!Stage_Hero_Container!!"
+                self._group_and_animate(slide, card_shapes, duration=0.45, group_name="!!Kinetic_Card_1!!", is_hero=True)
             else:
-                self._group_and_animate(slide, card_shapes, duration=0.45, delay=0.14 * i, group_name=f"!!Stage_Sub_Card_{i}!!")
+                self._group_and_animate(slide, card_shapes, duration=0.45, delay=0.14 * i, group_name=f"!!Kinetic_Card_{i+1}!!")
 
     def _render_process_layout(self, slide: Any, atoms: List[Any], top: float, height: float):
         count = max(1, min(len(atoms), 4))
@@ -1093,14 +1157,9 @@ class NativeDeckAuthor:
             step_shapes.append(tb)
 
             if i == 0:
-                names = [s.Name for s in step_shapes if s is not None]
-                if len(names) > 1:
-                    grp = slide.Shapes.Range(names).Group()
-                    grp.Name = "!!Stage_Hero_Container!!"
-                elif len(names) == 1:
-                    step_shapes[0].Name = "!!Stage_Hero_Container!!"
+                self._group_and_animate(slide, step_shapes, duration=0.45, group_name="!!Kinetic_Card_1!!", is_hero=True)
             else:
-                self._group_and_animate(slide, step_shapes, duration=0.45, delay=0.12 * i, group_name=f"!!Stage_Sub_Card_{i}!!")
+                self._group_and_animate(slide, step_shapes, duration=0.45, delay=0.12 * i, group_name=f"!!Kinetic_Card_{i+1}!!")
 
     def _render_comparison_layout(self, slide: Any, atoms: List[Any], top: float, height: float):
         card_w = (USABLE_WIDTH - 24.0) / 2.0
@@ -1158,14 +1217,9 @@ class NativeDeckAuthor:
             pillar_shapes.append(tb)
 
             if i == 0:
-                names = [s.Name for s in pillar_shapes if s is not None]
-                if len(names) > 1:
-                    grp = slide.Shapes.Range(names).Group()
-                    grp.Name = "!!Stage_Hero_Container!!"
-                elif len(names) == 1:
-                    pillar_shapes[0].Name = "!!Stage_Hero_Container!!"
+                self._group_and_animate(slide, pillar_shapes, duration=0.45, group_name="!!Kinetic_Card_1!!", is_hero=True)
             else:
-                self._group_and_animate(slide, pillar_shapes, duration=0.5, delay=0.18, group_name="!!Stage_Sub_Card_1!!")
+                self._group_and_animate(slide, pillar_shapes, duration=0.5, delay=0.18, group_name="!!Kinetic_Card_2!!")
 
     def _render_metric_layout(self, slide: Any, spec: Dict[str, Any], atoms: List[Any], top: float, height: float):
         left_w = USABLE_WIDTH * 0.42
@@ -1216,11 +1270,15 @@ class NativeDeckAuthor:
 
         # Package Hero Metric for Continuous Seamless Morph
         names = [s.Name for s in hero_shapes if s is not None]
+        hero_grp = None
         if len(names) > 1:
-            grp = slide.Shapes.Range(names).Group()
-            grp.Name = "!!Stage_Hero_Container!!"
+            hero_grp = slide.Shapes.Range(names).Group()
+            hero_grp.Name = "!!Kinetic_Card_1!!"
         elif len(names) == 1:
-            hero_shapes[0].Name = "!!Stage_Hero_Container!!"
+            hero_grp = hero_shapes[0]
+            hero_grp.Name = "!!Kinetic_Card_1!!"
+        if hero_grp is not None:
+            self._group_and_animate(slide, [hero_grp], duration=0.45, group_name="!!Kinetic_Card_1!!", is_hero=True)
 
         # Right Stacked List Cards
         right_left = MARGIN_LEFT + left_w + gutter
@@ -1262,7 +1320,7 @@ class NativeDeckAuthor:
             sp2.Font.Name = TOKENS["fonts"]["primary"]
             sp2.Font.Size = 14
             sp2.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["muted"])
-            self._group_and_animate(slide, rcard_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Stage_Sub_Card_{i+1}!!")
+            self._group_and_animate(slide, rcard_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Kinetic_Card_{i+2}!!")
 
     def _render_formula_hero_layout(self, slide: Any, spec: Dict[str, Any], atoms: List[Any], top: float, height: float):
         formula_expr = spec.get("formula", "")
@@ -1314,9 +1372,9 @@ class NativeDeckAuthor:
         names = [s.Name for s in hero_shapes if s is not None]
         if len(names) > 1:
             grp = slide.Shapes.Range(names).Group()
-            grp.Name = "!!Stage_Hero_Container!!"
+            grp.Name = "!!Kinetic_Card_1!!"
         elif len(names) == 1:
-            hero_shapes[0].Name = "!!Stage_Hero_Container!!"
+            hero_shapes[0].Name = "!!Kinetic_Card_1!!"
 
         param_top = top + hero_h + 14.0
         param_height = height - hero_h - 14.0
@@ -1365,7 +1423,7 @@ class NativeDeckAuthor:
                 p2.ParagraphFormat.SpaceWithin = 1.25
                 c_shapes.append(tb)
 
-                self._group_and_animate(slide, c_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Stage_Sub_Card_{i+1}!!")
+                self._group_and_animate(slide, c_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Kinetic_Card_{i+2}!!")
 
         else:
             card_w = (USABLE_WIDTH - 16.0) / 2
@@ -1415,7 +1473,7 @@ class NativeDeckAuthor:
                 p2.ParagraphFormat.SpaceWithin = 1.2
                 c_shapes.append(tb)
 
-                self._group_and_animate(slide, c_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Stage_Sub_Card_{i+1}!!")
+                self._group_and_animate(slide, c_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Kinetic_Card_{i+2}!!")
 
     def _render_data_table_layout(self, slide: Any, spec: Dict[str, Any], atoms: List[Any], top: float, height: float):
         table_data = spec.get("table_data", {})
@@ -1438,7 +1496,7 @@ class NativeDeckAuthor:
         norm_weights = [w / total_w for w in col_weights]
 
         table_shape = slide.Shapes.AddTable(num_rows, num_cols, MARGIN_LEFT, top, USABLE_WIDTH, height)
-        table_shape.Name = "!!Stage_Hero_Container!!"
+        table_shape.Name = "!!Kinetic_Card_1!!"
         tbl = table_shape.Table
 
         for c_idx, w_pct in enumerate(norm_weights, start=1):

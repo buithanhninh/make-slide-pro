@@ -1,7 +1,7 @@
 """
 make_slide_pro.py
-MAKE SLIDE PRO V8.6.0 - CANONICAL OFFICIAL ENTERPRISE RELEASE
-Universal Document-to-PowerPoint Publishing, 165+ Mega Archetypes, Pure Morph & MACC-QA Council.
+MAKE SLIDE PRO V9.3 - CANONICAL OFFICIAL ENTERPRISE RELEASE
+Universal Document-to-PowerPoint Publishing, 165+ Mega Archetypes, Pure Morph & KMCA V9.3.
 """
 
 from __future__ import annotations
@@ -29,8 +29,8 @@ except ImportError:
 
 BANNER = f"""{CYAN}{BOLD}
 ================================================================================
-           ★ MAKE SLIDE PRO V8.6.0 - CANONICAL OFFICIAL RELEASE ★
-    165+ Mega Archetypes | 100% Apple Morph | Atomic Presenter Sequencing
+   ★ MAKE SLIDE PRO V9.3 - KINETIC MORPH CONTINUITY ARCHITECTURE (KMCA V9.3) ★
+     165+ Mega Archetypes | 100% Morph By Word | Morph Bridge Contract
 ================================================================================{RESET}"""
 
 try:
@@ -52,6 +52,11 @@ from demographic_visualizer import render_all_demographic_charts
 from forensic_compliance_audit import audit_all_pptx
 from macc_council import MultiRoundCouncilOrchestrator
 
+try:
+    from mas_engine_v9 import MASOrchestratorV9
+except ImportError:
+    from scripts.mas_engine_v9 import MASOrchestratorV9
+
 
 def slugify(text: str) -> str:
     cleaned = "".join(c if c.isalnum() or c in (" ", "_", "-") else "_" for c in text)
@@ -61,8 +66,8 @@ def slugify(text: str) -> str:
 def print_banner():
     banner = """
 ================================================================================
-           ★ MAKE SLIDE PRO V8.3 - PRODUCTION SUITE ★
-   Universal Document-to-PowerPoint Publishing & 16-Agent Quality Council
+           ★ MAKE SLIDE PRO V9.3 - ENTERPRISE SUITE ★
+   Universal Document-to-PowerPoint Publishing & KMCA V9.3 Kinetic Motion Engine
 ================================================================================
 """
     print(banner)
@@ -74,7 +79,8 @@ def process_single_document(
     theme: str = "ALL",
     motion_mode: str = "presenter_click",
     run_qa: bool = True,
-    open_pptx: bool = False
+    open_pptx: bool = False,
+    target_slides: int = 0
 ) -> Dict[str, Any]:
     """Processes a single source document through the complete Make Slide Pro pipeline."""
     input_file = Path(input_file).resolve()
@@ -89,6 +95,8 @@ def process_single_document(
     print(f"\n>>> PROCESSING DOCUMENT: {input_file.name}")
     print(f"    Source Format : {input_file.suffix.upper()}")
     print(f"    Output Folder : {dest_dir}")
+    if target_slides > 0:
+        print(f"    Slide Tier    : {target_slides} slides requested")
     t0 = time.time()
 
     # Step 1: Universal Ingestion
@@ -113,7 +121,7 @@ def process_single_document(
 
     # Step 2: Blueprint Generation
     print("\n[Step 2/4] Synthesizing Deep-Curriculum Slide Blueprints...")
-    blueprints = generate_blueprints_from_canonical(canonical, doc_name=file_stem)
+    blueprints = generate_blueprints_from_canonical(canonical, doc_name=file_stem, target_slides=target_slides)
     bp_path = dest_dir / "slide-blueprints.json"
     with open(bp_path, "w", encoding="utf-8") as f:
         json.dump(blueprints, f, ensure_ascii=False, indent=2)
@@ -124,11 +132,11 @@ def process_single_document(
 
     # Step 2.5: Omniscient 16-Agent MACC-QA Council
     print("\n[Step 2.5/4] Omniscient 16-Agent MACC-QA Council Dialectical Convergence...")
-    council = MultiRoundCouncilOrchestrator(max_rounds=5, target_score=90.0)
+    council = MultiRoundCouncilOrchestrator(max_rounds=5, target_score=99.5)
     council_report = council.run_council(
         blueprints=blueprints,
         canonical_source=canonical,
-        doc_metadata={"file_stem": file_stem}
+        doc_metadata={"file_stem": file_stem, "enforce_v86": True, "target_slides": target_slides, "theme": theme}
     )
     if council_report.remediated_slides:
         blueprints["slides"] = council_report.remediated_slides
@@ -140,7 +148,7 @@ def process_single_document(
     with open(dest_dir / "macc-council-report.json", "w", encoding="utf-8") as f:
         json.dump(council_report.model_dump(), f, ensure_ascii=False, indent=2)
 
-    print(f"    ✔ MACC-QA V8.3 Council: Converged Score = {council_report.final_score:.1f}/100 in {council_report.total_rounds} rounds | P0={council_report.p0_count}, P1={council_report.p1_count}, P2={council_report.p2_count}")
+    print(f"    ✔ MACC-QA V8.6.0 Council: Converged Score = {council_report.final_score:.1f}/100 in {council_report.total_rounds} rounds | P0={council_report.p0_count}, P1={council_report.p1_count}, P2={council_report.p2_count}")
 
     # Step 3: Native PowerPoint COM Authoring
     print("\n[Step 3/4] Native PowerPoint COM Authoring (Kinetic Motion Engine)...")
@@ -163,25 +171,31 @@ def process_single_document(
         finally:
             author.close()
 
-    # Step 4: Multi-Agent QA Certification
+    # Step 4: Multi-Agent Closed-Loop Self-Healing Certification (MAS-CLSH V9.0)
     qa_results = {}
     if run_qa:
-        print("\n[Step 4/4] Multi-Agent Quality Assurance & Forensic Certification...")
-        qa_board = MultiAgentQABoard()
-        try:
-            for th, pptx_p in created_decks.items():
-                qa_dir = dest_dir / f"{th.lower()}_qa"
-                qa_dir.mkdir(parents=True, exist_ok=True)
-                res = qa_board.audit_deck(pptx_p, canonical, blueprints, qa_dir)
-                qa_results[th] = res
-                print(f"    ✔ QA [{th}]: Score = {res['overall_score']:.1f}/100 | Status = {res['certification_status']}")
-        finally:
-            qa_board.close()
+        print("\n[Step 4/4] Multi-Agent Closed-Loop Self-Healing (MAS-CLSH V9.0)...")
+        for th, pptx_p in created_decks.items():
+            orchestrator_v9 = MASOrchestratorV9(theme=th, motion_mode=motion_mode)
+            report_path = dest_dir / f"mas-v9-report-{th.lower()}.json"
+            report = orchestrator_v9.run_self_healing_cycle(
+                pptx_path=pptx_p,
+                blueprints_data=blueprints,
+                canonical_ledger=canonical,
+                output_report_path=report_path,
+            )
+            qa_results[th] = report.model_dump()
+            print(f"    ✔ MAS-CLSH [{th}]: Score = {report.overall_score:.1f}/100 | Certified = {report.is_certified}")
 
-        with open(dest_dir / "qa-certification-report.json", "w", encoding="utf-8") as f:
+            # Re-sync healed deck to parent output directory
+            sync_copy = output_dir / f"{file_stem} - {th.title()}.pptx"
+            shutil.copy2(pptx_p, sync_copy)
+            print(f"        -> Re-synced healed presentation to: {sync_copy.name}")
+
+        with open(dest_dir / "mas-v9-certification-report.json", "w", encoding="utf-8") as f:
             json.dump(qa_results, f, ensure_ascii=False, indent=2)
     else:
-        print("\n[Step 4/4] QA audit skipped by user.")
+        print("\n[Step 4/4] MAS-CLSH V9.0 audit skipped by user.")
 
     elapsed = time.time() - t0
     print(f"\n>>> COMPLETE: {input_file.name} processed in {elapsed:.1f}s.")
@@ -265,7 +279,7 @@ def run_interactive():
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Make Slide Pro V8.6.0 - Canonical Official Release (165+ Archetypes & Apple Keynote Motion)")
+    parser = argparse.ArgumentParser(description="Make Slide Pro V9.0 - Multi-Agent Closed-Loop Self-Healing (165+ Archetypes & Apple Keynote Motion)")
     parser.add_argument("--input", "-i", type=Path, help="Path to input document (.docx, .pdf, .txt, .md) or folder")
     parser.add_argument("--output", "-o", default=Path("Du_An_Outputs"), type=Path, help="Output root directory")
     parser.add_argument("--theme", "-t", default="ALL", choices=["DARK", "LIGHT", "ALL"], help="Slide color theme")
@@ -273,6 +287,8 @@ def main():
                         help="Motion choreography mode (default: presenter_click)")
     parser.add_argument("--no-qa", action="store_true", help="Skip multi-agent QA certification audit")
     parser.add_argument("--open", action="store_true", help="Automatically open generated PowerPoint deck")
+    parser.add_argument("--slides-tier", "--target-slides", "-s", type=int, default=0,
+                        help="Target slide count tier (5, 7, 10, 12, 15, 18, 20, 25, 30, or custom)")
     args = parser.parse_args()
 
     if not args.input:
@@ -293,9 +309,15 @@ def main():
         print(f"Phát hiện {len(docs)} tài liệu trong thư mục {input_path}. Bắt đầu xử lý hàng loạt...")
         for idx, doc in enumerate(docs, start=1):
             print(f"\n[{idx}/{len(docs)}] Xử lý: {doc.name}")
-            process_single_document(doc, args.output, theme=args.theme, motion_mode=args.motion_mode, run_qa=not args.no_qa, open_pptx=False)
+            process_single_document(
+                doc, args.output, theme=args.theme, motion_mode=args.motion_mode,
+                run_qa=not args.no_qa, open_pptx=False, target_slides=args.slides_tier
+            )
     else:
-        process_single_document(input_path, args.output, theme=args.theme, motion_mode=args.motion_mode, run_qa=not args.no_qa, open_pptx=args.open)
+        process_single_document(
+            input_path, args.output, theme=args.theme, motion_mode=args.motion_mode,
+            run_qa=not args.no_qa, open_pptx=args.open, target_slides=args.slides_tier
+        )
 
 
 if __name__ == "__main__":

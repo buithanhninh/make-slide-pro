@@ -101,7 +101,7 @@ class TypographyWidowOrphanSentinel(BaseCouncilAgent):
                         break
 
             # Check atoms
-            for aidx, atom in enumerate(s.get("atoms", [])):
+            for aidx, atom in enumerate(s.get("atoms") or []):
                 if isinstance(atom, dict):
                     for ak in ["text", "body", "title"]:
                         if ak in atom and isinstance(atom[ak], str) and atom[ak]:
@@ -123,7 +123,8 @@ class TypographyWidowOrphanSentinel(BaseCouncilAgent):
                                 )
 
             # Check generic cards / content_items / boxes
-            for cidx, item in enumerate(s.get("cards", []) + s.get("content_items", []) + s.get("boxes", [])):
+            generic_items = (s.get("cards") or []) + (s.get("content_items") or []) + (s.get("boxes") or [])
+            for cidx, item in enumerate(generic_items):
                 if isinstance(item, dict):
                     for ik in ["description", "body", "text", "headline", "title"]:
                         if ik in item and isinstance(item[ik], str) and item[ik]:
@@ -156,14 +157,15 @@ class TypographyWidowOrphanSentinel(BaseCouncilAgent):
                     if self._check_string_for_orphan(s[tk]):
                         s[tk] = self._bind_non_breaking_space(s[tk])
 
-            for atom in s.get("atoms", []):
+            for atom in (s.get("atoms") or []):
                 if isinstance(atom, dict):
                     for ak in ["text", "body", "title"]:
                         if ak in atom and isinstance(atom[ak], str):
                             if self._check_string_for_orphan(atom[ak]):
                                 atom[ak] = self._bind_non_breaking_space(atom[ak])
 
-            for item in s.get("cards", []) + s.get("content_items", []) + s.get("boxes", []):
+            generic_items = (s.get("cards") or []) + (s.get("content_items") or []) + (s.get("boxes") or [])
+            for item in generic_items:
                 if isinstance(item, dict):
                     for ik in ["description", "body", "text", "headline", "title"]:
                         if ik in item and isinstance(item[ik], str):

@@ -185,8 +185,13 @@ def test_choreographed_entrance_animator_timing_and_curves():
     seq = slide.TimeLine.MainSequence
     assert seq.Count == 3
 
-    # Check cards have on page click trigger and smooth easing
-    for i in range(1, 4):
+    # Check cards: Card 1 (Hero/base) has WithPrevious to avoid blank canvas bug, subsequent cards enter OnClick
+    assert seq(1).effectId == msoAnimEffectFade
+    assert seq(1).Timing.TriggerType == msoAnimTriggerWithPrevious
+    assert seq(1).Timing.SmoothStart == msoTrue
+    assert seq(1).Timing.SmoothEnd == msoTrue
+
+    for i in range(2, 4):
         c = seq(i)
         assert c.effectId == msoAnimEffectFade
         assert c.Timing.Duration == 0.40
@@ -194,7 +199,7 @@ def test_choreographed_entrance_animator_timing_and_curves():
         assert c.Timing.SmoothStart == msoTrue
         assert c.Timing.SmoothEnd == msoTrue
 
-    # Mode 2: kinetic_cascade
+    # Mode 2: kinetic_cascade (headers remain static, content shapes animated)
     slide_cascade = MockSlide()
     count_cascade = AppleChoreographedEntranceAnimator.animate_slide_components(
         slide_cascade,
@@ -202,9 +207,9 @@ def test_choreographed_entrance_animator_timing_and_curves():
         header_shapes=[title, kicker],
         motion_mode="kinetic_cascade"
     )
-    assert count_cascade == 5
+    assert count_cascade == 3
     seq_c = slide_cascade.TimeLine.MainSequence
-    assert seq_c.Count == 5
+    assert seq_c.Count == 3
 
     # Invariant: all durations must strictly be between 0.15s and 1.5s for QA compliance
     for i in range(1, seq_c.Count + 1):

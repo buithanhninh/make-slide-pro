@@ -514,6 +514,16 @@ class MasterComponentDispatcher:
         return vj_clean in ARCHETYPES_REGISTRY
 
     def render(self, slide: Any, spec: Dict[str, Any], visual_job: str, left: float, top: float, width: float, height: float) -> Optional[List[Any]]:
+        raw_shapes = self._render_raw(slide, spec, visual_job, left, top, width, height)
+        if not raw_shapes:
+            return raw_shapes
+        try:
+            from .utils import cluster_and_group_atomic_cards
+            return cluster_and_group_atomic_cards(slide, raw_shapes)
+        except Exception:
+            return raw_shapes
+
+    def _render_raw(self, slide: Any, spec: Dict[str, Any], visual_job: str, left: float, top: float, width: float, height: float) -> Optional[List[Any]]:
         vj = str(visual_job).upper().strip()
 
         # ----------------- 1. NATIVE TABLES (15) -----------------

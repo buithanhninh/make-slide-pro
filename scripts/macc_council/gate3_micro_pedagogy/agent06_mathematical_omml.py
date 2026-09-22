@@ -53,7 +53,12 @@ class MathematicalOMMLValidator(BaseCouncilAgent):
         return shielded_text, shields
 
     def _check_balanced_delimiters(self, expr: str) -> Optional[str]:
-        """Checks if curly braces, parentheses, and square brackets are balanced."""
+        """Checks if curly braces, parentheses, and square brackets are balanced, exempting standard half-open intervals."""
+        # Check if expr is a valid mathematical interval like [0, 1) or (a, b]
+        clean_expr = expr.strip("$ \t\r\n")
+        if re.match(r"^[\(\[]\s*[^,\(\)\[\]]+\s*,\s*[^,\(\)\[\]]+\s*[\)\]]$", clean_expr):
+            return None
+
         stack = []
         pairs = {')': '(', '}': '{', ']': '['}
         for char in expr:
@@ -66,6 +71,44 @@ class MathematicalOMMLValidator(BaseCouncilAgent):
         if stack:
             return f"Thiếu ký tự đóng cho '{stack[-1]}' (chưa đóng ngoặc)."
         return None
+
+    def _parse_brace_group(self, s: str, start: int) -> Optional[Tuple[str, int]]:
+        """Parses a balanced {content} starting at or after start index. Returns (content, end_idx) or None."""
+        idx = start
+        while idx < len(s) and s[idx].isspace():
+            idx += 1
+        if idx >= len(s) or s[idx] != '{':
+            return None
+        depth = 0
+        content_start = idx + 1
+        for i in range(idx, len(s)):
+            if s[i] == '{' and (i == 0 or s[i - 1] != '\\'):
+                depth += 1
+            elif s[i] == '}' and (i == 0 or s[i - 1] != '\\'):
+                depth -= 1
+                if depth == 0:
+                    return s[content_start:i], i + 1
+        return None
+
+    def _validate_frac_arguments(self, expr: str) -> bool:
+        """Verifies that every \\frac in expr has two well-formed brace groups {num}{den}, supporting arbitrary nesting."""
+        pos = 0
+        while True:
+            pos = expr.find(r"\frac", pos)
+            if pos == -1:
+                break
+            end_cmd = pos + 5
+            if end_cmd < len(expr) and expr[end_cmd].isalpha():
+                pos = end_cmd
+                continue
+            g1 = self._parse_brace_group(expr, end_cmd)
+            if not g1:
+                return False
+            g2 = self._parse_brace_group(expr, g1[1])
+            if not g2:
+                return False
+            pos = end_cmd
+        return True
 
     def _check_unclosed_math_delimiters(self, text: str) -> List[Tuple[str, str, str]]:
         """
@@ -166,10 +209,8 @@ class MathematicalOMMLValidator(BaseCouncilAgent):
                     )
 
                 # Check for broken \frac (needs two arguments {num}{den})
-                if r"\frac" in expr:
-                    frac_matches = re.findall(r"\\frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}", expr)
-                    raw_frac_count = expr.count(r"\frac")
-                    if len(frac_matches) < raw_frac_count and not err:
+                if r"\frac" in expr and not err:
+                    if not self._validate_frac_arguments(expr):
                         findings.append(
                             AgentFinding(
                                 agent=self.name,
@@ -282,12 +323,13 @@ class MathematicalOMMLValidator(BaseCouncilAgent):
                     for k in ["assertion_title", "title", "headline", "primary_claim", "speaker_notes"]:
                         if k in s:
                             s[k] = _replace_in_field(s[k])
-                    for atom in s.get("atoms", []):
+                    for atom in (s.get("atoms") or []):
                         if isinstance(atom, dict):
                             for ak in ["title", "text", "body", "mechanism"]:
                                 if ak in atom:
                                     atom[ak] = _replace_in_field(atom[ak])
-                    for item in s.get("content_items", []) + s.get("cards", []) + s.get("boxes", []):
+                    items = (s.get("content_items") or []) + (s.get("cards") or []) + (s.get("boxes") or [])
+                    for item in items:
                         if isinstance(item, dict):
                             for ik in ["title", "text", "body", "headline", "description"]:
                                 if ik in item:

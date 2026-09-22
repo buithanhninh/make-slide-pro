@@ -564,10 +564,10 @@ class NativeChartsEngine:
     # -------------------------------------------------------------
     def render_radar_filled(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
         c_data = spec.get("chart_data", {})
-        categories = c_data.get("categories", ["Tốc Độ Render", "Độ Phủ Mẫu (165+)", "Chất Lượng Native", "Độ Ổn Định QA", "Chuyển Động Apple"])
+        categories = c_data.get("categories", ["Tốc Độ Cung Ứng", "Độ Phủ Mạng Lưới", "Chất Lượng Chuyên Môn", "Sự Hài Lòng Dân Cư", "Hiệu Quả Truyền Thông"])
         series = c_data.get("series", [
-            {"name": "Giải Pháp Make Slide Pro", "values": [98, 100, 100, 96, 95]},
-            {"name": "Tiêu Chuẩn Thị Trường", "values": [65, 40, 50, 60, 45]}
+            {"name": "Đơn Vị Tiên Tiến", "values": [95, 98, 96, 92, 94]},
+            {"name": "Mức Bình Quân Chung", "values": [70, 65, 75, 68, 60]}
         ])
 
         shape = slide.Shapes.AddChart(xlRadarFilled, left, top, width, height)

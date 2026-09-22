@@ -41,6 +41,34 @@ class DataChartCartographer(BaseCouncilAgent):
         "SYSTEM_INTERACTION"
     }
 
+    # 20 Native Microsoft Office Charts (Module 5 - Excel backed)
+    OFFICE_CHART_TYPES = {
+        "CHART_COLUMN_CLUSTERED", "COLUMN_CLUSTERED",
+        "CHART_COLUMN_STACKED", "COLUMN_STACKED",
+        "CHART_COLUMN_100_STACKED", "COLUMN_100_STACKED",
+        "CHART_BAR_CLUSTERED", "BAR_CLUSTERED",
+        "CHART_BAR_DIVERGING", "BAR_DIVERGING",
+        "CHART_BAR_DIVERGING_PYRAMID", "POPULATION_PYRAMID_NATIVE",
+        "CHART_LINE_TREND", "LINE_TREND",
+        "CHART_LINE_WITH_MARKERS",
+        "CHART_AREA_STANDARD", "AREA_STANDARD",
+        "CHART_AREA_STACKED", "AREA_STACKED",
+        "CHART_DONUT_KPI", "DONUT_KPI", "CHART_DONUT_KPI_CENTER",
+        "CHART_PIE_HIGHLIGHT_SLICE", "PIE_HIGHLIGHT_SLICE", "PIE_EXPLODED",
+        "CHART_WATERFALL", "WATERFALL", "CHART_WATERFALL_BRIDGE",
+        "CHART_COMBO_DUAL_AXIS", "COMBO_DUAL_AXIS",
+        "CHART_RADAR", "RADAR", "CHART_RADAR_CAPABILITY",
+        "CHART_SCATTER_CORRELATION", "SCATTER_CORRELATION",
+        "CHART_BUBBLE_MATRIX", "BUBBLE_MATRIX",
+        "CHART_BAR_STACKED_100", "BAR_STACKED_100",
+        "CHART_PARETO_ANALYSIS", "PARETO_ANALYSIS", "PARETO_CHART",
+        "CHART_STEPPED_LINE", "STEPPED_LINE",
+        "CHART_RADAR_FILLED", "RADAR_FILLED",
+        "CHART_HISTOGRAM_DISTRIBUTION", "HISTOGRAM_DISTRIBUTION", "HISTOGRAM"
+    }
+
+    ALL_NATIVE_CHART_TYPES = NATIVE_CHART_TYPES | OFFICE_CHART_TYPES
+
     TIME_INDICATORS = re.compile(
         r"\b(năm\s*20\d{2}|20\d{2}|quý\s*[1-4]|tháng\s*\d{1,2}|q[1-4]|year|quarter|month)\b",
         re.IGNORECASE
@@ -93,29 +121,30 @@ class DataChartCartographer(BaseCouncilAgent):
             slide_id = s.get("slide_id", "unknown_slide")
             chart = s.get("chart") or s.get("chart_spec")
 
-            # Native demographic chart check
+            # Native demographic & Office chart check
             native_ct = s.get("chart_type")
             if native_ct and isinstance(native_ct, str):
                 native_ct_upper = native_ct.upper()
-                if native_ct_upper not in self.NATIVE_CHART_TYPES:
+                if native_ct_upper not in self.ALL_NATIVE_CHART_TYPES:
                     findings.append(
                         AgentFinding(
                             agent=self.name,
                             gate=self.gate,
                             slide_id=slide_id,
                             severity=Severity.P1,
-                            issue=f"Loại biểu đồ nhân khẩu học không chuẩn hóa: '{native_ct}'",
-                            rationale="Hệ thống chỉ hỗ trợ danh mục biểu đồ nhân khẩu học và đồ thị chuyên sâu chuẩn hóa.",
-                            suggestion="Chuyển sang loại biểu đồ hợp lệ như 'POPULATION_PYRAMID', 'FERTILITY_TRENDS', hoặc 'REGIONAL_DENSITY'.",
+                            issue=f"Loại biểu đồ không chuẩn hóa: '{native_ct}'",
+                            rationale="Hệ thống hỗ trợ 20 biểu đồ Microsoft Office Native và danh mục biểu đồ nhân khẩu học chuẩn hóa V8.6.0.",
+                            suggestion="Chuyển sang loại biểu đồ hợp lệ như 'CHART_COLUMN_CLUSTERED', 'CHART_PARETO_ANALYSIS' hoặc 'POPULATION_PYRAMID'.",
                             evidence=f"chart_type='{native_ct}'",
                             original_value=native_ct,
-                            suggested_value="POPULATION_PYRAMID"
+                            suggested_value="CHART_COLUMN_CLUSTERED"
                         )
                     )
 
-                atoms = s.get("atoms", [])
-                cards = s.get("cards", [])
-                if not atoms and not cards:
+                atoms = s.get("atoms") or []
+                cards = s.get("cards") or []
+                chart_insights = s.get("chart_insights") or []
+                if not atoms and not cards and not chart_insights:
                     findings.append(
                         AgentFinding(
                             agent=self.name,
@@ -124,8 +153,47 @@ class DataChartCartographer(BaseCouncilAgent):
                             severity=Severity.P1,
                             issue="Biểu đồ trực quan thiếu phân tích định tính (Missing Chart Insights)",
                             rationale="Theo nguyên lý Chart & Insights, biểu đồ số liệu phải luôn đi kèm ít nhất 1-3 thẻ insight phân tích ý nghĩa số liệu.",
-                            suggestion="Bổ sung các thẻ atoms diễn giải ý nghĩa phát hiện từ biểu đồ.",
+                            suggestion="Bổ sung các thẻ atoms hoặc chart_insights diễn giải ý nghĩa phát hiện từ biểu đồ.",
                             evidence=f"chart_type='{native_ct}', atoms count={len(atoms)}"
+                        )
+                    )
+
+            # Native Office Excel-backed Chart Data Check
+            chart_data = s.get("chart_data")
+            if chart_data and isinstance(chart_data, dict):
+                categories = chart_data.get("categories") or []
+                series = chart_data.get("series") or []
+                if not categories and not series:
+                    findings.append(
+                        AgentFinding(
+                            agent=self.name,
+                            gate=self.gate,
+                            slide_id=slide_id,
+                            severity=Severity.P0,
+                            issue="Biểu đồ Native Excel thiếu dữ liệu categories hoặc series",
+                            rationale="Biểu đồ Office Chart bắt buộc phải có mảng categories và chuỗi số liệu series để nạp vào bảng tính Excel nhúng.",
+                            suggestion="Bổ sung danh sách categories và series giá trị thực cho biểu đồ.",
+                            evidence=f"chart_data keys={list(chart_data.keys())}"
+                        )
+                    )
+
+            # Dark Canvas Contrast check for Chart Text
+            theme = (context or {}).get("theme", "DARK").upper()
+            if theme == "DARK":
+                chart_font_color = s.get("chart_font_color") or (chart.get("font_color") if chart and isinstance(chart, dict) else None)
+                if chart_font_color and str(chart_font_color).strip().lower() in {"#000000", "#0f172a", "black"}:
+                    findings.append(
+                        AgentFinding(
+                            agent=self.name,
+                            gate=self.gate,
+                            slide_id=slide_id,
+                            severity=Severity.P1,
+                            issue="Chữ trên biểu đồ sử dụng màu tối trên nền Dark Canvas",
+                            rationale="Trên nền Dark Canvas, nhãn trục và chú thích biểu đồ phải sử dụng màu sáng (#E2E8F0 hoặc #FFFFFF) để đảm bảo độ tương phản.",
+                            suggestion="Đổi màu chữ biểu đồ sang '#E2E8F0'.",
+                            evidence=f"font_color='{chart_font_color}'",
+                            original_value=chart_font_color,
+                            suggested_value="#E2E8F0"
                         )
                     )
 
@@ -244,14 +312,15 @@ class DataChartCartographer(BaseCouncilAgent):
         slides = self._get_slides(remediated)
 
         for s in slides:
-            # 1. Remediate native demographic charts
+            # 1. Remediate native demographic & office charts
             native_ct = s.get("chart_type")
             if native_ct and isinstance(native_ct, str):
-                if native_ct.upper() not in self.NATIVE_CHART_TYPES:
-                    s["chart_type"] = "POPULATION_PYRAMID"
-                atoms = s.get("atoms", [])
-                cards = s.get("cards", [])
-                if not atoms and not cards:
+                if native_ct.upper() not in self.ALL_NATIVE_CHART_TYPES:
+                    s["chart_type"] = "CHART_COLUMN_CLUSTERED" if any(k in native_ct.upper() for k in ["BAR", "COL", "LINE", "AREA", "CHART"]) else "POPULATION_PYRAMID"
+                atoms = s.get("atoms") or []
+                cards = s.get("cards") or []
+                chart_insights = s.get("chart_insights") or []
+                if not atoms and not cards and not chart_insights:
                     s["atoms"] = [
                         {
                             "kicker": "PHÂN TÍCH TRỌNG TÂM",
@@ -259,6 +328,10 @@ class DataChartCartographer(BaseCouncilAgent):
                             "text": "Số liệu phản ánh xu thế chuyển dịch rõ nét và tạo tiền đề cho các quyết sách chiến lược."
                         }
                     ]
+
+            # Fix dark font color on dark canvas
+            if s.get("chart_font_color") and str(s.get("chart_font_color")).strip().lower() in {"#000000", "#0f172a", "black"}:
+                s["chart_font_color"] = "#E2E8F0"
 
             chart = s.get("chart") or s.get("chart_spec")
             if chart and isinstance(chart, dict):
@@ -278,12 +351,14 @@ class DataChartCartographer(BaseCouncilAgent):
                             total = sum(data)
                             if total > 0 and abs(total - 100.0) > 1.0:
                                 chart["data"] = [round((v / total) * 100.0, 1) for v in data]
+                                chart["unit"] = "%"
                         # Case B: list of dicts
                         elif all(isinstance(v, dict) and "value" in v and isinstance(v["value"], (int, float)) for v in data):
                             total = sum(v["value"] for v in data)
                             if total > 0 and abs(total - 100.0) > 1.0:
                                 for v in data:
                                     v["value"] = round((v["value"] / total) * 100.0, 1)
+                                chart["unit"] = "%"
 
         if isinstance(remediated, dict):
             remediated["slides"] = slides

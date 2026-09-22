@@ -1,8 +1,11 @@
 """
 scripts/macc_council/__init__.py
-MACC-QA V8.0: 16-Agent Omniscient Council Framework.
+MACC-QA V8.6.0: 16-Agent Omniscient Council Framework.
 Exports base models, all 16 specialized agents across 5 forensic gates, and the master MultiRoundCouncilOrchestrator.
 """
+
+__version__ = "8.6.0"
+
 
 from .models import (
     Severity,

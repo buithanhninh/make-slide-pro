@@ -208,13 +208,14 @@ class NaturalLanguagePurist(BaseCouncilAgent):
                 if k in s:
                     s[k] = _clean_str(s[k])
 
-            for atom in s.get("atoms", []):
+            for atom in (s.get("atoms") or []):
                 if isinstance(atom, dict):
                     for ak in ["title", "text", "body", "mechanism", "kicker"]:
                         if ak in atom:
                             atom[ak] = _clean_str(atom[ak])
 
-            for item in s.get("content_items", []) + s.get("cards", []) + s.get("boxes", []):
+            items = (s.get("content_items") or []) + (s.get("cards") or []) + (s.get("boxes") or [])
+            for item in items:
                 if isinstance(item, dict):
                     for ik in ["title", "text", "body", "headline", "description"]:
                         if ik in item:

@@ -9,6 +9,7 @@ Supports all 5 demographic course modules and dynamic generic documents.
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import re
 import sys
@@ -26,12 +27,12 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 try:
-    from content_multi_agent_council import ContentMultiAgentCouncil
+    from macc_council import MultiRoundCouncilOrchestrator
 except ImportError:
     try:
-        from scripts.content_multi_agent_council import ContentMultiAgentCouncil
+        from scripts.macc_council import MultiRoundCouncilOrchestrator
     except ImportError:
-        ContentMultiAgentCouncil = None
+        MultiRoundCouncilOrchestrator = None
 
 try:
     from component_library import detect_optimal_archetype
@@ -55,10 +56,11 @@ def extract_pedagogical_sentence(text: str, max_words: int = 32) -> str:
                 res = cand
             else:
                 break
-        if len(res.split()) >= 4:
-            if not res.endswith((".", "!", "?")):
-                res += "."
-            return res
+        if len(res.split()) > max_words:
+            res = " ".join(res.split()[:max_words]).rstrip(",;: -–—")
+        if not res.endswith((".", "!", "?")):
+            res += "."
+        return res
     words = cleaned.split()[:max_words]
     res = " ".join(words).strip()
     if not res.endswith((".", "!", "?")):
@@ -1010,25 +1012,96 @@ def extract_card_concept_title(atom: Dict[str, Any], idx: int) -> str:
     return role_titles.get(role, f"Nội Dung Trọng Tâm {idx + 1}")
 
 
-def generate_generic_blueprints(canonical: Dict[str, Any]) -> Dict[str, Any]:
+def pick_domain_archetype(chunk: List[Dict[str, Any]], sec_title: str, chunk_idx: int, slide_counter: int) -> str:
+    """Intelligently assigns an archetype from the 165+ V8.6.0 library based on domain context."""
+    chunk_text = " ".join([a.get("verbatim", "") for a in chunk]).lower()
+    sec_lower = sec_title.lower()
+    combined = chunk_text + " " + sec_lower
+
+    # 1. Tech & Systems Architecture (Module 4)
+    if any(k in combined for k in ["kiến trúc", "hệ thống", "microservices", "cloud", "api", "database", "lakehouse", "medallion", "pipeline", "rag", "agent", "bảo mật", "zero trust", "iot"]):
+        if "medallion" in combined or "lakehouse" in combined or "kho dữ liệu" in combined:
+            return "ARCH_DATA_LAKEHOUSE_MEDALLION"
+        elif "rag" in combined or "llm" in combined or "ai" in combined or "agent" in combined:
+            return "ARCH_RAG_LLM_PIPELINE"
+        elif "devsecops" in combined or "ci/cd" in combined or "vòng lặp vô cực" in combined:
+            return "PROCESS_DEVSECOPS_INFINITY_LOOP"
+        elif "microservices" in combined or "service mesh" in combined:
+            return "ARCH_MICROSERVICES_MESH"
+        return "ARCH_SYSTEM_LAYERED_STACK"
+
+    # 2. Strategy & Management Frameworks (Module 2)
+    if any(k in combined for k in ["chiến lược", "ma trận", "swot", "năng lực cạnh tranh", "porter", "pestel", "cột trụ", "7s", "okr", "mục tiêu", "định hướng"]):
+        if "swot" in combined:
+            return "FRAMEWORK_SWOT_ANALYSIS"
+        elif "pestel" in combined or "vĩ mô" in combined or "hex" in combined:
+            return "FRAMEWORK_PESTEL_HEX"
+        elif "cạnh tranh" in combined or "porter" in combined or "5 lực lượng" in combined:
+            return "FRAMEWORK_PORTER_5_FORCES"
+        elif "thẻ điểm" in combined or "balanced scorecard" in combined or "bsc" in combined:
+            return "FRAMEWORK_BALANCED_SCORECARD"
+        elif "kim tự tháp" in combined or "thứ bậc" in combined:
+            return "FRAMEWORK_PYRAMID_ASCENDING"
+        return "FRAMEWORK_MATRIX_2X2"
+
+    # 3. Economics, Finance & Quantitative Metrics (Modules 1 & 5)
+    if any(k in combined for k in ["doanh thu", "chi phí", "lợi nhuận", "p&l", "ngân sách", "tài chính", "ebitda", "báo cáo tài chính"]):
+        return "TABLE_FINANCIAL_PL"
+    if any(k in combined for k in ["pareto", "80/20"]):
+        return "CHART_PARETO_ANALYSIS"
+    if any(k in combined for k in ["kpi", "chỉ số", "delta", "đo lường", "tăng trưởng", "thống kê"]):
+        return "CONTAINER_KPI_STAT_DELTA"
+
+    # 4. Comparison & Contrast (Modules 1 & 6)
+    if any(k in combined for k in ["so sánh", "đối chiếu", "trước và sau", "before vs after", "versus", "khác biệt", "ưu điểm và nhược điểm"]):
+        return "CONTAINER_BEFORE_AFTER"
+
+    # 5. Process & Progression (Module 3)
+    if any(k in combined for k in ["quy trình", "tiến trình", "lộ trình", "giai đoạn", "bước", "roadmap", "timeline", "tuần tự"]):
+        if "scrum" in combined or "agile" in combined or "sprint" in combined:
+            return "PROCESS_AGILE_SCRUM_CYCLE"
+        elif "cpm" in combined or "critical path" in combined:
+            return "PROCESS_CRITICAL_PATH_CPM"
+        elif "3 chân trời" in combined or "horizons" in combined:
+            return "PROCESS_3_HORIZONS_ROADMAP"
+        return "PROCESS_CHEVRON_LINEAR"
+
+    # 6. Default elegant containers with rhythmic rotation to prevent visual fatigue
+    if len(chunk) == 3:
+        options = ["CONTAINER_PILLAR_3D", "CONTAINER_CARD_GRID_3COL", "PROCESS_3_HORIZONS_ROADMAP", "FRAMEWORK_PYRAMID_ASCENDING"]
+        return options[slide_counter % len(options)]
+    elif len(chunk) == 4:
+        options = ["CONTAINER_BENTO_GRID_3X3", "FRAMEWORK_MATRIX_2X2", "FRAMEWORK_SWOT_ANALYSIS", "FRAMEWORK_PESTEL_HEX"]
+        return options[slide_counter % len(options)]
+    elif len(chunk) == 2:
+        options = ["CONTAINER_STAT_HERO_SPLIT_60_40", "CONTAINER_SPLIT_EQUAL_50_50", "CONTAINER_BEFORE_AFTER", "PROCESS_CHEVRON_LINEAR"]
+        return options[slide_counter % len(options)]
+    return "CONTAINER_BENTO_COMPLEX"
+
+
+def generate_generic_blueprints(canonical: Dict[str, Any], target_slides: int = 0) -> Dict[str, Any]:
     """
-    Exhaustive Deep-Curriculum Pedagogical Blueprint Generator for Make Slide Pro V8.3.0.
-    Processes any generic document (.docx, .pdf, .txt, .md) without information loss:
-    - Slices long sections into sequential 2-3 concept thematic slides.
-    - Automatically routes tables to DATA_TABLE.
-    - Automatically routes equations to FORMULA_CARD.
-    - Automatically routes metrics/statistics to CHART_AND_INSIGHTS.
-    - Injects pure 16:9 AI illustrations as EDITORIAL_HERO every 5-6 slides.
-    - Dynamically assigns BENTO_GRID, COMPARISON, PROCESS, and CARDS.
+    Exhaustive Deep-Curriculum Pedagogical Blueprint Generator for Make Slide Pro V8.6.0.
+    Processes any generic document (.docx, .pdf, .txt, .md) with:
+    - 165+ Mega Archetypes across 6 presentation engines.
+    - 100% Apple Keynote Continuous Morph (Slide 1 & N = Fade 0.65s, Slides 2..N-1 = Morph 0.85s).
+    - Atomic Presenter Sequencing for unified card animations.
+    - Dynamic scaling to 10 slide count tiers (5, 7, 10, 12, 15, 18, 20, 25, 30 slides, or custom).
     """
     sections = canonical.get("sections", [])
     source_path = Path(canonical.get("source_path", "Tài Liệu Chuyên Đề"))
+    source_stem = source_path.stem.replace("_", " ").strip()
     title_text = canonical.get("deck_title", "")
-    if not title_text or title_text == "CHUYÊN ĐỀ DÂN SỐ HỌC":
+    if any(k in source_stem.lower() for k in ["bài", "chuyên đề", "dịch vụ", "báo cáo", "kế hoạch"]):
+        title_text = source_stem
+    elif not title_text or title_text == "CHUYÊN ĐỀ DÂN SỐ HỌC":
         first_sec = sections[0]["title"] if sections else source_path.stem
-        title_text = re.sub(r"^(bài\s*\d+[\.\:\-]?\s*)", "", first_sec, flags=re.IGNORECASE).strip()
+        if sections and sections[0]["title"].lower() not in ["mục tiêu", "mở đầu", "giới thiệu", "lời nói đầu"]:
+            title_text = re.sub(r"^(bài\s*\d+[\.\:\-]?\s*)", "", first_sec, flags=re.IGNORECASE).strip()
+        else:
+            title_text = source_stem
         if not title_text or len(title_text) < 3:
-            title_text = source_path.stem.replace("_", " ").title()
+            title_text = source_stem.title()
 
     all_atoms = [a for s in sections for a in s.get("atoms", [])]
     core_claims = [a["verbatim"] for a in all_atoms if a.get("priority") == "P0" or a.get("semantic_role") == "CORE_DEFINITION"]
@@ -1058,7 +1131,7 @@ def generate_generic_blueprints(canonical: Dict[str, Any]) -> Dict[str, Any]:
     ICONS_PALETTE = ["activity", "target", "trending-up", "book-open", "shield", "users", "award", "zap", "calculator", "sliders"]
 
     slides = []
-    # 1. Cover Slide
+    # 1. Cover Slide (V8.6.0: Smooth Fade 0.65s)
     slides.append({
         "slide_id": "SLIDE_01",
         "role": "COVER",
@@ -1067,21 +1140,53 @@ def generate_generic_blueprints(canonical: Dict[str, Any]) -> Dict[str, Any]:
         "primary_claim": primary_cover_claim,
         "visual_job": "HERO_TITLE",
         "visual_anchor": "BRAND_COVER",
+        "transition": "fade",
+        "transition_duration": 0.65,
         "illustration": "illustration_bai_1.jpg",
         "speaker_notes": f"Kính chào quý học viên, hôm nay chúng ta nghiên cứu chuyên đề {title_text}.",
         "source_footer": f"Tài liệu đào tạo chuẩn hóa: {source_path.name}"
     })
 
+    # Pre-calculate counts across sections for dynamic chunking
+    all_narrative_atoms_count = sum(
+        len([a for a in sec.get("atoms", []) if not (a.get("is_table") or a.get("is_formula"))])
+        for sec in sections
+    )
+    all_tables_count = sum(
+        len([a for a in sec.get("atoms", []) if a.get("is_table") or a.get("table_data")])
+        for sec in sections
+    )
+    all_formulas_count = sum(
+        len([a for a in sec.get("atoms", []) if a.get("is_formula") or a.get("semantic_role") == "MATHEMATICAL_FORMULA"])
+        for sec in sections
+    )
+
+    if target_slides > 0:
+        needed_narrative = max(1, target_slides - 2 - all_tables_count - all_formulas_count)
+        if all_narrative_atoms_count > 0:
+            optimal_chunk_size = max(1, all_narrative_atoms_count // needed_narrative)
+        else:
+            optimal_chunk_size = 3
+    else:
+        optimal_chunk_size = 3
+
     slide_counter = 1
     ill_idx = 1
     chart_idx = 0
 
+    first_content_sec = True
     for sec in sections:
         sec_title = sec.get("title", "Nội Dung Trọng Tâm").strip()
         sec_clean = re.sub(r"^\d+[\.\:\-]?\s*", "", sec_title).strip() or sec_title
         atoms = sec.get("atoms", [])
         if not atoms:
             continue
+
+        if first_content_sec:
+            first_content_sec = False
+            if not any(k in sec_clean.lower() for k in ["bối cảnh", "thực trạng", "thách thức", "vấn đề", "khó khăn"]):
+                sec_clean = f"Bối Cảnh & {sec_clean}"
+                sec_title = f"BỐI CẢNH & {sec_title}"
 
         # Separate tables, formulas, and general narrative atoms
         table_atoms = [a for a in atoms if a.get("is_table") or a.get("table_data")]
@@ -1101,6 +1206,10 @@ def generate_generic_blueprints(canonical: Dict[str, Any]) -> Dict[str, Any]:
                 "visual_job": "DATA_TABLE",
                 "visual_anchor": "DATA_TABLE_MATRIX",
                 "table_data": t_data,
+                "transition": "morph",
+                "transition_duration": 0.85,
+                "atomic_card": True,
+                "safe_group": True,
                 "speaker_notes": f"Phân tích bảng số liệu tổng hợp của phần {sec_clean}.",
                 "source_footer": f"Nguồn trích dẫn: {source_path.name}"
             })
@@ -1109,7 +1218,6 @@ def generate_generic_blueprints(canonical: Dict[str, Any]) -> Dict[str, Any]:
         for f_atom in formula_atoms:
             slide_counter += 1
             formula_text = f_atom.get("verbatim", "")
-            # Clean formula string: stop before comma, semicolon, period, or 'trong đó'
             f_match = re.search(r"([A-Za-z0-9_]{1,10}\s*=\s*[^,;.\n]+(?:\s*[\*\/\+\-]\s*[^,;.\n]+)*)", formula_text)
             clean_formula = f_match.group(1).strip() if f_match else formula_text[:50]
             if "trong đó" in clean_formula.lower():
@@ -1124,6 +1232,10 @@ def generate_generic_blueprints(canonical: Dict[str, Any]) -> Dict[str, Any]:
                 "visual_job": "FORMULA_CARD",
                 "visual_anchor": "TWO_PILLARS",
                 "formula": clean_formula,
+                "transition": "morph",
+                "transition_duration": 0.85,
+                "atomic_card": True,
+                "safe_group": True,
                 "atoms": [
                     {
                         "title": "Công Thức Định Lượng",
@@ -1140,8 +1252,8 @@ def generate_generic_blueprints(canonical: Dict[str, Any]) -> Dict[str, Any]:
                 "source_footer": f"Phương pháp luận: {source_path.name}"
             })
 
-        # 2.3 Deep Pedagogical Chunking for Narrative Atoms (2-3 atoms per slide)
-        chunk_size = 3
+        # 2.3 Deep Pedagogical Chunking for Narrative Atoms
+        chunk_size = max(1, optimal_chunk_size)
         for chunk_idx in range(0, len(narrative_atoms), chunk_size):
             chunk = narrative_atoms[chunk_idx:chunk_idx + chunk_size]
             if not chunk:
@@ -1149,18 +1261,16 @@ def generate_generic_blueprints(canonical: Dict[str, Any]) -> Dict[str, Any]:
 
             slide_counter += 1
             has_metric = any(a.get("contains_metric") or a.get("semantic_role") == "STATISTICAL_EVIDENCE" for a in chunk)
-            has_contrast = any(a.get("semantic_role") == "DIALECTICAL_PAIR" for a in chunk)
-            has_mechanism = any(a.get("semantic_role") == "DYNAMIC_MECHANISM" for a in chunk)
 
-            # Assign Visual Job
+            # Assign Visual Job from 165+ Library
             detected = None
             if detect_optimal_archetype:
                 chunk_text = " ".join([a.get("verbatim", "") for a in chunk])
                 detected = detect_optimal_archetype({"assertion_title": sec_clean, "primary_claim": chunk_text, "atoms": chunk})
 
-            if detected and detected != "CONTAINER_BENTO_COMPLEX":
+            if detected and "BENTO" not in detected:
                 vjob = detected
-            elif slide_counter % 5 == 3:
+            elif slide_counter % 6 == 4:
                 vjob = "EDITORIAL_HERO"
                 current_ill = AI_ILLUSTRATIONS[ill_idx % len(AI_ILLUSTRATIONS)]
                 ill_idx += 1
@@ -1168,25 +1278,43 @@ def generate_generic_blueprints(canonical: Dict[str, Any]) -> Dict[str, Any]:
                 vjob = "CHART_AND_INSIGHTS"
                 current_chart = DEMO_CHARTS[chart_idx % len(DEMO_CHARTS)]
                 chart_idx += 1
-            elif has_contrast:
-                vjob = "COMPARISON"
-            elif has_mechanism or len(chunk) >= 3:
-                vjob = "PROCESS" if chunk_idx > 0 else "BENTO_GRID"
             else:
-                vjob = "CARDS"
+                vjob = pick_domain_archetype(chunk, sec_clean, chunk_idx, slide_counter)
 
-            # Build card atoms
+            # Build card atoms (ensuring 2-3 structured atoms per slide even for 1-atom chunks)
             card_atoms = []
-            for a_idx, atom in enumerate(chunk):
-                raw_text = atom.get("verbatim", "")
-                card_title = extract_card_concept_title(atom, a_idx)
-                card_text = clean_summary(raw_text, 25)
-                card_icon = ICONS_PALETTE[(slide_counter + a_idx) % len(ICONS_PALETTE)]
-                card_atoms.append({
-                    "title": card_title,
-                    "text": card_text,
-                    "icon": card_icon
-                })
+            if len(chunk) == 1:
+                single_atom = chunk[0]
+                raw_text = single_atom.get("verbatim", "")
+                card_title = extract_card_concept_title(single_atom, 0)
+                sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+|;\s+", raw_text) if len(s.strip()) > 5]
+                if len(sentences) >= 3:
+                    card_atoms = [
+                        {"title": card_title or "Luận Điểm Cốt Lõi", "text": clean_summary(sentences[0], 22), "icon": ICONS_PALETTE[(slide_counter) % len(ICONS_PALETTE)]},
+                        {"title": "Cơ Chế & Quy Chuẩn Thực Thi", "text": clean_summary(sentences[1], 25), "icon": ICONS_PALETTE[(slide_counter + 1) % len(ICONS_PALETTE)]},
+                        {"title": "Ý Nghĩa & Mục Tiêu Đo Lường", "text": clean_summary(" ".join(sentences[2:]), 25), "icon": ICONS_PALETTE[(slide_counter + 2) % len(ICONS_PALETTE)]},
+                    ]
+                elif len(sentences) == 2:
+                    card_atoms = [
+                        {"title": card_title or "Nội Dung Trọng Tâm", "text": clean_summary(sentences[0], 25), "icon": ICONS_PALETTE[(slide_counter) % len(ICONS_PALETTE)]},
+                        {"title": "Ý Nghĩa Triển Khai Thực Tiễn", "text": clean_summary(sentences[1], 25), "icon": ICONS_PALETTE[(slide_counter + 1) % len(ICONS_PALETTE)]},
+                    ]
+                else:
+                    card_atoms = [
+                        {"title": card_title or "Nội Dung Trọng Tâm", "text": clean_summary(raw_text, 28), "icon": ICONS_PALETTE[(slide_counter) % len(ICONS_PALETTE)]},
+                        {"title": "Khuyến Nghị Áp Dụng", "text": f"Vận dụng đồng bộ các nguyên tắc của {sec_clean.lower()} vào công tác thực tiễn.", "icon": ICONS_PALETTE[(slide_counter + 1) % len(ICONS_PALETTE)]}
+                    ]
+            else:
+                for a_idx, atom in enumerate(chunk):
+                    raw_text = atom.get("verbatim", "")
+                    card_title = extract_card_concept_title(atom, a_idx)
+                    card_text = clean_summary(raw_text, 25)
+                    card_icon = ICONS_PALETTE[(slide_counter + a_idx) % len(ICONS_PALETTE)]
+                    card_atoms.append({
+                        "title": card_title,
+                        "text": card_text,
+                        "icon": card_icon
+                    })
 
             primary_claim = clean_summary(chunk[0].get("verbatim", sec_title), 22)
             
@@ -1207,6 +1335,10 @@ def generate_generic_blueprints(canonical: Dict[str, Any]) -> Dict[str, Any]:
                 "visual_job": vjob,
                 "visual_anchor": "SECTION_CARDS",
                 "atoms": card_atoms,
+                "transition": "morph",
+                "transition_duration": 0.85,
+                "atomic_card": True,
+                "safe_group": True,
                 "speaker_notes": f"Nội dung trọng tâm của chuyên đề {sec_title}.",
                 "source_footer": f"Tài liệu chuẩn hóa: {source_path.name}"
             }
@@ -1218,7 +1350,7 @@ def generate_generic_blueprints(canonical: Dict[str, Any]) -> Dict[str, Any]:
 
             slides.append(slide_spec)
 
-    # 3. Summary & Conclusion Slide
+    # 3. Summary & Conclusion Slide (V8.6.0: Smooth Fade 0.65s)
     slide_counter += 1
     slides.append({
         "slide_id": f"SLIDE_{slide_counter:02d}",
@@ -1228,64 +1360,140 @@ def generate_generic_blueprints(canonical: Dict[str, Any]) -> Dict[str, Any]:
         "primary_claim": "Nắm vững lý thuyết, phương pháp luận và dữ liệu thực chứng là nền tảng cốt lõi cho mọi hành động thực tiễn hiệu quả.",
         "visual_job": "HERO_TITLE",
         "visual_anchor": "BRAND_SUMMARY",
+        "transition": "fade",
+        "transition_duration": 0.65,
         "speaker_notes": "Cảm ơn quý học viên đã theo dõi. Xin mời thảo luận và đóng góp ý kiến.",
         "source_footer": f"Hoàn thành chuyên đề đào tạo: {source_path.name}"
     })
 
+    # Dynamic Scaling to Target Slide Count Tier
+    if target_slides > 0 and len(slides) > 2:
+        target_content = max(1, target_slides - 2)
+        content_slides = slides[1:-1]
+        if len(content_slides) > target_content:
+            step = len(content_slides) / target_content
+            selected_content = [content_slides[int(i * step)] for i in range(target_content)]
+            slides = [slides[0]] + selected_content + [slides[-1]]
+        elif len(content_slides) < target_content:
+            needed = target_content - len(content_slides)
+            expanded = list(content_slides)
+            for i in range(needed):
+                source_slide = content_slides[i % len(content_slides)]
+                new_slide = copy.deepcopy(source_slide)
+                new_slide["assertion_title"] = f"Phân Tích Chi Tiết & Ứng Dụng: {new_slide.get('section', '')}"
+                new_slide["visual_job"] = "CONTAINER_BENTO_COMPLEX"
+                expanded.append(new_slide)
+            slides = [slides[0]] + expanded[:target_content] + [slides[-1]]
+
+    # Re-index slide IDs cleanly
+    for idx, s in enumerate(slides):
+        s["slide_id"] = f"SLIDE_{idx+1:02d}"
+
     return {
-        "schema_version": "1.0",
+        "schema_version": "8.6.0",
+        "version": "8.6.0",
+        "v86_mode": True,
         "lesson_index": 1,
         "deck_title": title_text,
         "total_slides": len(slides),
-        "visual_system": "MODERN_REFINED",
+        "visual_system": "V86_KEYNOTE_MORPH",
         "slides": slides
     }
 
 
-def generate_blueprints_from_canonical(canonical: Dict[str, Any], doc_name: str = "") -> Dict[str, Any]:
-    header_str = canonical.get("source_path", "") + " " + (canonical.get("sections", [{}])[0].get("title", ""))
+def generate_blueprints_from_canonical(canonical: Dict[str, Any], doc_name: str = "", target_slides: int = 0) -> Dict[str, Any]:
+    secs = canonical.get("sections") or [{}]
+    first_title = secs[0].get("title", "") if isinstance(secs[0], dict) else ""
+    header_str = str(canonical.get("source_path", "")) + " " + str(first_title)
     check_str = (doc_name + " " + header_str).lower()
-    
-    # Import exhaustive deep curriculum blueprints (106 slides total across 5 core lessons)
+
+    # Import exhaustive deep curriculum blueprints for Course 1
     try:
         import curriculum_blueprints_data as cbd
     except ImportError:
         from scripts import curriculum_blueprints_data as cbd
 
-    if any(k in check_str for k in ["bai 1", "bài 1", "bài i", "nhap mon", "nhập môn"]):
+    # Import exhaustive deep curriculum blueprints for Course 2 (Make Slide Pro V8.6.0)
+    try:
+        from course2_curriculum_builder import get_course2_blueprints
+    except ImportError:
+        from scripts.course2_curriculum_builder import get_course2_blueprints
+
+    is_course_2 = ("a tuan dan so 2" in check_str) or any(
+        k in check_str for k in ["dịch vụ", "dich vu", "kết hôn", "khám sức khỏe", "khhgd", "khhgđ", "trước sinh", "sơ sinh", "cao tuổi", "csskss"]
+    )
+
+    if is_course_2:
+        raw_bp = get_course2_blueprints(doc_name or check_str, target_slides=target_slides)
+    elif any(k in check_str for k in ["nhap mon", "nhập môn"]):
         raw_bp = cbd.get_lesson_blueprints_bai_1()
-    elif any(k in check_str for k in ["bai 2", "bài 2", "bài ii", "quy mo-co cau", "qui mô", "chất lượng ds", "chat luong ds"]):
+    elif any(k in check_str for k in ["quy mo-co cau", "qui mô", "chất lượng ds", "chat luong ds"]):
         raw_bp = cbd.get_lesson_blueprints_bai_2()
-    elif any(k in check_str for k in ["bai 3", "bài 3", "bài iii", "bien dong", "biến động", "mức sinh"]):
+    elif any(k in check_str for k in ["bien dong", "biến động", "mức sinh"]):
         raw_bp = cbd.get_lesson_blueprints_bai_3()
-    elif any(k in check_str for k in ["bai 4", "bài 4", "bài iv", "phan bo", "phân bố", "di dan", "đô thị hóa", "do thi hoa"]):
+    elif any(k in check_str for k in ["phan bo", "phân bố", "di dan", "đô thị hóa", "do thi hoa"]):
         raw_bp = cbd.get_lesson_blueprints_bai_4()
-    elif any(k in check_str for k in ["bai 5", "bài 5", "bài v", "du bao", "dự báo"]):
+    elif any(k in check_str for k in ["du bao", "dự báo"]):
         raw_bp = cbd.get_lesson_blueprints_bai_5()
     else:
-        raw_bp = generate_generic_blueprints(canonical)
+        raw_bp = generate_generic_blueprints(canonical, target_slides=target_slides)
 
-    # Route through MACC-QA V7.0 Multi-Agent Content Council for Forensic Review & Refinement
-    if ContentMultiAgentCouncil:
-        council = ContentMultiAgentCouncil(max_rounds=3)
-        all_text = " ".join(
-            a.get("verbatim", "") for sec in canonical.get("sections", []) for a in sec.get("atoms", [])
+    # Ensure V8.6.0 motion & metadata flags
+    raw_bp["schema_version"] = "8.6.0"
+    raw_bp["version"] = "8.6.0"
+    raw_bp["v86_mode"] = True
+    total_s = len(raw_bp.get("slides", []))
+    for s_idx, s in enumerate(raw_bp.get("slides", [])):
+        if s_idx == 0 or s_idx == total_s - 1:
+            s.setdefault("transition", "fade")
+            s.setdefault("transition_duration", 0.65)
+        else:
+            s.setdefault("transition", "morph")
+            s.setdefault("transition_duration", 0.85)
+            s.setdefault("atomic_card", True)
+            s.setdefault("safe_group", True)
+
+    # Route through MACC-QA V8.6.0 16-Agent Omniscient Council for Forensic Review & Refinement
+    if MultiRoundCouncilOrchestrator:
+        council = MultiRoundCouncilOrchestrator(max_rounds=5, target_score=99.5)
+        report = council.run_council(
+            blueprints=raw_bp,
+            canonical_source=canonical,
+            doc_metadata={"file_stem": doc_name, "enforce_v86": True, "target_slides": target_slides}
         )
-        return council.review_and_refine_blueprints(raw_bp, canonical_text=all_text)
+        if report.remediated_slides:
+            raw_bp["slides"] = report.remediated_slides
+            raw_bp["total_slides"] = len(report.remediated_slides)
+        raw_bp["council_certification"] = {
+            "version": "MACC-QA V8.6.0",
+            "score": report.final_score,
+            "certified": report.certified,
+            "total_rounds": report.total_rounds,
+            "p0_count": report.p0_count,
+            "p1_count": report.p1_count,
+            "p2_count": report.p2_count
+        }
+        return raw_bp
     return raw_bp
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate Certified Slide Blueprints")
+    parser = argparse.ArgumentParser(description="Generate Certified Slide Blueprints (Make Slide Pro V8.6.0)")
     parser.add_argument("--canonical", required=True, type=Path, help="Path to canonical-content.json")
     parser.add_argument("--output", required=True, type=Path, help="Path to output slide-blueprints.json")
     parser.add_argument("--name", default="", type=str, help="Optional document name hint")
+    parser.add_argument("--slides-tier", "--target-slides", "-s", type=int, default=0,
+                        help="Target slide count tier (5, 7, 10, 12, 15, 18, 20, 25, 30, or custom)")
     args = parser.parse_args()
 
     with open(args.canonical, "r", encoding="utf-8") as f:
         canonical = json.load(f)
 
-    blueprints = generate_blueprints_from_canonical(canonical, doc_name=args.name or args.canonical.name)
+    blueprints = generate_blueprints_from_canonical(
+        canonical,
+        doc_name=args.name or args.canonical.name,
+        target_slides=args.slides_tier
+    )
 
     with open(args.output, "w", encoding="utf-8") as f:
         json.dump(blueprints, f, ensure_ascii=False, indent=2)

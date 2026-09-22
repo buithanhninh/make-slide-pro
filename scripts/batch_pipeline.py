@@ -1,8 +1,8 @@
 """
 batch_pipeline.py
-End-to-End Batch Pipeline & Multi-Agent Quality Certification for Make Slide Pro V6.2.
+End-to-End Batch Pipeline & Multi-Agent Quality Certification for Make Slide Pro V8.6.0.
 Processes all demographic lessons in `Du An/A Tuan Dan So`, authoring native PowerPoint decks,
-exporting high-res PDFs and PNG thumbnails, and validating 100% against 4 independent QA auditors.
+exporting high-res PDFs and PNG thumbnails, and validating 100% against 16-Agent MACC-QA Council.
 """
 
 from __future__ import annotations
@@ -51,14 +51,14 @@ def run_batch_pipeline(input_dir: Path, output_root: Path, pattern: Optional[str
 
     master_results = {
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "pipeline_version": "Make Slide Pro V8.3.0 (Omniscient 16-Agent MACC-QA Council & Kinetic Motion Architecture)",
+        "pipeline_version": "Make Slide Pro V8.6.0 (Omniscient 16-Agent MACC-QA Council & Kinetic Motion Architecture)",
         "total_lessons": len(docx_files),
         "lessons": []
     }
 
     # Pre-render demographic charts for visual anchor injection
     print("================================================================================")
-    print("   MAKE SLIDE PRO V8.3 - 16-AGENT COUNCIL & KINETIC MOTION PIPELINE (DARK & LIGHT) ")
+    print("   MAKE SLIDE PRO V8.6.0 - 16-AGENT COUNCIL & KINETIC MOTION PIPELINE (DARK & LIGHT) ")
     print("================================================================================")
     print("Generating high-resolution demographic infographic charts...")
     render_all_demographic_charts(Path("assets/charts"))
@@ -97,25 +97,12 @@ def run_batch_pipeline(input_dir: Path, output_root: Path, pattern: Optional[str
 
         print(f"      ✔ Blueprints: {blueprints['total_slides']} slides created ('{blueprints['deck_title']}')")
 
-        # Step 2.5: MACC-QA V8.3 16-Agent Omniscient Council Dialectical Review & Auto-Remediation
-        orchestrator = MultiRoundCouncilOrchestrator()
-        canonical_text = " ".join(
-            sec.get("title", "")
-            + " "
-            + " ".join(sec.get("paragraphs", []))
-            + " "
-            + " ".join(a.get("verbatim", "") for a in sec.get("atoms", []))
-            for sec in canonical.get("sections", [])
-        )
-        council_context = {
-            "canonical_text": canonical_text,
-            "source_text": canonical_text,
-            "deck_title": blueprints.get("deck_title", "")
-        }
-        council_report = orchestrator.run_convergence_loop(
-            target=blueprints,
-            context=council_context,
-            max_rounds=5
+        # Step 2.5: MACC-QA V8.6.0 16-Agent Omniscient Council Dialectical Review & Auto-Remediation
+        orchestrator = MultiRoundCouncilOrchestrator(max_rounds=5, target_score=99.5)
+        council_report = orchestrator.run_council(
+            blueprints=blueprints,
+            canonical_source=canonical,
+            doc_metadata={"file_stem": docx_path.stem}
         )
         if council_report.remediated_slides:
             blueprints["slides"] = council_report.remediated_slides
@@ -126,7 +113,7 @@ def run_batch_pipeline(input_dir: Path, output_root: Path, pattern: Optional[str
         with open(lesson_out_dir / "macc-council-report.json", "w", encoding="utf-8") as f:
             json.dump(council_report.model_dump(), f, ensure_ascii=False, indent=2)
 
-        print(f"      ✔ MACC-QA V8.3 Council: Converged Score = {council_report.final_score:.1f}/100 in {council_report.total_rounds} rounds | P0={council_report.p0_count}, P1={council_report.p1_count}, P2={council_report.p2_count}")
+        print(f"      ✔ MACC-QA V8.6.0 Council: Converged Score = {council_report.final_score:.1f}/100 in {council_report.total_rounds} rounds | P0={council_report.p0_count}, P1={council_report.p1_count}, P2={council_report.p2_count}")
 
         # Step 3: Native PowerPoint Authoring (Dual-Theme: DARK & LIGHT)
         import shutil
@@ -234,7 +221,7 @@ def run_batch_pipeline(input_dir: Path, output_root: Path, pattern: Optional[str
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Batch Pipeline for Make Slide Pro V6.2")
+    parser = argparse.ArgumentParser(description="Batch Pipeline for Make Slide Pro V8.6.0")
     parser.add_argument("--input-dir", default=Path("Du An/A Tuan Dan So"), type=Path, help="Input directory containing DOCX files")
     parser.add_argument("--output-dir", default=Path("Du_An_Outputs"), type=Path, help="Output root directory")
     parser.add_argument("--pattern", default="*.docx", type=str, help="Glob pattern for filtering docx files (e.g. '*Bai 1*')")

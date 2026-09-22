@@ -75,21 +75,19 @@ class AdvancedContainersEngine:
         hero_card.Line.Visible = msoTrue
         hero_card.Line.ForeColor.RGB = hex_to_bgr(brand)
         hero_card.Line.Weight = 2.0
-        shapes.append(hero_card)
 
         # Hero Badge
-        h_pill = slide.Shapes.AddShape(msoShapeRoundedRectangle, left + 18, top + 16, 95, 20)
+        h_pill = slide.Shapes.AddShape(msoShapeRoundedRectangle, left + 18, top + 16, 95, 22)
         h_pill.Fill.Solid()
         h_pill.Fill.ForeColor.RGB = hex_to_bgr(self._get_token("colors", "badge_bg", "#082F49"))
         h_pill.Line.Visible = msoFalse
         pt = h_pill.TextFrame.TextRange
         pt.Text = atoms[0].get("badge", "TIÊU ĐIỂM")
         pt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        pt.Font.Size = 9.5
+        pt.Font.Size = 10.0
         pt.Font.Bold = msoTrue
         pt.Font.Color.RGB = hex_to_bgr(brand)
         pt.ParagraphFormat.Alignment = ppAlignCenter
-        shapes.append(h_pill)
 
         # Hero Content
         htb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, left + 18, top + 48, hero_w - 36, main_h - 60)
@@ -98,21 +96,27 @@ class AdvancedContainersEngine:
         hp1 = htf.TextRange.Paragraphs(1)
         hp1.Text = atoms[0].get("title", "Luận Điểm Trọng Yếu") + "\n"
         hp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        hp1.Font.Size = 18
+        hp1.Font.Size = 20.0
         hp1.Font.Bold = msoTrue
         hp1.Font.Color.RGB = hex_to_bgr(ink)
-        hp1.ParagraphFormat.SpaceAfter = 8
+        hp1.ParagraphFormat.SpaceAfter = 10
 
         hp2 = htf.TextRange.Paragraphs(2)
         hp2.Text = atoms[0].get("text", "")
         hp2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        hp2.Font.Size = 13.5
+        hp2.Font.Size = 14.0
         hp2.Font.Color.RGB = hex_to_bgr(muted)
-        shapes.append(htb)
+        hp2.ParagraphFormat.LineRuleWithin = msoTrue
+        hp2.ParagraphFormat.SpaceWithin = 1.25
+
+        # Group Hero Card 1 atomically so text is permanently locked on top of background
+        hero_grp = safe_group(slide, [hero_card, h_pill, htb], "Bento_Hero_Card")
+        shapes.append(hero_grp)
 
         # 2. Right Two Stacked Cards
         sub_h = (main_h - 12.0) / 2.0
         for i in range(1, 3):
+            sub_shapes = []
             cur_top = top + (i - 1) * (sub_h + 12.0)
             a_data = atoms[i] if i < len(atoms) else {"title": f"Yếu Tố {i}", "text": "Mô tả chi tiết"}
             rcard = slide.Shapes.AddShape(msoShapeRoundedRectangle, right_left, cur_top, sub_w, sub_h)
@@ -120,25 +124,30 @@ class AdvancedContainersEngine:
             rcard.Fill.ForeColor.RGB = hex_to_bgr(surface)
             rcard.Line.Visible = msoTrue
             rcard.Line.ForeColor.RGB = hex_to_bgr(border)
-            shapes.append(rcard)
+            sub_shapes.append(rcard)
 
-            rtb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, right_left + 14, cur_top + 10, sub_w - 28, sub_h - 20)
+            rtb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, right_left + 16, cur_top + 12, sub_w - 32, sub_h - 24)
             rtf = rtb.TextFrame
             rtf.WordWrap = msoTrue
             rp1 = rtf.TextRange.Paragraphs(1)
             rp1.Text = a_data.get("title", "") + "\n"
             rp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            rp1.Font.Size = 13
+            rp1.Font.Size = 14.5
             rp1.Font.Bold = msoTrue
             rp1.Font.Color.RGB = hex_to_bgr(brand)
-            rp1.ParagraphFormat.SpaceAfter = 4
+            rp1.ParagraphFormat.SpaceAfter = 6
 
             rp2 = rtf.TextRange.Paragraphs(2)
             rp2.Text = a_data.get("text", "")
             rp2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            rp2.Font.Size = 11.5
+            rp2.Font.Size = 12.5
             rp2.Font.Color.RGB = hex_to_bgr(muted)
-            shapes.append(rtb)
+            rp2.ParagraphFormat.LineRuleWithin = msoTrue
+            rp2.ParagraphFormat.SpaceWithin = 1.2
+            sub_shapes.append(rtb)
+
+            rcard_grp = safe_group(slide, sub_shapes, f"Bento_Sub_Card_{i}")
+            shapes.append(rcard_grp)
 
         # 3. Bottom Full-Width Horizontal Metric Strip
         bot_top = top + main_h + 12.0
@@ -146,7 +155,6 @@ class AdvancedContainersEngine:
         bot_strip.Fill.Solid()
         bot_strip.Fill.ForeColor.RGB = hex_to_bgr("#0F172A" if self.theme == "DARK" else "#E2E8F0")
         bot_strip.Line.Visible = msoFalse
-        shapes.append(bot_strip)
 
         last_atom = atoms[3] if len(atoms) > 3 else atoms[-1]
         btb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, left + 20, bot_top + 14, width - 40, bot_strip_h - 28)
@@ -155,10 +163,12 @@ class AdvancedContainersEngine:
         bp1 = btf.TextRange.Paragraphs(1)
         bp1.Text = f"★ {last_atom.get('title', 'TỔNG KẾT')}: {last_atom.get('text', '')}"
         bp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        bp1.Font.Size = 12
+        bp1.Font.Size = 13.0
         bp1.Font.Bold = msoTrue
         bp1.Font.Color.RGB = hex_to_bgr("#FFFFFF" if self.theme == "DARK" else "#0F172A")
-        shapes.append(btb)
+
+        bot_grp = safe_group(slide, [bot_strip, btb], "Bento_Bottom_Strip")
+        shapes.append(bot_grp)
 
         return shapes
 
@@ -170,66 +180,91 @@ class AdvancedContainersEngine:
         brand = self._get_token("colors", "brand", "#0284C7")
         surface = self._get_token("colors", "surface", "#0B132B")
         ink = self._get_token("colors", "ink", "#FFFFFF")
+        muted = self._get_token("colors", "muted", "#CBD5E1")
         border = self._get_token("colors", "card_border", "#1E293B")
 
-        kpi_list = spec.get("kpi_stats", [
-            {"metric": "100.3 Tr", "delta": "+0.84% YoY", "is_positive": True, "label": "Quy Mô Dân Số", "desc": "Cột mốc lịch sử đạt 100 triệu người"},
-            {"metric": "1.96", "delta": "-7.1% vs Chuẩn", "is_positive": False, "label": "Mức Sinh (TFR)", "desc": "Dưới mức sinh thay thế 2.10 con"},
-            {"metric": "42.5%", "delta": "+1.8% YoY", "is_positive": True, "label": "Tỷ Lệ Đô Thị Hóa", "desc": "Động lực phát triển kinh tế vùng"}
-        ])
+        kpi_list = spec.get("kpi_stats")
+        if not kpi_list:
+            atoms = spec.get("atoms", [])
+            if atoms:
+                kpi_list = []
+                for idx, a in enumerate(atoms[:4]):
+                    kpi_list.append({
+                        "metric": a.get("metric", f"0{idx+1}"),
+                        "delta": a.get("delta", "Mục Tiêu 2030"),
+                        "is_positive": True,
+                        "label": a.get("title", f"Chỉ Số 0{idx+1}"),
+                        "desc": a.get("text", "")
+                    })
+            else:
+                kpi_list = [
+                    {"metric": "100.3 Tr", "delta": "+0.84% YoY", "is_positive": True, "label": "Quy Mô Dân Số", "desc": "Cột mốc lịch sử đạt 100 triệu người"},
+                    {"metric": "1.96", "delta": "-7.1% vs Chuẩn", "is_positive": False, "label": "Mức Sinh (TFR)", "desc": "Dưới mức sinh thay thế 2.10 con"},
+                    {"metric": "42.5%", "delta": "+1.8% YoY", "is_positive": True, "label": "Tỷ Lệ Đô Thị Hóa", "desc": "Động lực phát triển kinh tế vùng"}
+                ]
 
         count = len(kpi_list)
-        gap = 16.0
+        gap = 14.0
         card_w = (width - (gap * (count - 1))) / count
 
         for idx, k in enumerate(kpi_list):
             cx = left + idx * (card_w + gap)
+            card_shapes = []
+
+            # 1. Card Container
             card = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, top, card_w, height)
             card.Fill.Solid()
             card.Fill.ForeColor.RGB = hex_to_bgr(surface)
             card.Line.Visible = msoTrue
             card.Line.ForeColor.RGB = hex_to_bgr(brand if idx == 0 else border)
             card.Line.Weight = 2.0 if idx == 0 else 1.0
-            shapes.append(card)
+            card_shapes.append(card)
 
-            # Giant Metric
-            mtb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 16, top + 20, card_w - 32, 60)
+            # 2. Giant Metric (Top Tier)
+            mtb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 16, top + 16, card_w - 32, 54)
             mt = mtb.TextFrame.TextRange
             mt.Text = k["metric"]
             mt.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            mt.Font.Size = 38
+            mt.Font.Size = 34 if count > 3 else 38
             mt.Font.Bold = msoTrue
             mt.Font.Color.RGB = hex_to_bgr(brand if idx == 0 else ink)
-            shapes.append(mtb)
+            mt.ParagraphFormat.Alignment = ppAlignLeft
+            card_shapes.append(mtb)
 
-            # Delta Chip Badge
+            # 3. Delta Chip Badge
             is_pos = k.get("is_positive", True)
             chip_bg = ("#064E3B", "#10B981") if is_pos else ("#7F1D1D", "#EF4444")
             if self.theme == "LIGHT":
                 chip_bg = ("#DCFCE7", "#15803D") if is_pos else ("#FEE2E2", "#DC2626")
 
-            chip = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx + 16, top + 88, 110, 22)
+            chip_w = min(120.0, card_w - 32.0)
+            chip = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx + 16, top + 74, chip_w, 22)
             chip.Fill.Solid()
             chip.Fill.ForeColor.RGB = hex_to_bgr(chip_bg[0])
             chip.Line.Visible = msoFalse
             ct = chip.TextFrame.TextRange
             icon_arrow = "▲ " if is_pos else "▼ "
-            ct.Text = icon_arrow + k["delta"]
+            ct.Text = icon_arrow + k.get("delta", "Mục tiêu")
             ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            ct.Font.Size = 9.5
+            ct.Font.Size = 10.0
             ct.Font.Bold = msoTrue
             ct.Font.Color.RGB = hex_to_bgr(chip_bg[1])
             ct.ParagraphFormat.Alignment = ppAlignCenter
-            shapes.append(chip)
+            card_shapes.append(chip)
 
-            # Label & Description
-            ltb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 16, top + 120, card_w - 32, height - 135)
+            # 4. Body Content Tier (Label & Description)
+            content_top = top + 104.0
+            content_h = height - 150.0
+            ltb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 16, content_top, card_w - 32, content_h)
             ltf = ltb.TextFrame
             ltf.WordWrap = msoTrue
+            ltf.MarginLeft = 0
+            ltf.MarginTop = 0
+
             lp1 = ltf.TextRange.Paragraphs(1)
             lp1.Text = k["label"] + "\n"
             lp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            lp1.Font.Size = 15
+            lp1.Font.Size = 15.0
             lp1.Font.Bold = msoTrue
             lp1.Font.Color.RGB = hex_to_bgr(ink)
             lp1.ParagraphFormat.SpaceAfter = 6
@@ -237,9 +272,32 @@ class AdvancedContainersEngine:
             lp2 = ltf.TextRange.Paragraphs(2)
             lp2.Text = k["desc"]
             lp2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            lp2.Font.Size = 12
-            lp2.Font.Color.RGB = hex_to_bgr(self._get_token("colors", "muted", "#CBD5E1"))
-            shapes.append(ltb)
+            lp2.Font.Size = 12.5
+            lp2.Font.Color.RGB = hex_to_bgr(muted)
+            lp2.ParagraphFormat.LineRuleWithin = msoTrue
+            lp2.ParagraphFormat.SpaceWithin = 1.3
+            card_shapes.append(ltb)
+
+            # 5. Bottom Anchor Tier (Zero Dead Space Anchor)
+            badge_y = top + height - 36.0
+            badge = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx + 16, badge_y, card_w - 32, 22)
+            badge.Fill.Solid()
+            badge.Fill.ForeColor.RGB = hex_to_bgr("#0F172A" if self.theme == "DARK" else "#E2E8F0")
+            badge.Line.Visible = msoTrue
+            badge.Line.ForeColor.RGB = hex_to_bgr(brand if idx == 0 else border)
+            badge.Line.Weight = 1.0
+            bt = badge.TextFrame.TextRange
+            bt.Text = "◈ Chỉ Tiêu Đến 2030"
+            bt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+            bt.Font.Size = 10.0
+            bt.Font.Bold = msoTrue
+            bt.Font.Color.RGB = hex_to_bgr(brand if idx == 0 else muted)
+            bt.ParagraphFormat.Alignment = ppAlignCenter
+            card_shapes.append(badge)
+
+            # Atomic group for 100% synchronized presenter clicks
+            card_grp = safe_group(slide, card_shapes, f"KPI_StatCard_{idx+1}")
+            shapes.append(card_grp)
 
         return shapes
 
@@ -248,94 +306,210 @@ class AdvancedContainersEngine:
     # -------------------------------------------------------------
     def render_before_after(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
         shapes = []
-        gap = 18.0
+        gap = 24.0
         col_w = (width - gap) / 2.0
+
+        surface = self._get_token("colors", "surface", "#0B132B")
+        ink = self._get_token("colors", "ink", "#FFFFFF")
+        muted = self._get_token("colors", "muted", "#CBD5E1")
+        font_name = self._get_token("fonts", "primary", "Segoe UI")
 
         data = spec.get("contrast_data", {})
         atoms = spec.get("atoms", [])
-        if data:
-            before_title = data.get("before_title", "HIỆN TRẠNG & THÁCH THỨC")
-            before_items = data.get("before_items", [
-                "Dữ liệu phân tán ở nhiều phòng ban, thiếu tính đồng bộ",
-                "Báo cáo thủ công mất từ 5-7 ngày làm việc"
-            ])
-            after_title = data.get("after_title", "MỤC TIÊU & GIẢI PHÁP ĐỘT PHÁ")
-            after_items = data.get("after_items", [
-                "Kiến trúc dữ liệu hồ dữ liệu tập trung (Single Source of Truth)",
-                "Tự động hóa xuất báo cáo phân tích theo thời gian thực"
-            ])
-        elif atoms and len(atoms) >= 2:
-            before_title = atoms[0].get("title", "TRẠNG THÁI 01")
-            before_items = [atoms[0].get("text", "")]
-            after_title = atoms[1].get("title", "TRẠNG THÁI 02")
-            after_items = [atoms[1].get("text", "")]
-        else:
-            before_title = "HIỆN TRẠNG & THÁCH THỨC"
-            before_items = [
-                "Dữ liệu phân tán ở nhiều phòng ban, thiếu tính đồng bộ",
-                "Báo cáo thủ công mất từ 5-7 ngày làm việc",
-                "Mô hình dự báo đơn biến, sai số biến động cao"
-            ]
-            after_title = "MỤC TIÊU & GIẢI PHÁP ĐỘT PHÁ"
-            after_items = [
-                "Kiến trúc dữ liệu hồ dữ liệu tập trung (Single Source of Truth)",
-                "Tự động hóa xuất báo cáo phân tích theo thời gian thực",
-                "Thuật toán AI đa biến nâng độ chính xác dự báo lên 98.5%"
-            ]
 
-        # Left: Before (Muted/Red tint)
+        # Default rich comparative criteria if none or sparse
+        def_before_items = [
+            "Hình Thái Vật Chất: Tồn tại dưới dạng vật thể rõ ràng, có kích thước, khối lượng, hình dáng, màu sắc và bao bì cụ thể.",
+            "Kiểm Định Chất Lượng: Khách hàng có thể quan sát, cầm nắm, cân đong đo đếm và kiểm tra tính năng kỹ thuật trước khi mua.",
+            "Quyền Sở Hữu & Tồn Trữ: Được chuyển giao quyền sở hữu hoàn toàn sau giao dịch; có thể lưu trữ trong kho bãi qua nhiều thời kỳ."
+        ]
+        def_after_items = [
+            "Bản Chất Phi Vật Thể: Không có hình thái vật lý, là chuỗi hoạt động chuyển giao đồng thời giữa người cung ứng và thụ hưởng.",
+            "Kiểm Định Qua Trải Nghiệm: Chỉ có thể cảm nhận và đánh giá mức độ hài lòng trong và sau toàn bộ quá trình trực tiếp tiếp nhận.",
+            "Quyền Thụ Hưởng Trải Nghiệm: Khách hàng chỉ sở hữu lợi ích chăm sóc sức khỏe và trải nghiệm dịch vụ, hoàn toàn không thể tồn kho."
+        ]
+
+        if data:
+            before_title = data.get("before_title", "HÀNG HÓA HỮU HÌNH (GOODS)")
+            b_raw_items = data.get("before_items", [])
+            after_title = data.get("after_title", "SẢN PHẨM DỊCH VỤ (SERVICES)")
+            a_raw_items = data.get("after_items", [])
+            before_pill = data.get("before_pill", "✕ HÀNG HÓA HỮU HÌNH")
+            after_pill = data.get("after_pill", "✓ SẢN PHẨM DỊCH VỤ")
+            before_badge = data.get("before_badge", "Góc Nhìn Thực Thể Đo Lường Được")
+            after_badge = data.get("after_badge", "Góc Nhìn Trải Nghiệm Giá Trị Vô Hình")
+        elif atoms and len(atoms) >= 2:
+            before_title = atoms[0].get("title", "HÀNG HÓA HỮU HÌNH (GOODS)")
+            b_raw_items = atoms[0].get("items", []) or ([atoms[0].get("text", "")] if atoms[0].get("text") else [])
+            after_title = atoms[1].get("title", "SẢN PHẨM DỊCH VỤ (SERVICES)")
+            a_raw_items = atoms[1].get("items", []) or ([atoms[1].get("text", "")] if atoms[1].get("text") else [])
+            before_pill = atoms[0].get("pill", "✕ HÀNG HÓA HỮU HÌNH")
+            after_pill = atoms[1].get("pill", "✓ SẢN PHẨM DỊCH VỤ")
+            before_badge = atoms[0].get("badge", "Chuẩn Mực Thực Thể Vật Chất")
+            after_badge = atoms[1].get("badge", "Chuẩn Mực Trải Nghiệm & Vô Hình")
+        else:
+            before_title = "HÀNG HÓA HỮU HÌNH (GOODS)"
+            b_raw_items = []
+            after_title = "SẢN PHẨM DỊCH VỤ (SERVICES)"
+            a_raw_items = []
+            before_pill = "✕ HÀNG HÓA HỮU HÌNH"
+            after_pill = "✓ SẢN PHẨM DỊCH VỤ"
+            before_badge = "Chuẩn Mực Thực Thể Vật Chất"
+            after_badge = "Chuẩn Mực Trải Nghiệm & Vô Hình"
+
+        # Ensure at least 3 detailed bullets to eliminate dead space completely
+        before_bullets = b_raw_items if len(b_raw_items) >= 2 else def_before_items
+        after_bullets = a_raw_items if len(a_raw_items) >= 2 else def_after_items
+
+        pill_w = min(240.0, col_w - 40.0)
+        pill_h = 26.0
+        badge_h = 28.0
+        badge_y = top + height - badge_h - 14.0
+        tb_top = top + 50.0
+        tb_h = badge_y - tb_top - 8.0
+
+        # -------------------------------------------------------------
+        # Left Card: Before (Rose / Red High Contrast Accent)
+        # -------------------------------------------------------------
+        b_shapes = []
         b_card = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, top, col_w, height)
         b_card.Fill.Solid()
-        b_card.Fill.ForeColor.RGB = hex_to_bgr("#1E1E2E" if self.theme == "DARK" else "#F1F5F9")
+        b_card.Fill.ForeColor.RGB = hex_to_bgr("#0B132B" if self.theme == "DARK" else "#FFFFFF")
         b_card.Line.Visible = msoTrue
-        b_card.Line.ForeColor.RGB = hex_to_bgr("#EF4444" if self.theme == "DARK" else "#DC2626")
-        b_card.Line.Weight = 1.5
-        shapes.append(b_card)
+        b_card.Line.ForeColor.RGB = hex_to_bgr("#F43F5E" if self.theme == "DARK" else "#E11D48")
+        b_card.Line.Weight = 1.8
+        b_shapes.append(b_card)
 
-        # Before Header
-        btb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, left + 18, top + 16, col_w - 36, height - 32)
+        # Top Accent Pill
+        b_pill = slide.Shapes.AddShape(msoShapeRoundedRectangle, left + 20, top + 16, pill_w, pill_h)
+        b_pill.Fill.Solid()
+        b_pill.Fill.ForeColor.RGB = hex_to_bgr("#2D121B" if self.theme == "DARK" else "#FFE4E6")
+        b_pill.Line.Visible = msoTrue
+        b_pill.Line.ForeColor.RGB = hex_to_bgr("#F43F5E" if self.theme == "DARK" else "#E11D48")
+        b_pill.Line.Weight = 1.0
+        pt1 = b_pill.TextFrame.TextRange
+        pt1.Text = before_pill
+        pt1.Font.Name = font_name
+        pt1.Font.Size = 10.5
+        pt1.Font.Bold = msoTrue
+        pt1.Font.Color.RGB = hex_to_bgr("#FB7185" if self.theme == "DARK" else "#BE123C")
+        pt1.ParagraphFormat.Alignment = ppAlignCenter
+        b_shapes.append(b_pill)
+
+        # Bottom Badge Strip
+        b_badge = slide.Shapes.AddShape(msoShapeRoundedRectangle, left + 20, badge_y, col_w - 40.0, badge_h)
+        b_badge.Fill.Solid()
+        b_badge.Fill.ForeColor.RGB = hex_to_bgr("#1E1E2E" if self.theme == "DARK" else "#F1F5F9")
+        b_badge.Line.Visible = msoFalse
+        bb_txt = b_badge.TextFrame.TextRange
+        bb_txt.Text = f"◈ {before_badge}"
+        bb_txt.Font.Name = font_name
+        bb_txt.Font.Size = 11.0
+        bb_txt.Font.Bold = msoTrue
+        bb_txt.Font.Color.RGB = hex_to_bgr("#FDA4AF" if self.theme == "DARK" else "#9F1239")
+        bb_txt.ParagraphFormat.Alignment = ppAlignCenter
+        b_shapes.append(b_badge)
+
+        # Textbox
+        btb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, left + 20, tb_top, col_w - 40.0, tb_h)
         btf = btb.TextFrame
         btf.WordWrap = msoTrue
+        btf.MarginTop = 0
+        btf.MarginBottom = 0
+        btf.MarginLeft = 0
+        btf.MarginRight = 0
+
         bp1 = btf.TextRange.Paragraphs(1)
-        bp1.Text = "✕ " + before_title + "\n\n"
-        bp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        bp1.Font.Size = 14
+        bp1.Text = before_title + "\n"
+        bp1.Font.Name = font_name
+        bp1.Font.Size = 16.0
         bp1.Font.Bold = msoTrue
-        bp1.Font.Color.RGB = hex_to_bgr("#EF4444" if self.theme == "DARK" else "#DC2626")
+        bp1.Font.Color.RGB = hex_to_bgr("#F43F5E" if self.theme == "DARK" else "#BE123C")
+        bp1.ParagraphFormat.SpaceAfter = 8
 
         bp2 = btf.TextRange.Paragraphs(2)
-        bp2.Text = "\n\n".join([f"• {it}" for it in before_items])
-        bp2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        bp2.Font.Size = 12
-        bp2.Font.Color.RGB = hex_to_bgr(self._get_token("colors", "muted", "#CBD5E1"))
-        shapes.append(btb)
+        bp2.Text = "\n".join([f"• {it}" for it in before_bullets])
+        bp2.Font.Name = font_name
+        bp2.Font.Size = 13.0
+        bp2.Font.Color.RGB = hex_to_bgr(muted)
+        bp2.ParagraphFormat.LineRuleWithin = msoTrue
+        bp2.ParagraphFormat.SpaceWithin = 1.22
+        b_shapes.append(btb)
 
-        # Right: After (Brand/Green tint)
+        before_group = safe_group(slide, b_shapes, "Before_Card_Group")
+        shapes.append(before_group)
+
+        # -------------------------------------------------------------
+        # Right Card: After (Emerald / Green High Contrast Accent)
+        # -------------------------------------------------------------
         ax = left + col_w + gap
+        a_shapes = []
         a_card = slide.Shapes.AddShape(msoShapeRoundedRectangle, ax, top, col_w, height)
         a_card.Fill.Solid()
-        a_card.Fill.ForeColor.RGB = hex_to_bgr("#064E3B" if self.theme == "DARK" else "#DCFCE7")
+        a_card.Fill.ForeColor.RGB = hex_to_bgr("#0B132B" if self.theme == "DARK" else "#FFFFFF")
         a_card.Line.Visible = msoTrue
-        a_card.Line.ForeColor.RGB = hex_to_bgr("#10B981" if self.theme == "DARK" else "#15803D")
-        a_card.Line.Weight = 2.0
-        shapes.append(a_card)
+        a_card.Line.ForeColor.RGB = hex_to_bgr("#10B981" if self.theme == "DARK" else "#059669")
+        a_card.Line.Weight = 1.8
+        a_shapes.append(a_card)
 
-        atb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, ax + 18, top + 16, col_w - 36, height - 32)
+        # Top Accent Pill
+        a_pill = slide.Shapes.AddShape(msoShapeRoundedRectangle, ax + 20, top + 16, pill_w, pill_h)
+        a_pill.Fill.Solid()
+        a_pill.Fill.ForeColor.RGB = hex_to_bgr("#062E21" if self.theme == "DARK" else "#DCFCE7")
+        a_pill.Line.Visible = msoTrue
+        a_pill.Line.ForeColor.RGB = hex_to_bgr("#10B981" if self.theme == "DARK" else "#059669")
+        a_pill.Line.Weight = 1.0
+        pt2 = a_pill.TextFrame.TextRange
+        pt2.Text = after_pill
+        pt2.Font.Name = font_name
+        pt2.Font.Size = 10.5
+        pt2.Font.Bold = msoTrue
+        pt2.Font.Color.RGB = hex_to_bgr("#34D399" if self.theme == "DARK" else "#047857")
+        pt2.ParagraphFormat.Alignment = ppAlignCenter
+        a_shapes.append(a_pill)
+
+        # Bottom Badge Strip
+        a_badge = slide.Shapes.AddShape(msoShapeRoundedRectangle, ax + 20, badge_y, col_w - 40.0, badge_h)
+        a_badge.Fill.Solid()
+        a_badge.Fill.ForeColor.RGB = hex_to_bgr("#064E3B" if self.theme == "DARK" else "#DCFCE7")
+        a_badge.Line.Visible = msoFalse
+        ab_txt = a_badge.TextFrame.TextRange
+        ab_txt.Text = f"★ {after_badge}"
+        ab_txt.Font.Name = font_name
+        ab_txt.Font.Size = 11.0
+        ab_txt.Font.Bold = msoTrue
+        ab_txt.Font.Color.RGB = hex_to_bgr("#6EE7B7" if self.theme == "DARK" else "#065F46")
+        ab_txt.ParagraphFormat.Alignment = ppAlignCenter
+        a_shapes.append(a_badge)
+
+        # Textbox
+        atb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, ax + 20, tb_top, col_w - 40.0, tb_h)
         atf = atb.TextFrame
         atf.WordWrap = msoTrue
+        atf.MarginTop = 0
+        atf.MarginBottom = 0
+        atf.MarginLeft = 0
+        atf.MarginRight = 0
+
         ap1 = atf.TextRange.Paragraphs(1)
-        ap1.Text = "✓ " + after_title + "\n\n"
-        ap1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        ap1.Font.Size = 14
+        ap1.Text = after_title + "\n"
+        ap1.Font.Name = font_name
+        ap1.Font.Size = 16.0
         ap1.Font.Bold = msoTrue
-        ap1.Font.Color.RGB = hex_to_bgr("#10B981" if self.theme == "DARK" else "#15803D")
+        ap1.Font.Color.RGB = hex_to_bgr("#10B981" if self.theme == "DARK" else "#047857")
+        ap1.ParagraphFormat.SpaceAfter = 8
 
         ap2 = atf.TextRange.Paragraphs(2)
-        ap2.Text = "\n\n".join([f"✔ {it}" for it in after_items])
-        ap2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        ap2.Font.Size = 12
+        ap2.Text = "\n".join([f"✔ {it}" for it in after_bullets])
+        ap2.Font.Name = font_name
+        ap2.Font.Size = 13.0
         ap2.Font.Color.RGB = hex_to_bgr("#FFFFFF" if self.theme == "DARK" else "#0F172A")
-        shapes.append(atb)
+        ap2.ParagraphFormat.LineRuleWithin = msoTrue
+        ap2.ParagraphFormat.SpaceWithin = 1.22
+        a_shapes.append(atb)
+
+        after_group = safe_group(slide, a_shapes, "After_Card_Group")
+        shapes.append(after_group)
 
         return shapes
 
@@ -530,13 +704,27 @@ class AdvancedContainersEngine:
         brand = self._get_token("colors", "brand", "#0284C7")
         surface = self._get_token("colors", "surface", "#0B132B")
         ink = self._get_token("colors", "ink", "#FFFFFF")
+        muted = self._get_token("colors", "muted", "#CBD5E1")
         border = self._get_token("colors", "card_border", "#1E293B")
 
-        pillars = spec.get("pillars", [
-            {"title": "Trụ Cột Kinh Tế", "sub": "Tận dụng tối đa Dư lợi Dân số vàng để bứt phá thu nhập bình quân", "kpi": "GDP +6.8%"},
-            {"title": "Trụ Cột Xã Hội", "sub": "Mở rộng bao phủ an sinh và bảo hiểm y tế toàn dân ứng phó già hóa", "kpi": "BHYT 95%"},
-            {"title": "Trụ Cột Thể Chế", "sub": "Hoàn thiện pháp luật và chính sách dân số đồng bộ với chiến lược số", "kpi": "100% Số Hóa"}
-        ])
+        pillars_raw = spec.get("pillars")
+        if pillars_raw:
+            pillars = pillars_raw
+        else:
+            atoms = spec.get("atoms", [])
+            if atoms:
+                pillars = []
+                for i, a in enumerate(atoms[:3]):
+                    t = a.get("title", f"Trọng Tâm 0{i+1}")
+                    s = a.get("text") or a.get("desc") or ""
+                    k = a.get("kpi") or a.get("badge") or f"Trụ Cột 0{i+1}"
+                    pillars.append({"title": t, "sub": s, "kpi": k})
+            else:
+                pillars = [
+                    {"title": "Trụ Cột Kinh Tế", "sub": "Tận dụng tối đa Dư lợi Dân số vàng để bứt phá thu nhập bình quân", "kpi": "GDP +6.8%"},
+                    {"title": "Trụ Cột Xã Hội", "sub": "Mở rộng bao phủ an sinh và bảo hiểm y tế toàn dân ứng phó già hóa", "kpi": "BHYT 95%"},
+                    {"title": "Trụ Cột Thể Chế", "sub": "Hoàn thiện pháp luật và chính sách dân số đồng bộ với chiến lược số", "kpi": "100% Số Hóa"}
+                ]
 
         count = len(pillars)
         gap = 16.0
@@ -544,6 +732,7 @@ class AdvancedContainersEngine:
 
         for idx, p in enumerate(pillars):
             px = left + idx * (col_w + gap)
+            pillar_shapes = []
 
             card = slide.Shapes.AddShape(msoShapeRoundedRectangle, px, top, col_w, height)
             card.Fill.Solid()
@@ -551,24 +740,26 @@ class AdvancedContainersEngine:
             card.Line.Visible = msoTrue
             card.Line.ForeColor.RGB = hex_to_bgr(brand if idx == 0 else border)
             card.Line.Weight = 2.0 if idx == 0 else 1.0
-            shapes.append(card)
+            pillar_shapes.append(card)
 
             # Top Accent Color Bar
             top_bar = slide.Shapes.AddShape(msoShapeRoundedRectangle, px, top, col_w, 6)
             top_bar.Fill.Solid()
             top_bar.Fill.ForeColor.RGB = hex_to_bgr(brand if idx == 0 else ("#0D9488" if idx == 1 else "#10B981"))
             top_bar.Line.Visible = msoFalse
-            shapes.append(top_bar)
+            pillar_shapes.append(top_bar)
 
             # Text inside Pillar
-            tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, px + 16, top + 18, col_w - 32, height - 36)
+            tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, px + 16, top + 18, col_w - 32, height - 60)
             tf = tb.TextFrame
             tf.WordWrap = msoTrue
+            tf.MarginLeft = 0
+            tf.MarginTop = 0
 
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"TRỤ CỘT 0{idx + 1}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 10
+            p1.Font.Size = 10.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
             p1.ParagraphFormat.SpaceAfter = 4
@@ -576,23 +767,40 @@ class AdvancedContainersEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = p["title"] + "\n\n"
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 15
+            p2.Font.Size = 15.5
             p2.Font.Bold = msoTrue
             p2.Font.Color.RGB = hex_to_bgr(ink)
+            p2.ParagraphFormat.SpaceAfter = 6
 
             p3 = tf.TextRange.Paragraphs(3)
-            p3.Text = p.get("sub", "") + "\n\n"
+            p3.Text = p.get("sub", "")
             p3.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p3.Font.Size = 12
-            p3.Font.Color.RGB = hex_to_bgr(self._get_token("colors", "muted", "#CBD5E1"))
+            p3.Font.Size = 12.5
+            p3.Font.Color.RGB = hex_to_bgr(muted)
+            p3.ParagraphFormat.LineRuleWithin = msoTrue
+            p3.ParagraphFormat.SpaceWithin = 1.3
+            pillar_shapes.append(tb)
 
-            p4 = tf.TextRange.Paragraphs(4)
-            p4.Text = f"Mục Tiêu: {p.get('kpi', '')}"
-            p4.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            p4.Font.Size = 13
-            p4.Font.Bold = msoTrue
-            p4.Font.Color.RGB = hex_to_bgr("#10B981" if self.theme == "DARK" else "#059669")
-            shapes.append(tb)
+            # Bottom Anchor Badge
+            kpi_val = p.get("kpi", f"Chuẩn Đầu Ra 0{idx+1}")
+            badge_y = top + height - 36.0
+            badge = slide.Shapes.AddShape(msoShapeRoundedRectangle, px + 16, badge_y, col_w - 32, 22)
+            badge.Fill.Solid()
+            badge.Fill.ForeColor.RGB = hex_to_bgr("#0F172A" if self.theme == "DARK" else "#E2E8F0")
+            badge.Line.Visible = msoTrue
+            badge.Line.ForeColor.RGB = hex_to_bgr(brand if idx == 0 else border)
+            badge.Line.Weight = 1.0
+            bt = badge.TextFrame.TextRange
+            bt.Text = f"★ {kpi_val}"
+            bt.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
+            bt.Font.Size = 11.0
+            bt.Font.Bold = msoTrue
+            bt.Font.Color.RGB = hex_to_bgr("#10B981" if self.theme == "DARK" else "#059669")
+            bt.ParagraphFormat.Alignment = ppAlignCenter
+            pillar_shapes.append(badge)
+
+            col_grp = safe_group(slide, pillar_shapes, f"Pillar_Col_{idx+1}")
+            shapes.append(col_grp)
 
         return shapes
 
@@ -668,12 +876,24 @@ class AdvancedContainersEngine:
         muted = self._get_token("colors", "muted", "#CBD5E1")
         border = self._get_token("colors", "card_border", "#1E293B")
 
-        pillars = spec.get("pillars", [
-            {"num": "TRỤ CỘT 01", "title": "Chiến Lược Số", "desc": "Định vị sản phẩm dẫn đầu thị trường.", "kpi": "Tăng trưởng +45%"},
-            {"num": "TRỤ CỘT 02", "title": "Xuất Sắc Vận Hành", "desc": "Tự động hóa 90% quy trình thủ công.", "kpi": "Tiết kiệm 3.2 Tỷ"},
-            {"num": "TRỤ CỘT 03", "title": "Khách Hàng Trọng Tâm", "desc": "Nâng cao chỉ số hài lòng toàn diện.", "kpi": "NPS 88 Điểm"},
-            {"num": "TRỤ CỘT 04", "title": "Đổi Mới Văn Hóa", "desc": "Đào tạo nhân sự làm chủ công nghệ AI.", "kpi": "100% Nhân Sự"}
-        ])
+        pillars_raw = spec.get("pillars", [])
+        atoms = spec.get("atoms", [])
+        if pillars_raw:
+            pillars = pillars_raw
+        elif atoms:
+            pillars = []
+            for i, a in enumerate(atoms[:4]):
+                title = a.get("title", f"Trọng Tâm 0{i+1}") if isinstance(a, dict) else f"Trọng Tâm 0{i+1}"
+                desc = a.get("text") or a.get("desc") or str(a) if isinstance(a, dict) else str(a)
+                num = a.get("num") or a.get("pill") or f"TRỌNG TÂM 0{i+1}"
+                kpi = a.get("kpi") or a.get("chip") or a.get("badge") or ""
+                pillars.append({"num": num, "title": title, "desc": desc, "kpi": kpi})
+        else:
+            claim = spec.get("primary_claim", "Nội dung chuẩn hóa y tế dân số.")
+            pillars = [
+                {"num": f"TRỌNG TÂM 0{i+1}", "title": f"Yếu Tố Cốt Lõi 0{i+1}", "desc": claim, "kpi": ""}
+                for i in range(4)
+            ]
 
         gap = 12.0
         col_w = (width - 3 * gap) / 4.0
@@ -685,40 +905,46 @@ class AdvancedContainersEngine:
             card.Fill.Solid()
             card.Fill.ForeColor.RGB = hex_to_bgr(surface)
             card.Line.Visible = msoTrue
-            card.Line.ForeColor.RGB = hex_to_bgr(brand)
-            card.Line.Weight = 1.2
-            shapes.append(card)
+            card.Line.ForeColor.RGB = hex_to_bgr(brand if i == 0 else border)
+            card.Line.Weight = 1.5 if i == 0 else 1.0
 
-            tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, px + 10, top + 15, col_w - 20, height - 30)
+            tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, px + 12, top + 16, col_w - 24, height - 32)
             tf = tb.TextFrame
             tf.WordWrap = msoTrue
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = p.get("num", f"0{i+1}") + "\n"
             p1.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            p1.Font.Size = 10
+            p1.Font.Size = 11.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
+            p1.ParagraphFormat.SpaceAfter = 4
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = p.get("title", "") + "\n\n"
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 12
+            p2.Font.Size = 14.0
             p2.Font.Bold = msoTrue
             p2.Font.Color.RGB = hex_to_bgr(ink)
+            p2.ParagraphFormat.SpaceAfter = 6
 
             p3 = tf.TextRange.Paragraphs(3)
             p3.Text = p.get("desc", "") + "\n\n"
             p3.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p3.Font.Size = 9.5
+            p3.Font.Size = 12.0
             p3.Font.Color.RGB = hex_to_bgr(muted)
+            p3.ParagraphFormat.LineRuleWithin = msoTrue
+            p3.ParagraphFormat.SpaceWithin = 1.2
 
-            p4 = tf.TextRange.Paragraphs(4)
-            p4.Text = f"★ {p.get('kpi', '')}"
-            p4.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            p4.Font.Size = 10.5
-            p4.Font.Bold = msoTrue
-            p4.Font.Color.RGB = hex_to_bgr(self._get_token("colors", "success", "#10B981"))
-            shapes.append(tb)
+            if p.get("kpi"):
+                p4 = tf.TextRange.Paragraphs(4)
+                p4.Text = f"★ {p.get('kpi', '')}"
+                p4.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
+                p4.Font.Size = 11.5
+                p4.Font.Bold = msoTrue
+                p4.Font.Color.RGB = hex_to_bgr(self._get_token("colors", "success", "#10B981"))
+
+            col_grp = safe_group(slide, [card, tb], f"Pillar4_Col_{i+1}")
+            shapes.append(col_grp)
 
         return shapes
 
@@ -734,11 +960,25 @@ class AdvancedContainersEngine:
         warning = self._get_token("colors", "warning", "#F59E0B")
         success = self._get_token("colors", "success", "#10B981")
 
-        steps = [
-            {"tag": "BƯỚC 1: VẤN ĐỀ CỐT LÕI", "title": "Dữ Liệu Bị Phân Mảnh", "desc": "Hơn 5 nguồn dữ liệu độc lập không đồng bộ, gây chậm trễ báo cáo hàng tuần.", "color": danger},
-            {"tag": "BƯỚC 2: HỆ QUẢ NGHIÊM TRỌNG", "title": "Tổn Thất Chi Phí Vận Hành", "desc": "Mất 14 giờ lao động mỗi tuần cho xử lý thủ công, tỷ lệ sai sót lên tới 8.5%.", "color": warning},
-            {"tag": "BƯỚC 3: GIẢI PHÁP ĐỘT PHÁ", "title": "Tự Động Hóa Với Make Slide Pro", "desc": "Hợp nhất toàn bộ dữ liệu vào 1 pipeline, sinh slide chuẩn quốc tế tức thì.", "color": success}
-        ]
+        steps_raw = spec.get("steps", [])
+        atoms = spec.get("atoms", [])
+        colors = [danger, warning, success]
+        tags = ["BƯỚC 1: ĐẶT VẤN ĐỀ", "BƯỚC 2: PHÂN TÍCH", "BƯỚC 3: GIẢI PHÁP CAN THIỆP"]
+        if steps_raw:
+            steps = steps_raw
+        elif atoms:
+            steps = []
+            for i, a in enumerate(atoms[:3]):
+                title = a.get("title", f"Giai Đoạn 0{i+1}") if isinstance(a, dict) else f"Giai Đoạn 0{i+1}"
+                desc = a.get("text") or a.get("desc") or str(a) if isinstance(a, dict) else str(a)
+                tag = a.get("tag") or a.get("pill") or tags[i % len(tags)]
+                steps.append({"tag": tag, "title": title, "desc": desc, "color": colors[i % len(colors)]})
+        else:
+            claim = spec.get("primary_claim", "Trọng tâm bài giảng y tế dân số.")
+            steps = [
+                {"tag": tags[i], "title": f"Mục Tiêu Trọng Điểm 0{i+1}", "desc": claim, "color": colors[i]}
+                for i in range(3)
+            ]
 
         gap = 14.0
         col_w = (width - 2 * gap) / 3.0
@@ -811,12 +1051,24 @@ class AdvancedContainersEngine:
 
         # Explanatory Cards on Right
         rx = left + width * 0.65
-        rw = width * 0.35
-        levels = [
-            {"name": "HỒNG TÂM (CORE)", "target": "Khách Hàng Doanh Nghiệp Lớn", "desc": "Đem lại 70% ARR"},
-            {"name": "VÒNG TRONG (INNER)", "target": "Khối Cơ Quan & Giáo Dục", "desc": "Quy mô 25% thị trường"},
-            {"name": "VÒNG NGOÀI (OUTER)", "target": "Người Dùng Cá Nhân Pro", "desc": "Kênh lan tỏa thương hiệu"}
-        ]
+        levels_raw = spec.get("levels", [])
+        atoms = spec.get("atoms", [])
+        default_names = ["HỒNG TÂM (CỐT LÕI)", "VÒNG TRONG (TRỌNG YẾU)", "VÒNG NGOÀI (MỞ RỘNG)"]
+        if levels_raw:
+            levels = levels_raw
+        elif atoms:
+            levels = []
+            for i, a in enumerate(atoms[:3]):
+                name = a.get("name") or a.get("pill") or default_names[i % len(default_names)]
+                target = a.get("title", f"Mục Tiêu 0{i+1}") if isinstance(a, dict) else f"Mục Tiêu 0{i+1}"
+                desc = a.get("text") or a.get("desc") or str(a) if isinstance(a, dict) else str(a)
+                levels.append({"name": name, "target": target, "desc": desc})
+        else:
+            claim = spec.get("primary_claim", "Nội dung trọng tâm đào tạo y tế dân số.")
+            levels = [
+                {"name": default_names[i], "target": f"Đối Tượng Mục Tiêu 0{i+1}", "desc": claim}
+                for i in range(3)
+            ]
 
         card_h = (height - 20.0) / 3.0
         for i, lv in enumerate(levels):
@@ -1032,29 +1284,27 @@ class AdvancedContainersEngine:
                 accent_c = brand if idx == 0 else "#10B981"
                 card.Line.ForeColor.RGB = hex_to_bgr(accent_c)
                 card.Line.Weight = 2.0
-                shapes.append(card)
 
                 # Accent badge
-                pill = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx + 18, top + 18, 130, 24)
+                pill = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx + 18, top + 18, 140, 26)
                 pill.Fill.Solid()
                 pill.Fill.ForeColor.RGB = hex_to_bgr(self._get_token("colors", "badge_bg", "#082F49"))
                 pill.Line.Visible = msoFalse
                 pt = pill.TextFrame.TextRange
                 pt.Text = f"THUỘC TÍNH 0{idx+1}" if "Thuộc Tính" in a.get("title", "") else f"TRỌNG TÂM 0{idx+1}"
                 pt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-                pt.Font.Size = 10.0
+                pt.Font.Size = 11.0
                 pt.Font.Bold = msoTrue
                 pt.Font.Color.RGB = hex_to_bgr(accent_c)
                 pt.ParagraphFormat.Alignment = ppAlignCenter
-                shapes.append(pill)
 
-                tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 18, top + 52, col_w - 36, height - 70)
+                tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 18, top + 56, col_w - 36, height - 74)
                 tf = tb.TextFrame
                 tf.WordWrap = msoTrue
                 p1 = tf.TextRange.Paragraphs(1)
                 p1.Text = a.get("title", "") + "\n\n"
                 p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-                p1.Font.Size = 16.0
+                p1.Font.Size = 17.0
                 p1.Font.Bold = msoTrue
                 p1.Font.Color.RGB = hex_to_bgr(ink)
                 p1.ParagraphFormat.SpaceAfter = 8
@@ -1062,9 +1312,12 @@ class AdvancedContainersEngine:
                 p2 = tf.TextRange.Paragraphs(2)
                 p2.Text = a.get("text", "")
                 p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-                p2.Font.Size = 12.0
+                p2.Font.Size = 13.5
                 p2.Font.Color.RGB = hex_to_bgr(muted)
-                shapes.append(tb)
+                p2.ParagraphFormat.SpaceWithin = 1.25
+
+                col_grp = safe_group(slide, [card, pill, tb], f"Hero_Split_Col_{idx+1}")
+                shapes.append(col_grp)
 
             return shapes
 
@@ -1076,24 +1329,26 @@ class AdvancedContainersEngine:
         l_card.Fill.Solid()
         l_card.Fill.ForeColor.RGB = hex_to_bgr(brand)
         l_card.Line.Visible = msoFalse
-        shapes.append(l_card)
 
-        ltb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, left + 18, top + 25, half_w - 36, height - 50)
+        ltb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, left + 20, top + 25, half_w - 40, height - 50)
         ltf = ltb.TextFrame
         ltf.WordWrap = msoTrue
         lp1 = ltf.TextRange.Paragraphs(1)
         lp1.Text = hero_atom.get("title", "TRỌNG TÂM CHIẾN LƯỢC") + "\n\n"
         lp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        lp1.Font.Size = 16.0
+        lp1.Font.Size = 18.0
         lp1.Font.Bold = msoTrue
         lp1.Font.Color.RGB = hex_to_bgr("#FFFFFF")
 
         lp2 = ltf.TextRange.Paragraphs(2)
         lp2.Text = hero_atom.get("text", spec.get("primary_claim", ""))
         lp2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-        lp2.Font.Size = 12.0
+        lp2.Font.Size = 13.5
         lp2.Font.Color.RGB = hex_to_bgr("#F0FDF4")
-        shapes.append(ltb)
+        lp2.ParagraphFormat.SpaceWithin = 1.25
+
+        hero_grp = safe_group(slide, [l_card, ltb], "Hero_Split_Left")
+        shapes.append(hero_grp)
 
         # Right Sub-Cards
         rx = left + half_w + gap
@@ -1112,24 +1367,26 @@ class AdvancedContainersEngine:
             scard.Fill.ForeColor.RGB = hex_to_bgr(surface)
             scard.Line.Visible = msoTrue
             scard.Line.ForeColor.RGB = hex_to_bgr(border)
-            shapes.append(scard)
 
-            tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, rx + 10, sy + 6, half_w - 20, sub_h - 12)
+            tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, rx + 14, sy + 6, half_w - 28, sub_h - 12)
             tf = tb.TextFrame
             tf.WordWrap = msoTrue
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"✓ {s.get('title', '')}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 12.0
+            p1.Font.Size = 13.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = s.get("text", s.get("desc", ""))
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 11.5
+            p2.Font.Size = 12.0
             p2.Font.Color.RGB = hex_to_bgr(muted)
-            shapes.append(tb)
+            p2.ParagraphFormat.SpaceWithin = 1.2
+
+            sub_grp = safe_group(slide, [scard, tb], f"Hero_Split_Sub_{i+1}")
+            shapes.append(sub_grp)
 
         return shapes
 
@@ -1191,11 +1448,23 @@ class AdvancedContainersEngine:
         muted = self._get_token("colors", "muted", "#CBD5E1")
         border = self._get_token("colors", "card_border", "#1E293B")
 
-        cards = [
-            {"badge": "MỚI NHẤT", "title": "Engine Sinh Vector", "desc": "110+ mô hình hình học hoàn chỉnh."},
-            {"badge": "ĐỀ XUẤT", "title": "Bảng Biểu Chuẩn P&L", "desc": "Hỗ trợ sửa số liệu Excel trực tiếp."},
-            {"badge": "NÂNG CAO", "title": "16 Tác Tử MACC", "desc": "Tự động kiểm định chất lượng 4K."}
-        ]
+        atoms = spec.get("atoms", [])
+        default_badges = ["TIÊU ĐIỂM", "TRỌNG TÂM", "MỞ RỘNG"]
+        if spec.get("cards"):
+            cards = spec["cards"]
+        elif atoms:
+            cards = []
+            for i, a in enumerate(atoms[:3]):
+                t = a.get("title", f"Nội Dung 0{i+1}") if isinstance(a, dict) else f"Nội Dung 0{i+1}"
+                d = a.get("text") or a.get("desc") or str(a) if isinstance(a, dict) else str(a)
+                b = a.get("badge") or a.get("chip") or default_badges[i % len(default_badges)]
+                cards.append({"badge": b, "title": t, "desc": d})
+        else:
+            claim = spec.get("primary_claim", "Nội dung chuẩn hóa đào tạo.")
+            cards = [
+                {"badge": default_badges[i], "title": f"Mục Tiêu 0{i+1}", "desc": claim}
+                for i in range(3)
+            ]
 
         col_w = (width - 2 * 14.0) / 3.0
         for i, c in enumerate(cards):
@@ -1797,12 +2066,23 @@ class AdvancedContainersEngine:
         stripe.Line.Weight = 2.0
         shapes.append(stripe)
 
-        stats = spec.get("marquee_stats", [
-            {"val": "165+", "label": "Archetypes Toàn Cầu", "badge": "★ THƯ VIỆN MEGA", "color": "#38BDF8"},
-            {"val": "100%", "label": "Native Excel Embedded", "badge": "✔ CHỈNH SỬA TỰ DO", "color": "#10B981"},
-            {"val": "0.85s", "label": "Apple Morph Motion", "badge": "⚡ CHUYỂN ĐỘNG MA THUẬT", "color": "#F59E0B"},
-            {"val": "48/48", "label": "Tests Pass Tuyệt Đối", "badge": "🛡 AN TOÀN HỒI QUY", "color": "#A855F7"}
-        ])
+        atoms = spec.get("atoms", [])
+        colors = ["#38BDF8", "#10B981", "#F59E0B", "#A855F7"]
+        badges = ["TIÊU ĐIỂM", "HIỆU QUẢ", "TIẾN ĐỘ", "CHẤT LƯỢNG"]
+        if spec.get("marquee_stats"):
+            stats = spec["marquee_stats"]
+        elif atoms:
+            stats = []
+            for i, a in enumerate(atoms[:4]):
+                val = a.get("val") or a.get("num") or a.get("metric") or f"0{i+1}"
+                lbl = a.get("title", f"Chỉ Số {i+1}") if isinstance(a, dict) else str(a)
+                badge = a.get("badge") or a.get("chip") or badges[i % len(badges)]
+                stats.append({"val": str(val), "label": lbl, "badge": badge, "color": colors[i % len(colors)]})
+        else:
+            stats = [
+                {"val": f"10{i}%", "label": f"Mục Tiêu Chuẩn Hóa 0{i+1}", "badge": badges[i], "color": colors[i]}
+                for i in range(4)
+            ]
 
         col_w = width / len(stats)
         for i, st in enumerate(stats):
@@ -1864,41 +2144,44 @@ class AdvancedContainersEngine:
         gap = 18.0
         card_w = (width - 2 * gap) / 3.0
 
-        pillars = [
-            {
-                "pill": "TRỤ CỘT 01",
-                "title": "Thư Viện Mega 165+",
-                "color": "#0284C7",
-                "bullets": [
-                    "• 165+ Archetypes bao phủ toàn diện 6 phân hệ",
-                    "• Phân tích từ 1,000 slide chuẩn McKinsey & BCG",
-                    "• Bố cục căn chỉnh tỷ lệ vàng 16:9 sắc nét"
-                ],
-                "chip": "Tiêu Chuẩn Quốc Tế"
-            },
-            {
-                "pill": "TRỤ CỘT 02",
-                "title": "Chỉnh Sửa Native 100%",
-                "color": "#10B981",
-                "bullets": [
-                    "• 100% PowerPoint Tables & Office Charts",
-                    "• Nhúng Excel Worksheet trực tiếp trong file",
-                    "• Thay đổi số liệu, đổi màu tự do không vỡ hình"
-                ],
-                "chip": "Tự Do Tùy Biến 100%"
-            },
-            {
-                "pill": "TRỤ CỘT 03",
-                "title": "Apple Morph Motion",
-                "color": "#8B5CF6",
-                "bullets": [
-                    "• Chuyển tiếp Magic Morph mượt mà 0.85s",
-                    "• Xuất hiện so le thác nước Staggered Entrance",
-                    "• Điều khiển từng click thuyết trình chuyên nghiệp"
-                ],
-                "chip": "Trải Nghiệm Apple Keynote"
-            }
+        atoms = spec.get("atoms", [])
+        palette = [
+            self._get_token("colors", "brand", "#0284C7"),
+            self._get_token("colors", "success", "#10B981"),
+            self._get_token("colors", "accent", "#8B5CF6")
         ]
+        if atoms:
+            pillars = []
+            for i, atom in enumerate(atoms[:3]):
+                title = atom.get("title", f"Trọng Tâm 0{i+1}") if isinstance(atom, dict) else f"Trọng Tâm 0{i+1}"
+                text = atom.get("text") or atom.get("body") or atom.get("desc") or str(atom) if isinstance(atom, dict) else str(atom)
+                raw_bullets = [b.strip().lstrip("•- ") for b in text.split("\n") if b.strip()]
+                if not raw_bullets:
+                    raw_bullets = [text]
+                formatted_bullets = [f"• {b}" if not b.startswith("•") else b for b in raw_bullets]
+                pill_label = atom.get("pill") or (f"TRỤ CỘT 0{i+1}" if "trụ cột" in title.lower() else f"TRỌNG TÂM 0{i+1}")
+                chip_label = atom.get("chip") or atom.get("badge") or ""
+                if "tiêu chuẩn" in chip_label.lower() or "watermark" in chip_label.lower():
+                    chip_label = ""
+                pillars.append({
+                    "pill": pill_label,
+                    "title": title,
+                    "color": palette[i % len(palette)],
+                    "bullets": formatted_bullets,
+                    "chip": chip_label
+                })
+        else:
+            claim = spec.get("primary_claim", "Nội dung chuẩn hóa y tế dân số.")
+            pillars = [
+                {
+                    "pill": f"TRỌNG TÂM 0{i+1}",
+                    "title": f"Mục Tiêu Trọng Yếu 0{i+1}",
+                    "color": palette[i % len(palette)],
+                    "bullets": [f"• {claim}"],
+                    "chip": ""
+                }
+                for i in range(3)
+            ]
 
         for i, item in enumerate(pillars):
             p_shapes = []
@@ -1913,7 +2196,7 @@ class AdvancedContainersEngine:
             card.Line.Weight = 2.0
             p_shapes.append(card)
 
-            # Top Pillar Number Pill
+            # Top Accent Pill
             pill = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx + 16.0, card_y + 14.0, card_w - 32.0, 26.0)
             pill.Fill.Solid()
             pill.Fill.ForeColor.RGB = hex_to_bgr(color)
@@ -1923,34 +2206,33 @@ class AdvancedContainersEngine:
             pt.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
             pt.Font.Size = 11.0
             pt.Font.Bold = msoTrue
-            pt.Font.Color.RGB = hex_to_bgr("#FFFFFF")
+            pt.Font.Color.RGB = hex_to_bgr(ink)
             pill.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
             p_shapes.append(pill)
 
             # Title
-            tb_title = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 12.0, card_y + 46.0, card_w - 24.0, 36.0)
+            tb_title = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 12.0, card_y + 48.0, card_w - 24.0, 36.0)
             ttf = tb_title.TextFrame
             ttf.WordWrap = msoTrue
-            ttf.MarginLeft = 0
-            ttf.MarginRight = 0
             ttt = ttf.TextRange
             ttt.Text = item["title"]
             ttt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            ttt.Font.Size = 13.0
+            ttt.Font.Size = 14.5
             ttt.Font.Bold = msoTrue
             ttt.Font.Color.RGB = hex_to_bgr(ink)
             ttt.ParagraphFormat.Alignment = ppAlignCenter
             p_shapes.append(tb_title)
 
             # Divider line
-            div = slide.Shapes.AddShape(msoShapeRectangle, cx + 18.0, card_y + 86.0, card_w - 36.0, 1.5)
+            div = slide.Shapes.AddShape(msoShapeRectangle, cx + 20.0, card_y + 88.0, card_w - 40.0, 1.0)
             div.Fill.Solid()
             div.Fill.ForeColor.RGB = hex_to_bgr(color)
             div.Line.Visible = msoFalse
             p_shapes.append(div)
 
             # Structured Bullets
-            tb_desc = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 12.0, card_y + 94.0, card_w - 24.0, card_h - 138.0)
+            bullets_h = card_h - 105.0 if not item.get("chip") else card_h - 135.0
+            tb_desc = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 14.0, card_y + 94.0, card_w - 28.0, bullets_h)
             dtf = tb_desc.TextFrame
             dtf.WordWrap = msoTrue
             dtf.MarginLeft = 0
@@ -1958,24 +2240,26 @@ class AdvancedContainersEngine:
             dtt = dtf.TextRange
             dtt.Text = "\n\n".join(item["bullets"])
             dtt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            dtt.Font.Size = 10.0
+            dtt.Font.Size = 12.5
             dtt.Font.Color.RGB = hex_to_bgr(muted)
             dtt.ParagraphFormat.Alignment = ppAlignLeft
+            dtt.ParagraphFormat.SpaceWithin = 1.2
             p_shapes.append(tb_desc)
 
-            # Bottom Highlight Chip
-            chip = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx + 14.0, card_y + card_h - 32.0, card_w - 28.0, 22.0)
-            chip.Fill.Solid()
-            chip.Fill.ForeColor.RGB = hex_to_bgr("#1E293B" if self.theme == "DARK" else "#E2E8F0")
-            chip.Line.Visible = msoFalse
-            ct = chip.TextFrame.TextRange
-            ct.Text = f"✔  {item['chip']}"
-            ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            ct.Font.Size = 9.5
-            ct.Font.Bold = msoTrue
-            ct.Font.Color.RGB = hex_to_bgr(color)
-            chip.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
-            p_shapes.append(chip)
+            # Bottom Highlight Chip (Only if explicit chip provided)
+            if item.get("chip"):
+                chip = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx + 14.0, card_y + card_h - 32.0, card_w - 28.0, 22.0)
+                chip.Fill.Solid()
+                chip.Fill.ForeColor.RGB = hex_to_bgr("#1E293B" if self.theme == "DARK" else "#E2E8F0")
+                chip.Line.Visible = msoFalse
+                ct = chip.TextFrame.TextRange
+                ct.Text = f"✔  {item['chip']}"
+                ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+                ct.Font.Size = 9.5
+                ct.Font.Bold = msoTrue
+                ct.Font.Color.RGB = hex_to_bgr(color)
+                chip.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
+                p_shapes.append(chip)
 
             pillar_grp = safe_group(slide, p_shapes, f"Three_Pillars_Card_{i+1}")
             shapes.append(pillar_grp)
@@ -1994,41 +2278,42 @@ class AdvancedContainersEngine:
         gap = 40.0
         card_w = (width - 2 * gap) / 3.0
 
-        stages = [
-            {
-                "badge": "01. THÁCH THỨC CŨ",
-                "title": "Nỗi Đau & Điểm Nghẽn",
-                "color": "#EF4444",
-                "bullets": [
-                    "• Slide ảnh tĩnh thô sơ, không sửa được số liệu",
-                    "• Mất 6-8 tiếng format thủ công mỗi bài thuyết trình",
-                    "• Hiệu ứng chuyển động rời rạc, thiếu kết nối logic"
-                ],
-                "chip": "Thất Thoát 40% Thời Gian"
-            },
-            {
-                "badge": "02. ĐỘT PHÁ V8.6",
-                "title": "Nền Tảng Make Slide Pro",
-                "color": "#0284C7",
-                "bullets": [
-                    "• Kho Mega 165+ Archetypes chuẩn thế giới",
-                    "• 100% Native COM: sửa trực tiếp trong Excel",
-                    "• Hệ thống chuyển động Apple Morph ma thuật"
-                ],
-                "chip": "Tự Động Hóa Toàn Diện"
-            },
-            {
-                "badge": "03. THÀNH QUẢ ĐẠT ĐƯỢC",
-                "title": "Tác Động Đo Lường Được",
-                "color": "#10B981",
-                "bullets": [
-                    "• Tiết kiệm 90% thời gian biên soạn đề án",
-                    "• Tăng 3x tỷ lệ thuyết phục thành công C-Level",
-                    "• Trải nghiệm mượt mà, đẳng cấp khác biệt"
-                ],
-                "chip": "ROI Tăng Trưởng 350%"
-            }
-        ]
+        atoms = spec.get("atoms", [])
+        colors = ["#EF4444", "#0284C7", "#10B981"]
+        badges = ["01. THỰC TRẠNG & THÁCH THỨC", "02. MỤC TIÊU & GIẢI PHÁP", "03. KẾT QUẢ ĐẠT ĐƯỢC"]
+        if spec.get("stages"):
+            stages = spec["stages"]
+        elif atoms:
+            stages = []
+            for i, a in enumerate(atoms[:3]):
+                title = a.get("title", f"Giai Đoạn 0{i+1}") if isinstance(a, dict) else f"Giai Đoạn 0{i+1}"
+                text = a.get("text") or a.get("desc") or str(a) if isinstance(a, dict) else str(a)
+                raw_bullets = [b.strip().lstrip("•- ") for b in text.split("\n") if b.strip()]
+                if not raw_bullets:
+                    raw_bullets = [text]
+                formatted_bullets = [f"• {b}" if not b.startswith("•") else b for b in raw_bullets]
+                chip = a.get("chip") or a.get("badge") or ""
+                if "tiêu chuẩn" in chip.lower() or "watermark" in chip.lower():
+                    chip = ""
+                stages.append({
+                    "badge": a.get("badge", badges[i % len(badges)]),
+                    "title": title,
+                    "color": colors[i % len(colors)],
+                    "bullets": formatted_bullets,
+                    "chip": chip
+                })
+        else:
+            claim = spec.get("primary_claim", "Nội dung chuẩn hóa y tế dân số.")
+            stages = [
+                {
+                    "badge": badges[i],
+                    "title": f"Mục Tiêu Trọng Điểm 0{i+1}",
+                    "color": colors[i],
+                    "bullets": [f"• {claim}"],
+                    "chip": ""
+                }
+                for i in range(3)
+            ]
 
         card_coords = []
         for i, item in enumerate(stages):
@@ -2036,6 +2321,15 @@ class AdvancedContainersEngine:
             cx = left + i * (card_w + gap)
             card_coords.append((cx, card_y))
             color = item["color"]
+
+            # Dynamic Vector Connector incoming from previous card
+            if i > 0 and len(card_coords) > 1:
+                x_start = card_coords[i - 1][0] + card_w
+                y_mid = card_y + card_h / 2.0
+                x_end = cx
+                conn = add_vector_connector(slide, x_start, y_mid, x_end, y_mid, color="#38BDF8", weight=2.5, arrowhead=True)
+                if conn:
+                    c_shapes.append(conn)
 
             card = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, card_y, card_w, card_h)
             card.Fill.Solid()
@@ -2082,7 +2376,8 @@ class AdvancedContainersEngine:
             c_shapes.append(div)
 
             # Bullets
-            tb_desc = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 12.0, card_y + 94.0, card_w - 24.0, card_h - 138.0)
+            bullets_h = card_h - 110.0 if not item.get("chip") else card_h - 138.0
+            tb_desc = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 12.0, card_y + 94.0, card_w - 24.0, bullets_h)
             dtf = tb_desc.TextFrame
             dtf.WordWrap = msoTrue
             dtf.MarginLeft = 0
@@ -2095,31 +2390,23 @@ class AdvancedContainersEngine:
             dtt.ParagraphFormat.Alignment = ppAlignLeft
             c_shapes.append(tb_desc)
 
-            # Bottom Highlight Chip
-            chip = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx + 14.0, card_y + card_h - 32.0, card_w - 28.0, 22.0)
-            chip.Fill.Solid()
-            chip.Fill.ForeColor.RGB = hex_to_bgr("#1E293B" if self.theme == "DARK" else "#E2E8F0")
-            chip.Line.Visible = msoFalse
-            ct = chip.TextFrame.TextRange
-            ct.Text = f"▲  {item['chip']}"
-            ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            ct.Font.Size = 9.5
-            ct.Font.Bold = msoTrue
-            ct.Font.Color.RGB = hex_to_bgr(color)
-            chip.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
-            c_shapes.append(chip)
+            # Bottom Highlight Chip (Only if explicit chip provided)
+            if item.get("chip"):
+                chip = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx + 14.0, card_y + card_h - 32.0, card_w - 28.0, 22.0)
+                chip.Fill.Solid()
+                chip.Fill.ForeColor.RGB = hex_to_bgr("#1E293B" if self.theme == "DARK" else "#E2E8F0")
+                chip.Line.Visible = msoFalse
+                ct = chip.TextFrame.TextRange
+                ct.Text = f"▲  {item['chip']}"
+                ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+                ct.Font.Size = 9.5
+                ct.Font.Bold = msoTrue
+                ct.Font.Color.RGB = hex_to_bgr(color)
+                chip.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
+                c_shapes.append(chip)
 
             card_grp = safe_group(slide, c_shapes, f"PSI_Card_{i+1}")
             shapes.append(card_grp)
-
-        # Dynamic Vector Connectors between Cards
-        for i in range(2):
-            x_start = card_coords[i][0] + card_w
-            y_mid = card_y + card_h / 2.0
-            x_end = card_coords[i+1][0]
-            conn = add_vector_connector(slide, x_start, y_mid, x_end, y_mid, color="#38BDF8", weight=2.5, arrowhead=True)
-            if conn:
-                shapes.append(conn)
 
         return shapes
 
@@ -2136,6 +2423,10 @@ class AdvancedContainersEngine:
         cx = left + (width - hex_w) / 2.0
         cy = top + (height - hex_h) / 2.0
 
+        center_label = spec.get("center_title") or spec.get("assertion_title") or "TRỌNG TÂM CỐT LÕI"
+        if len(center_label) > 28:
+            center_label = center_label[:26] + "..."
+
         core = slide.Shapes.AddShape(msoShapeHexagon, cx, cy, hex_w, hex_h)
         core.Fill.Solid()
         core.Fill.ForeColor.RGB = hex_to_bgr(brand)
@@ -2144,8 +2435,8 @@ class AdvancedContainersEngine:
         core.Line.Weight = 2.0
         shapes.append(core)
         tr = core.TextFrame.TextRange
-        tr.Text = "MAKE SLIDE PRO\nV8.6 CORE"
-        tr.Font.Size = 10.5
+        tr.Text = f"TRỌNG TÂM\n{center_label.upper()}"
+        tr.Font.Size = 10.0
         tr.Font.Bold = msoTrue
         tr.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         tr.ParagraphFormat.Alignment = ppAlignCenter
@@ -2155,7 +2446,16 @@ class AdvancedContainersEngine:
         center_x = left + width / 2.0
         center_y = top + height / 2.0
         orbit_r = min(width, height) * 0.36
-        features = ["165+ Mẫu", "100% Native", "Excel Nhúng", "Apple Morph", "16 Tác Tử", "Zero P0"]
+        
+        atoms = spec.get("atoms", [])
+        if spec.get("features"):
+            features = spec["features"][:6]
+        elif atoms:
+            features = [a.get("title", f"Yếu Tố {i+1}") if isinstance(a, dict) else str(a) for i, a in enumerate(atoms[:6])]
+            while len(features) < 6:
+                features.append(f"Thuộc Tính 0{len(features)+1}")
+        else:
+            features = [f"Yếu Tố 0{i+1}" for i in range(6)]
 
         for i, feat in enumerate(features):
             angle = i * (2 * math.pi / 6)
@@ -2186,11 +2486,22 @@ class AdvancedContainersEngine:
         brand = self._get_token("colors", "brand", "#0284C7")
         ink = self._get_token("colors", "ink", "#FFFFFF")
 
-        reviews = [
-            ("★★★★★", "\"Kho 165+ Archetypes và khả năng sửa Excel trực tiếp đã thay đổi hoàn toàn cách chúng tôi làm slide tư vấn cho khách hàng.\"", "Giám Đốc Chiến Lược, Big 4 Consulting"),
-            ("★★★★★", "\"Hiệu ứng chuyển cảnh Apple Morph mượt mà ngoài sức tưởng tượng. Thuyết trình trước hội đồng đầu tư thành công rực rỡ!\"", "CEO & Founder, YC Backed Startup"),
-            ("★★★★★", "\"Hệ thống kiểm toán 16 tác tử MACC bảo đảm tính chính xác dữ liệu 100%. Không bao giờ gặp lỗi vỡ hình hay lệch tỷ lệ.\"", "Trưởng Ban Chuyển Đổi Số, Tập Đoàn FinTech")
-        ]
+        atoms = spec.get("atoms", [])
+        if spec.get("reviews"):
+            reviews = spec["reviews"]
+        elif atoms:
+            reviews = []
+            for i, a in enumerate(atoms[:3]):
+                stars = a.get("stars", "★★★★★")
+                quote = a.get("text") or a.get("desc") or str(a) if isinstance(a, dict) else str(a)
+                author = a.get("title", f"Chuyên Gia Y Tế 0{i+1}") if isinstance(a, dict) else f"Chuyên Gia 0{i+1}"
+                reviews.append((stars, f"\"{quote}\"", author))
+        else:
+            claim = spec.get("primary_claim", "Khuyến nghị chuẩn hóa chuyên môn y tế dân số.")
+            reviews = [
+                ("★★★★★", f"\"{claim}\"", f"Hội Đồng Chuyên Môn 0{i+1}")
+                for i in range(3)
+            ]
 
         card_w = (width - 32.0) / 3.0
         for i, (stars, quote, author) in enumerate(reviews):
@@ -2240,6 +2551,17 @@ class AdvancedContainersEngine:
         right_w = width * 0.38
         gap = width * 0.04
 
+        atoms = spec.get("atoms", [])
+        stat_val = spec.get("stat_value") or (atoms[0].get("title", "100%") if atoms else "100%")
+        stat_label = spec.get("stat_label") or (atoms[0].get("text", "CHỈ SỐ TRỌNG YẾU") if atoms else "CHỈ SỐ TRỌNG YẾU")
+        detail_title = spec.get("detail_title", "Ý NGHĨA CHUYÊN MÔN:")
+        
+        if len(atoms) > 1:
+            detail_bullets = [f"• {a.get('title', '')}: {a.get('text', '')}" if isinstance(a, dict) else f"• {str(a)}" for a in atoms[1:]]
+        else:
+            claim = spec.get("primary_claim", "Trọng tâm bài giảng y tế dân số chuẩn hóa.")
+            detail_bullets = [f"• {claim}"]
+
         # Left 60%: Giant Number Hero Card
         left_card = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, top, left_w, height)
         left_card.Fill.Solid()
@@ -2253,14 +2575,14 @@ class AdvancedContainersEngine:
         tf_l = tb_l.TextFrame
         tf_l.WordWrap = msoTrue
         p1 = tf_l.TextRange.Paragraphs(1)
-        p1.Text = "165+\n"
-        p1.Font.Size = 56.0
+        p1.Text = f"{stat_val}\n"
+        p1.Font.Size = 48.0 if len(str(stat_val)) > 5 else 56.0
         p1.Font.Bold = msoTrue
         p1.Font.Color.RGB = hex_to_bgr("#38BDF8")
         p1.ParagraphFormat.Alignment = ppAlignCenter
 
         p2 = tf_l.TextRange.Paragraphs(2)
-        p2.Text = "ARCHETYPES CHUẨN THẾ GIỚI\nĐẦY ĐỦ TRÊN 6 PHÂN HỆ"
+        p2.Text = stat_label.upper()
         p2.Font.Size = 13.0
         p2.Font.Bold = msoTrue
         p2.Font.Color.RGB = hex_to_bgr(ink)
@@ -2280,7 +2602,7 @@ class AdvancedContainersEngine:
         tf_r = tb_r.TextFrame
         tf_r.WordWrap = msoTrue
         rp = tf_r.TextRange
-        rp.Text = "Ý NGHĨA ĐỐI VỚI DOANH NGHIỆP:\n\n• Đa dạng hóa 100% hình thái biểu diễn\n• Phục vụ toàn diện mọi nhu cầu từ kinh doanh đến công nghệ\n• Tương thích hoàn hảo với hệ thống chuyển động Apple Morph\n• Tự động co giãn tham số linh hoạt từ 2 đến 8 hạng mục"
+        rp.Text = f"{detail_title}\n\n" + "\n\n".join(detail_bullets)
         rp.Font.Size = 11.0
         rp.Font.Color.RGB = hex_to_bgr(ink)
         shapes.append(tb_r)

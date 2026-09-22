@@ -13,6 +13,14 @@ root_dir = Path(__file__).resolve().parent.parent.parent.parent
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
+# Enforce UTF-8 on Windows Console to prevent charmap encoding crashes
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 
 AGENTS = [
     ("Agent 01", "SourceFidelityFactChecker", "tests.macc_council.adversarial.test_agent01_hard", "test_agent01_adversarial_matrix"),

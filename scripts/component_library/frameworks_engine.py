@@ -88,13 +88,14 @@ class StrategicFrameworksEngine:
         for i, q in enumerate(quadrants[:4]):
             qx, qy = coords[i]
             is_hl = q.get("highlight", (i == 1))
+            q_shapes = []
             card = slide.Shapes.AddShape(msoShapeRoundedRectangle, qx, qy, qw, qh)
             card.Fill.Solid()
             card.Fill.ForeColor.RGB = hex_to_bgr(brand if (is_hl and self.theme == "DARK") else (surface if not is_hl else "#E0F2FE"))
             card.Line.Visible = msoTrue
             card.Line.ForeColor.RGB = hex_to_bgr(brand if is_hl else border)
             card.Line.Weight = 2.0 if is_hl else 1.0
-            shapes.append(card)
+            q_shapes.append(card)
 
             tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, qx + 16, qy + 14, qw - 32, qh - 28)
             tf = tb.TextFrame
@@ -103,7 +104,7 @@ class StrategicFrameworksEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = q.get("title", f"PHÂN VÙNG 0{i+1}") + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 13
+            p1.Font.Size = 14
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr("#FFFFFF" if (is_hl and self.theme == "DARK") else (brand if is_hl else ink))
             p1.ParagraphFormat.SpaceAfter = 6
@@ -111,15 +112,25 @@ class StrategicFrameworksEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = q.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 11.5
+            p2.Font.Size = 12.5
             p2.Font.Color.RGB = hex_to_bgr("#E2E8F0" if (is_hl and self.theme == "DARK") else muted)
-            shapes.append(tb)
+            try:
+                p2.ParagraphFormat.SpaceWithin = 1.25
+            except Exception:
+                pass
+            q_shapes.append(tb)
 
-        ax_tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, left, matrix_top + 2 * qh + gap + 4.0, width, 20)
+            grp = safe_group(slide, q_shapes, f"Matrix_Quadrant_{i+1}")
+            shapes.append(grp)
+
+        ax_tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, left, matrix_top + 2 * qh + gap + 4.0, width, 24)
         at = ax_tb.TextFrame.TextRange
-        at.Text = axis_x
+        if axis_y and axis_y != "Giá Trị Tác Động Chiến Lược →":
+            at.Text = f"▲ {axis_y}   •   ► {axis_x}"
+        else:
+            at.Text = axis_x
         at.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        at.Font.Size = 10
+        at.Font.Size = 10.5
         at.Font.Bold = msoTrue
         at.Font.Color.RGB = hex_to_bgr(brand)
         at.ParagraphFormat.Alignment = ppAlignCenter
@@ -331,12 +342,36 @@ class StrategicFrameworksEngine:
         ink = self._get_token("colors", "ink", "#FFFFFF")
         muted = self._get_token("colors", "muted", "#CBD5E1")
 
-        swot_data = spec.get("swot", [
-            {"letter": "S", "title": "ĐIỂM MẠNH (STRENGTHS)", "items": ["Hệ thống 16 tác tử MACC tự phục hồi", "Kho 110+ Archetypes chuẩn quốc tế", "100% Native Object sửa trong Excel"], "color": "#10B981"},
-            {"letter": "W", "title": "ĐIỂM YẾU (WEAKNESSES)", "items": ["Cần cài đặt bộ Office cục bộ trên Windows", "Phụ thuộc tài liệu đầu vào có cấu trúc", "Cần tối ưu thời gian khởi động COM"], "color": "#EF4444"},
-            {"letter": "O", "title": "CƠ HỘI (OPPORTUNITIES)", "items": ["Mở rộng cung cấp dịch vụ Web SaaS toàn quốc", "Tích hợp công nghệ Generative AI đa phương thức", "Chuyển giao cho các trường đại học"], "color": "#0284C7"},
-            {"letter": "T", "title": "THÁCH THỨC (THREATS)", "items": ["Cạnh tranh từ các nền tảng thiết kế toàn cầu", "Thay đổi chính sách cập nhật của Microsoft", "Đòi hỏi bảo mật dữ liệu PII nghiêm ngặt"], "color": "#F59E0B"}
-        ])
+        atoms = spec.get("atoms", [])
+        default_swot = [
+            {"letter": "S", "title": "ĐIỂM MẠNH (STRENGTHS)", "color": "#10B981"},
+            {"letter": "W", "title": "ĐIỂM YẾU (WEAKNESSES)", "color": "#EF4444"},
+            {"letter": "O", "title": "CƠ HỘI (OPPORTUNITIES)", "color": "#0284C7"},
+            {"letter": "T", "title": "THÁCH THỨC (THREATS)", "color": "#F59E0B"}
+        ]
+        swot_raw = spec.get("swot") or spec.get("swot_data")
+        if swot_raw:
+            swot_data = swot_raw
+        elif atoms and len(atoms) >= 4:
+            swot_data = []
+            for i, a in enumerate(atoms[:4]):
+                t = a.get("title", default_swot[i]["title"]) if isinstance(a, dict) else default_swot[i]["title"]
+                d = a.get("text") or a.get("desc") or str(a) if isinstance(a, dict) else str(a)
+                bullets = [b.strip() for b in d.split("\n") if b.strip()]
+                if not bullets:
+                    bullets = [d]
+                swot_data.append({
+                    "letter": default_swot[i]["letter"],
+                    "title": t,
+                    "items": bullets,
+                    "color": default_swot[i]["color"]
+                })
+        else:
+            claim = spec.get("primary_claim", "Nội dung phân tích bối cảnh chuyên môn.")
+            swot_data = [
+                {"letter": default_swot[i]["letter"], "title": default_swot[i]["title"], "items": [claim], "color": default_swot[i]["color"]}
+                for i in range(4)
+            ]
 
         gap = 14.0
         qw = (width - gap) / 2.0
@@ -344,20 +379,20 @@ class StrategicFrameworksEngine:
         coords = [(left, top), (left + qw + gap, top), (left, top + qh + gap), (left + qw + gap, top + qh + gap)]
 
         for idx, (item, (cx, cy)) in enumerate(zip(swot_data[:4], coords)):
+            q_shapes = []
             card = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, cy, qw, qh)
             card.Fill.Solid()
             card.Fill.ForeColor.RGB = hex_to_bgr(surface)
             card.Line.Visible = msoTrue
             card.Line.ForeColor.RGB = hex_to_bgr(item["color"])
             card.Line.Weight = 2.0
-            shapes.append(card)
+            q_shapes.append(card)
 
             # Giant Letter Badge (S, W, O, T)
             badge = slide.Shapes.AddShape(msoShapeOval, cx + 16, cy + 14, 38, 38)
             badge.Fill.Solid()
             badge.Fill.ForeColor.RGB = hex_to_bgr(item["color"])
             badge.Line.Visible = msoFalse
-            shapes.append(badge)
             bt = badge.TextFrame.TextRange
             bt.Text = item["letter"]
             bt.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
@@ -365,6 +400,7 @@ class StrategicFrameworksEngine:
             bt.Font.Bold = msoTrue
             bt.Font.Color.RGB = hex_to_bgr("#FFFFFF")
             badge.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
+            q_shapes.append(badge)
 
             tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, cx + 62, cy + 14, qw - 76, qh - 24)
             tf = tb.TextFrame
@@ -380,9 +416,16 @@ class StrategicFrameworksEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = "\n".join([f"• {x}" for x in item.get("items", [])])
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 11
+            p2.Font.Size = 11.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
-            shapes.append(tb)
+            try:
+                p2.ParagraphFormat.SpaceWithin = 1.2
+            except Exception:
+                pass
+            q_shapes.append(tb)
+
+            grp = safe_group(slide, q_shapes, f"SWOT_Card_{item.get('letter', idx+1)}")
+            shapes.append(grp)
 
         return shapes
 
@@ -501,14 +544,25 @@ class StrategicFrameworksEngine:
         muted = self._get_token("colors", "muted", "#94A3B8")
 
         data = spec.get("house_data", {})
-        roof_title = data.get("roof", "TẦM NHÌN 2030: HỆ SINH THÁI TỰ ĐỘNG HÓA THUYẾT TRÌNH THÔNG MINH SỐ 1")
-        pillars = data.get("pillars", [
-            {"title": "Trụ Cột 1: Công Nghệ Lõi", "desc": "Kiến trúc 16 tác tử MACC & Native COM trực tiếp."},
-            {"title": "Trụ Cột 2: Thư Viện Mega", "desc": "165+ Archetypes chuẩn thế giới, 100% Native Editable."},
-            {"title": "Trụ Cột 3: Apple Motion", "desc": "Chuyển động Magic Morph và Staggered Entrance mượt mà."},
-            {"title": "Trụ Cột 4: Trải Nghiệm Khách Hàng", "desc": "Giao diện Web Studio SaaS hiện đại, phản hồi tức thì."}
-        ])
-        foundation = data.get("foundation", "NỀN MÓNG CỐT LÕI: DỮ LIỆU ĐÁNG TIN CẬY • AN NINH ZERO TRUST • ĐỔI MỚI TOÀN DIỆN")
+        atoms = spec.get("atoms", [])
+        roof_title = data.get("roof") or spec.get("assertion_title", "TẦM NHÌN & ĐỊNH HƯỚNG CHIẾN LƯỢC QUỐC GIA")
+        if data.get("pillars"):
+            pillars = data["pillars"]
+        elif atoms:
+            pillars = []
+            for i, a in enumerate(atoms[:4]):
+                t = a.get("title", f"Trụ Cột 0{i+1}") if isinstance(a, dict) else f"Trụ Cột 0{i+1}"
+                d = a.get("text") or a.get("desc") or str(a) if isinstance(a, dict) else str(a)
+                pillars.append({"title": t, "desc": d})
+            while len(pillars) < 4:
+                pillars.append({"title": f"Trụ Cột 0{len(pillars)+1}", "desc": "Giải pháp bổ trợ chuẩn hóa."})
+        else:
+            claim = spec.get("primary_claim", "Nội dung chuẩn hóa chuyên môn.")
+            pillars = [
+                {"title": f"Trụ Cột 0{i+1}: Yếu Tố Cốt Lõi", "desc": claim}
+                for i in range(4)
+            ]
+        foundation = data.get("foundation", "NỀN MÓNG CỐT LÕI: HỆ THỐNG CHÍNH SÁCH • NĂNG LỰC CHUYÊN MÔN • VẬN HÀNH THỰC TIỄN")
 
         roof_h = 52.0
         found_h = 44.0
@@ -606,7 +660,9 @@ class StrategicFrameworksEngine:
             p_shapes.append(tb_desc)
 
             # Bottom KPI chip
-            kpi_labels = ["SLA 99.9%", "165+ Mẫu", "Morph 0.85s", "CSAT 98%", "KPI Đạt"]
+            chip_label = pil.get("kpi") or pil.get("chip") or pil.get("badge")
+            if not chip_label:
+                chip_label = f"Mục Tiêu 0{idx+1}: Trọng Tâm"
             chip_w = pw - 32.0
             chip_h = 24.0
             chip = slide.Shapes.AddShape(msoShapeRoundedRectangle, px + 16.0, py + pillar_h - 34.0, chip_w, chip_h)
@@ -616,9 +672,9 @@ class StrategicFrameworksEngine:
             chip.Line.ForeColor.RGB = hex_to_bgr(p_color)
             chip.Line.Weight = 1.0
             ct = chip.TextFrame.TextRange
-            ct.Text = f"✔ {kpi_labels[idx % len(kpi_labels)]}"
+            ct.Text = f"✔ {chip_label}"
             ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            ct.Font.Size = 9.5
+            ct.Font.Size = 10.0
             ct.Font.Bold = msoTrue
             ct.Font.Color.RGB = hex_to_bgr(p_color)
             chip.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -672,6 +728,7 @@ class StrategicFrameworksEngine:
 
         COLORS = ["#0284C7", "#0369A1", "#0D9488", "#1E293B"] if self.theme == "DARK" else ["#0284C7", "#0D9488", "#10B981", "#E2E8F0"]
 
+        tier_groups = []
         for i, l_data in enumerate(layers):
             ly = top + i * (layer_h + 8.0)
             w_cur = pyr_w * (0.45 + (i * (0.55 / max(1, n - 1))))
@@ -681,12 +738,11 @@ class StrategicFrameworksEngine:
             shape.Fill.Solid()
             shape.Fill.ForeColor.RGB = hex_to_bgr(COLORS[i % len(COLORS)])
             shape.Line.Visible = msoFalse
-            shapes.append(shape)
 
             st = shape.TextFrame.TextRange
             st.Text = l_data["tier"]
             st.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            st.Font.Size = 11
+            st.Font.Size = 12
             st.Font.Bold = msoTrue
             st.Font.Color.RGB = hex_to_bgr("#FFFFFF" if i < 3 or self.theme == "DARK" else "#0F172A")
             shape.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -696,7 +752,6 @@ class StrategicFrameworksEngine:
             card.Fill.ForeColor.RGB = hex_to_bgr(surface)
             card.Line.Visible = msoTrue
             card.Line.ForeColor.RGB = hex_to_bgr(self._get_token("colors", "card_border", "#1E293B"))
-            shapes.append(card)
 
             tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, detail_left + 14, ly + 6, detail_w - 28, layer_h - 12)
             tf = tb.TextFrame
@@ -704,18 +759,26 @@ class StrategicFrameworksEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = l_data["title"] + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 12
+            p1.Font.Size = 13
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand if i == 0 else ink)
+            p1.ParagraphFormat.SpaceAfter = 4
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = l_data["desc"]
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 10.5
+            p2.Font.Size = 11.5
             p2.Font.Color.RGB = hex_to_bgr(self._get_token("colors", "muted", "#CBD5E1"))
-            shapes.append(tb)
+            try:
+                p2.ParagraphFormat.SpaceWithin = 1.2
+            except Exception:
+                pass
 
-        return shapes
+            tier_grp = safe_group(slide, [shape, card, tb], f"Pyramid_Tier_{i+1}")
+            tier_groups.append(tier_grp)
+
+        # Pedagogical Inversion: Presentation reveals from Foundation (Base) up to Peak!
+        return list(reversed(tier_groups))
 
     # 10. FRAMEWORK_INVERTED_PYRAMID (Tháp Ngược Ưu Tiên)
     def render_inverted_pyramid(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
@@ -1327,15 +1390,22 @@ class StrategicFrameworksEngine:
     # 22. FRAMEWORK_VRIO_MATRIX (Khung Năng Lực VRIO)
     def render_vrio_matrix(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> List[Any]:
         spec_vrio = dict(spec)
-        spec_vrio["table_data"] = {
-            "headers": ["Năng Lực / Tài Sản Cốt Lõi", "Giá Trị (V)", "Độ Hiếm (R)", "Khó Sao Chép (I)", "Tổ Chức (O)", "Hàm Ý Cạnh Tranh"],
-            "rows": [
-                ["Kiến trúc 16 tác tử MACC", "Có (Yes)", "Có (Yes)", "Có (Yes)", "Có (Yes)", "LỢI THẾ BỀN VỮNG"],
-                ["Kho 110+ Archetypes chuẩn", "Có (Yes)", "Có (Yes)", "Có (Yes)", "Có (Yes)", "LỢI THẾ BỀN VỮNG"],
-                ["Hạ tầng máy chủ đám mây", "Có (Yes)", "Không", "Không", "Có (Yes)", "NGANG BẰNG CẠNH TRANH"],
-                ["Tài liệu đào tạo chuẩn hóa", "Có (Yes)", "Có (Yes)", "Không", "Có (Yes)", "LỢI THẾ TẠM THỜI"]
-            ]
-        }
+        atoms = spec.get("atoms", [])
+        if not spec_vrio.get("table_data"):
+            headers = ["Năng Lực / Tài Sản Cốt Lõi", "Giá Trị (V)", "Độ Hiếm (R)", "Khó Sao Chép (I)", "Tổ Chức (O)", "Hàm Ý Cạnh Tranh"]
+            if atoms:
+                rows = []
+                for i, a in enumerate(atoms[:4]):
+                    t = a.get("title", f"Năng Lực 0{i+1}") if isinstance(a, dict) else str(a)
+                    rows.append([t, "Có (Yes)", "Có (Yes)", "Có (Yes)", "Có (Yes)", "LỢI THẾ BỀN VỮNG"])
+            else:
+                rows = [
+                    ["1. Đội ngũ nhân lực chuyên môn cao", "Có (Yes)", "Có (Yes)", "Có (Yes)", "Có (Yes)", "LỢI THẾ BỀN VỮNG"],
+                    ["2. Mạng lưới dịch vụ phủ khắp cơ sở", "Có (Yes)", "Có (Yes)", "Có (Yes)", "Có (Yes)", "LỢI THẾ BỀN VỮNG"],
+                    ["3. Trang thiết bị y tế chuyên dụng", "Có (Yes)", "Không", "Không", "Có (Yes)", "NGANG BẰNG CẠNH TRANH"],
+                    ["4. Quy trình chuyên môn chuẩn hóa", "Có (Yes)", "Có (Yes)", "Không", "Có (Yes)", "LỢI THẾ TẠM THỜI"]
+                ]
+            spec_vrio["table_data"] = {"headers": headers, "rows": rows}
         from .tables_engine import NativeTablesEngine
         t_engine = NativeTablesEngine(theme=self.theme, tokens=self.tokens)
         res = t_engine.render_comparison_table(slide, spec_vrio, left, top, width, height)
@@ -1565,13 +1635,28 @@ class StrategicFrameworksEngine:
         surface = self._get_token("colors", "surface", "#0B132B")
         ink = self._get_token("colors", "ink", "#FFFFFF")
 
-        # 3 Curved/Horizontal feature classification lanes
         lane_h = (height - 24.0) / 3.0
-        lanes = [
-            {"tier": "1. ĐỘT PHÁ GÂY THÍCH THÚ (DELIGHTERS)", "color": "#10B981", "desc": "Apple Morph Motion & 165+ Archetypes (Khách hàng bất ngờ vượt mong đợi)"},
-            {"tier": "2. TỶ LỆ THUẬN HIỆU NĂNG (PERFORMANCE)", "color": "#0284C7", "desc": "100% Native Editable Tables & Office Charts (Càng mượt trải nghiệm càng cao)"},
-            {"tier": "3. TÍNH NĂNG BẮT BUỘC (MUST-BE / BASIC)", "color": "#F59E0B", "desc": "Độ chính xác dữ liệu, không lỗi hồi quy, xuất file PPTX chuẩn 16:9"}
+        atoms = spec.get("atoms", [])
+        default_tiers = [
+            ("1. ĐỘT PHÁ & GIÁ TRỊ VƯỢT TRỘI", "#10B981"),
+            ("2. HIỆU QUẢ VẬN HÀNH & TỶ LỆ THUẬN", "#0284C7"),
+            ("3. TIÊU CHUẨN BẮT BUỘC NỀN TẢNG", "#F59E0B")
         ]
+        if spec.get("lanes"):
+            lanes = spec["lanes"]
+        elif atoms:
+            lanes = []
+            for idx, a in enumerate(atoms[:3]):
+                t = a.get("title", f"Phân Cấp 0{idx+1}") if isinstance(a, dict) else f"Phân Cấp 0{idx+1}"
+                d = a.get("text") or a.get("desc") or str(a) if isinstance(a, dict) else str(a)
+                tier_name, color = default_tiers[idx % len(default_tiers)]
+                lanes.append({"tier": f"{tier_name}: {t}", "color": color, "desc": d})
+        else:
+            claim = spec.get("primary_claim", "Nội dung phân loại tính năng chuyên môn.")
+            lanes = [
+                {"tier": default_tiers[i][0], "color": default_tiers[i][1], "desc": claim}
+                for i in range(3)
+            ]
 
         for idx, lane in enumerate(lanes):
             ly = top + idx * (lane_h + 12.0)
@@ -1605,18 +1690,24 @@ class StrategicFrameworksEngine:
         lower_h = height * 0.32
         gap = 4.0
 
+        atoms = spec.get("atoms", [])
+        claim = spec.get("primary_claim", "Trọng tâm bài giảng chuyên môn.")
+        a_texts = [a.get("text") or a.get("title") or str(a) if isinstance(a, dict) else str(a) for a in atoms]
+        while len(a_texts) < 9:
+            a_texts.append(claim)
+
         boxes = [
             # Upper row (5 primary sectors)
-            (left, top, col_w - gap, upper_h, "1. VẤN ĐỀ (PROBLEM)\n\n• Slide ảnh tĩnh khó sửa\n• Ít mẫu bảng biểu\n• Hiệu ứng đơn điệu"),
-            (left + col_w, top, col_w - gap, upper_h * 0.48, "2. GIẢI PHÁP\n• 165+ Archetypes\n• 100% Native COM"),
-            (left + col_w, top + upper_h * 0.52, col_w - gap, upper_h * 0.48, "8. CHỈ SỐ THEN CHỐT\n• 48/48 Tests Pass\n• < 25s Render"),
-            (left + 2 * col_w, top, col_w - gap, upper_h, "3. TUYÊN BỐ GIÁ TRỊ\n\nSlide đẳng cấp quốc tế, hoàn toàn có thể chỉnh sửa & chuyển động Apple"),
-            (left + 3 * col_w, top, col_w - gap, upper_h * 0.48, "9. LỢI THẾ ĐỘC QUYỀN\n• 16 Tác Tử MACC\n• Apple Morph"),
-            (left + 3 * col_w, top + upper_h * 0.52, col_w - gap, upper_h * 0.48, "4. KÊNH TIẾP CẬN\n• Web Studio SaaS\n• Desktop API"),
-            (left + 4 * col_w, top, col_w - gap, upper_h, "5. PHÂN KHÚC KH\n\n• Giảng viên, chuyên gia\n• C-Level, Startup Pitch\n• Doanh nghiệp Enterprise"),
+            (left, top, col_w - gap, upper_h, f"1. VẤN ĐỀ & BỐI CẢNH\n\n• {a_texts[0]}"),
+            (left + col_w, top, col_w - gap, upper_h * 0.48, f"2. GIẢI PHÁP\n• {a_texts[1]}"),
+            (left + col_w, top + upper_h * 0.52, col_w - gap, upper_h * 0.48, f"8. CHỈ SỐ THEN CHỐT\n• {a_texts[7]}"),
+            (left + 2 * col_w, top, col_w - gap, upper_h, f"3. GIÁ TRỊ CỐT LÕI\n\n{a_texts[2]}"),
+            (left + 3 * col_w, top, col_w - gap, upper_h * 0.48, f"9. LỢI THẾ CHUYÊN MÔN\n• {a_texts[8]}"),
+            (left + 3 * col_w, top + upper_h * 0.52, col_w - gap, upper_h * 0.48, f"4. PHƯƠNG THỨC TIẾP CẬN\n• {a_texts[3]}"),
+            (left + 4 * col_w, top, col_w - gap, upper_h, f"5. ĐỐI TƯỢNG THỤ HƯỞNG\n\n• {a_texts[4]}"),
             # Lower row (Cost structure & Revenue streams)
-            (left, top + upper_h + 8.0, width * 0.5 - gap, lower_h, "7. CƠ CẤU CHI PHÍ (COST STRUCTURE)\n• R&D GPU Đám Mây • Chi phí bản quyền dữ liệu • Vận hành máy chủ"),
-            (left + width * 0.5, top + upper_h + 8.0, width * 0.5, lower_h, "6. DÒNG DOANH THU (REVENUE STREAMS)\n• Gói thuê bao Pro / Team / Enterprise • Dịch vụ thiết kế theo yêu cầu")
+            (left, top + upper_h + 8.0, width * 0.5 - gap, lower_h, f"7. NGUỒN LỰC & CHI PHÍ\n• {a_texts[6]}"),
+            (left + width * 0.5, top + upper_h + 8.0, width * 0.5, lower_h, f"6. HIỆU QUẢ KINH TẾ - XÃ HỘI\n• {a_texts[5]}")
         ]
 
         for bx, by, bw, bh, text in boxes:
@@ -1682,9 +1773,9 @@ class StrategicFrameworksEngine:
         sub_gap = 7.0
         sub_h = (canvas_h - 58.0 - (2 * sub_gap)) / 3.0
         vm_subcards = [
-            ("1. Sản Phẩm & Dịch Vụ", "Bộ công cụ Make Slide Pro V8.6: 165+ Archetypes chuẩn quốc tế & Motion Morph.", "#0284C7"),
-            ("2. Thuốc Giảm Đau (Pain Relievers)", "100% Native COM: Xóa tan nỗi lo ảnh vỡ, bảng cứng nhắc, tiết kiệm 90% giờ làm.", "#38BDF8"),
-            ("3. Yếu Tố Tạo Lợi Ích (Gain Creators)", "Trải nghiệm Apple Keynote đỉnh cao, thuyết phục hoàn toàn hội đồng thẩm định.", "#10B981")
+            ("1. Sản Phẩm & Dịch Vụ", "Gói giải pháp dịch vụ chăm sóc sức khỏe ban đầu và tư vấn chuyên sâu toàn diện.", "#0284C7"),
+            ("2. Giảm Thiểu Rủi Ro (Pain Relievers)", "Khắc phục triệt để rào cản địa lý, tiết kiệm chi phí đi lại và thời gian chờ đợi cho người dân.", "#38BDF8"),
+            ("3. Yếu Tố Tạo Lợi Ích (Gain Creators)", "Nâng cao chất lượng sống, chẩn đoán phát hiện sớm nguy cơ bệnh và cải thiện chỉ số sức khỏe.", "#10B981")
         ]
         for idx, (stitle, sdesc, scolor) in enumerate(vm_subcards):
             sy = canvas_y + 48.0 + idx * (sub_h + sub_gap)
@@ -1778,9 +1869,9 @@ class StrategicFrameworksEngine:
 
         # 3 Sub-Cards for Customer Profile
         cp_subcards = [
-            ("1. Việc Khách Hàng (Customer Jobs)", "Thuyết trình bảo vệ đề án, giải trình số liệu C-Level, gọi vốn đầu tư.", "#38BDF8"),
-            ("2. Nỗi Đau Khách Hàng (Pains)", "Slide thiếu chuyên nghiệp, mất 6-8 tiếng format thủ công, biểu đồ lệch chuẩn.", "#EF4444"),
-            ("3. Kỳ Vọng Đột Phá (Gains)", "Slide tạo ấn tượng mạnh mẽ, dẫn dắt câu chuyện thuyết phục và chốt deal thành công.", "#10B981")
+            ("1. Việc Cần Làm (Customer Jobs)", "Cần tiếp cận dịch vụ y tế an toàn, đáng tin cậy, bảo mật và thủ tục nhanh gọn.", "#10B981"),
+            ("2. Nỗi Đau (Customer Pains)", "Lo ngại chi phí ngoài danh mục, thông tin truyền thông sai lệch và e ngại định kiến.", "#EF4444"),
+            ("3. Lợi Ích Kỳ Vọng (Gains)", "Bảo vệ sức khỏe gia đình trọn vẹn, được tư vấn tận tâm và chất lượng dịch vụ bảo đảm.", "#F59E0B")
         ]
         for idx, (stitle, sdesc, scolor) in enumerate(cp_subcards):
             sy = canvas_y + 48.0 + idx * (sub_h + sub_gap)
@@ -1826,10 +1917,10 @@ class StrategicFrameworksEngine:
         qh = (height - 16.0) / 2.0
 
         quads = [
-            (left, top, qw, qh, "RẮC RỐI (COMPLEX)\n\n• Thăm dò -> Cảm nhận -> Ứng phó\n• Thực tiễn mới xuất hiện (Emergent Practice)\n• Áp dụng: Phát triển AI tự động & chuyển động mới", "#3B82F6"),
-            (left + qw + 16.0, top, qw, qh, "PHỨC TẠP (COMPLICATED)\n\n• Cảm nhận -> Phân tích -> Ứng phó\n• Thực tiễn tối ưu (Good Practice)\n• Áp dụng: Kiến trúc 165+ Archetypes & Tối ưu COM", "#10B981"),
-            (left, top + qh + 16.0, qw, qh, "HỖN LOẠN (CHAOTIC)\n\n• Hành động -> Cảm nhận -> Ứng phó\n• Thực tiễn đổi mới đột phá (Novel Practice)\n• Áp dụng: Ứng phó sự cố P0 & Khắc phục thời gian thực", "#EF4444"),
-            (left + qw + 16.0, top + qh + 16.0, qw, qh, "RÕ RÀNG (CLEAR / SIMPLE)\n\n• Cảm nhận -> Phân loại -> Ứng phó\n• Thực tiễn tốt nhất (Best Practice)\n• Áp dụng: Quy chuẩn định dạng 16:9 & Bảng màu Dark Luxury", "#F59E0B")
+            (left, top, qw, qh, "RẮC RỐI (COMPLEX)\n\n• Thăm dò -> Cảm nhận -> Ứng phó\n• Thực tiễn mới xuất hiện (Emergent Practice)\n• Áp dụng: Nghiên cứu mô hình dân số mới & can thiệp thích ứng", "#3B82F6"),
+            (left + qw + 16.0, top, qw, qh, "PHỨC TẠP (COMPLICATED)\n\n• Cảm nhận -> Phân tích -> Ứng phó\n• Thực tiễn tối ưu (Good Practice)\n• Áp dụng: Phân tích số liệu nhân khẩu học & chuyên môn y tế", "#10B981"),
+            (left, top + qh + 16.0, qw, qh, "HỖN LOẠN (CHAOTIC)\n\n• Hành động -> Cảm nhận -> Ứng phó\n• Thực tiễn đổi mới đột phá (Novel Practice)\n• Áp dụng: Ứng phó dịch bệnh khẩn cấp & can thiệp đột xuất", "#EF4444"),
+            (left + qw + 16.0, top + qh + 16.0, qw, qh, "RÕ RÀNG (CLEAR / SIMPLE)\n\n• Cảm nhận -> Phân loại -> Ứng phó\n• Thực tiễn tốt nhất (Best Practice)\n• Áp dụng: Quy trình cấp phát phương tiện tránh thai & phác đồ chuẩn", "#F59E0B")
         ]
 
         for qx, qy, qwidth, qheight, text, color in quads:
@@ -1867,8 +1958,12 @@ class StrategicFrameworksEngine:
         lw.Line.ForeColor.RGB = hex_to_bgr("#F59E0B")
         lw.Line.Weight = 2.0
         shapes.append(lw)
+        atoms = spec.get("atoms", [])
+        claim = spec.get("primary_claim", "Nội dung nhận diện rủi ro y tế dân số.")
+
         t_lw = lw.TextFrame.TextRange
-        t_lw.Text = "NGUYÊN NHÂN & RÀO CHẮN PHÒNG NGỪA\n\n• Mối đe dọa: Slide xuất ra bị vỡ hình hoặc lỗi font\n• Rào chắn 1: Khởi tạo font dự phòng Segoe UI\n• Rào chắn 2: Kiểm toán tĩnh kích thước Canvas 960x540\n• Rào chắn 3: Tự động điều chỉnh kích cỡ font co giãn"
+        lw_items = [f"• {a.get('title', '')}: {a.get('text', '')}" if isinstance(a, dict) else f"• {str(a)}" for a in atoms[:2]] if atoms else [f"• Yếu tố nguy cơ: {claim}"]
+        t_lw.Text = "NGUYÊN NHÂN & RÀO CHẮN PHÒNG NGỪA\n\n" + "\n".join(lw_items)
         t_lw.Font.Size = 10.5
         t_lw.Font.Color.RGB = hex_to_bgr(ink)
 
@@ -1881,7 +1976,7 @@ class StrategicFrameworksEngine:
         knot.Line.Weight = 2.5
         shapes.append(knot)
         t_k = knot.TextFrame.TextRange
-        t_k.Text = "SỰ CỐ TRỌNG YẾU\n(TOP EVENT)\n\nXuất Slide Bị Lỗi\nTrình Chiếu"
+        t_k.Text = "SỰ CỐ TRỌNG YẾU\n(TOP EVENT)\n\nNguy Cơ\nSức Khỏe"
         t_k.Font.Size = 11.5
         t_k.Font.Bold = msoTrue
         t_k.Font.Color.RGB = hex_to_bgr("#FFFFFF")
@@ -1896,7 +1991,8 @@ class StrategicFrameworksEngine:
         rw.Line.Weight = 2.0
         shapes.append(rw)
         t_rw = rw.TextFrame.TextRange
-        t_rw.Text = "RÀO CHẮN GIẢM THIỂU & HẬU QUẢ\n\n• Rào chắn 4: Hội đồng 16 tác tử MACC tự động quét P0\n• Rào chắn 5: Cơ chế fallback render an toàn\n• Kết quả bảo vệ: 100% Deck đạt chất lượng phát hành\n• Không gây gián đoạn buổi thuyết trình quan trọng"
+        rw_items = [f"• {a.get('title', '')}: {a.get('text', '')}" if isinstance(a, dict) else f"• {str(a)}" for a in atoms[2:4]] if len(atoms) > 2 else [f"• Biện pháp can thiệp: Giám sát chủ động và điều trị kịp thời", f"• Kết quả bảo vệ: Nâng cao chất lượng dân số toàn diện"]
+        t_rw.Text = "RÀO CHẮN GIẢM THIỂU & HẬU QUẢ\n\n" + "\n".join(rw_items)
         t_rw.Font.Size = 10.5
         t_rw.Font.Color.RGB = hex_to_bgr(ink)
 
@@ -1911,12 +2007,23 @@ class StrategicFrameworksEngine:
         qw = (width - 16.0) / 2.0
         qh = (height - 16.0) / 2.0
 
-        quads = [
-            (left, top, qw, qh, "LOẠI BỎ (ELIMINATE)\n\n• Loại bỏ hình ảnh tĩnh chụp màn hình bảng biểu\n• Loại bỏ các bố cục đơn điệu thiếu tính co giãn\n• Loại bỏ thao tác thủ công định dạng lại slide", "#EF4444"),
-            (left + qw + 16.0, top, qw, qh, "NÂNG CAO (RAISE)\n\n• Nâng số lượng Archetypes lên 165+ mẫu chuẩn quốc tế\n• Nâng tính linh hoạt với khả năng sửa trực tiếp Excel\n• Nâng tốc độ xuất file hoàn chỉnh xuống dưới 25 giây", "#10B981"),
-            (left, top + qh + 16.0, qw, qh, "CẮT GIẢM (REDUCE)\n\n• Cắt giảm tối đa thời gian dàn trang thủ công\n• Cắt giảm lỗi tràn chữ và lỗi sai lệch tỷ lệ đồ họa\n• Cắt giảm chi phí thuê chuyên gia thiết kế bên ngoài", "#F59E0B"),
-            (left + qw + 16.0, top + qh + 16.0, qw, qh, "TẠO MỚI (CREATE)\n\n• Tạo mới chuyển động chuyển tiếp Morph chuẩn Apple\n• Tạo mới hội đồng kiểm định 16 tác tử MACC đa chiều\n• Tạo mới cơ chế nhận dạng ngữ nghĩa bố cục tự động", "#0284C7")
-        ]
+        atoms = spec.get("atoms", [])
+        errc_labels = ["LOẠI BỎ (ELIMINATE)", "NÂNG CAO (RAISE)", "CẮT GIẢM (REDUCE)", "TẠO MỚI (CREATE)"]
+        errc_colors = ["#EF4444", "#10B981", "#F59E0B", "#0284C7"]
+        coords = [(left, top), (left + qw + 16.0, top), (left, top + qh + 16.0), (left + qw + 16.0, top + qh + 16.0)]
+        quads = []
+        if atoms:
+            for i in range(4):
+                a = atoms[i] if i < len(atoms) else {}
+                t = a.get("title", f"Yếu Tố {i+1}") if isinstance(a, dict) else str(a)
+                d = a.get("text") or a.get("desc") or "" if isinstance(a, dict) else ""
+                cx, cy = coords[i]
+                quads.append((cx, cy, qw, qh, f"{errc_labels[i]}\n\n• {t}\n• {d}" if d else f"{errc_labels[i]}\n\n• {t}", errc_colors[i]))
+        else:
+            claim = spec.get("primary_claim", "Chiến lược nâng cao chất lượng chuyên môn.")
+            for i in range(4):
+                cx, cy = coords[i]
+                quads.append((cx, cy, qw, qh, f"{errc_labels[i]}\n\n• {claim}", errc_colors[i]))
 
         for qx, qy, qwidth, qheight, text, color in quads:
             q = slide.Shapes.AddShape(msoShapeRoundedRectangle, qx, qy, qwidth, qheight)
@@ -1953,9 +2060,13 @@ class StrategicFrameworksEngine:
         sn.Line.ForeColor.RGB = hex_to_bgr("#38BDF8")
         sn.Line.Weight = 2.5
         shapes.append(sn)
+        atoms = spec.get("atoms", [])
+        ns_title = spec.get("north_star_title") or spec.get("assertion_title", "CHỈ SỐ ĐỊNH HƯỚNG TRỌNG TÂM")
+        claim = spec.get("primary_claim", "Nội dung chuẩn hóa chuyên môn.")
+
         t_sn = sn.TextFrame.TextRange
-        t_sn.Text = "★ CHỈ SỐ BẮC ĐẨU (NORTH STAR METRIC)\n\nSố Lượng Slide Trình Chiếu Chuẩn Đẳng Cấp Quốc Tế\nĐược Xuất Thành Công Mỗi Tuần"
-        t_sn.Font.Size = 12.5
+        t_sn.Text = f"★ CHỈ SỐ TRỌNG YẾU (CORE METRIC)\n\n{ns_title}"
+        t_sn.Font.Size = 12.0
         t_sn.Font.Bold = msoTrue
         t_sn.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         t_sn.ParagraphFormat.Alignment = ppAlignCenter
@@ -1965,11 +2076,20 @@ class StrategicFrameworksEngine:
         card_h = height * 0.60
         card_y = top + star_h + 18.0
 
-        drivers = [
-            {"title": "ĐỘ PHỦ THỊ GIÁC\n(VISUAL BREADTH)", "metric": "Kho 165+ Archetypes", "desc": "Bảo đảm đáp ứng mọi nhu cầu từ kinh doanh đến công nghệ"},
-            {"title": "TÍNH LINH HOẠT\n(EDITABILITY)", "metric": "100% Native & Excel", "desc": "Người dùng tự do chỉnh sửa bảng biểu và biểu đồ trực tiếp"},
-            {"title": "TRẢI NGHIỆM CHUYỂN ĐỘNG\n(MOTION DELIGHT)", "metric": "Apple Morph Motion", "desc": "Hiệu ứng chuyển cảnh ma thuật tạo cảm xúc mạnh mẽ"}
-        ]
+        if spec.get("drivers"):
+            drivers = spec["drivers"]
+        elif atoms:
+            drivers = []
+            for i, a in enumerate(atoms[:3]):
+                t = a.get("title", f"Trụ Cột 0{i+1}") if isinstance(a, dict) else f"Trụ Cột 0{i+1}"
+                d = a.get("text") or a.get("desc") or str(a) if isinstance(a, dict) else str(a)
+                m = a.get("metric") or a.get("badge") or f"Chỉ Số 0{i+1}"
+                drivers.append({"title": t, "metric": m, "desc": d})
+        else:
+            drivers = [
+                {"title": f"YẾU TỐ 0{i+1}", "metric": "Chuẩn Hóa", "desc": claim}
+                for i in range(3)
+            ]
 
         for i, d in enumerate(drivers):
             cx = left + i * (card_w + 16.0)
@@ -1995,12 +2115,23 @@ class StrategicFrameworksEngine:
         surface = self._get_token("colors", "surface", "#0B132B")
         ink = self._get_token("colors", "ink", "#FFFFFF")
 
-        steps = [
-            ("G - MỤC TIÊU (GOAL)", "Xây dựng công cụ tạo slide dẫn đầu thế giới về độ phong phú và tính thẩm mỹ", "#0284C7"),
-            ("R - THỰC TẾ (REALITY)", "Đã có 112 archetypes, người dùng mong muốn bổ sung thêm nhiều biểu mẫu cao cấp", "#F59E0B"),
-            ("O - LỰA CHỌN (OPTIONS)", "Rà soát 1,000 template hàng đầu để mở rộng lên 165+ archetypes và tích hợp Apple Motion", "#10B981"),
-            ("W - Ý CHÍ HÀNH ĐỘNG (WILL)", "Triển khai ngay lập tức, chạy kiểm thử tự động 48/48 và xuất bản phiên bản V8.6", "#8B5CF6")
-        ]
+        atoms = spec.get("atoms", [])
+        colors = ["#0284C7", "#F59E0B", "#10B981", "#8B5CF6"]
+        letters = ["G - MỤC TIÊU (GOAL)", "R - THỰC TRẠNG (REALITY)", "O - GIẢI PHÁP (OPTIONS)", "W - KẾ HOẠCH HÀNH ĐỘNG (WILL)"]
+        if spec.get("steps"):
+            steps = spec["steps"]
+        elif atoms:
+            steps = []
+            for i, a in enumerate(atoms[:4]):
+                t = a.get("title", f"Nội Dung 0{i+1}") if isinstance(a, dict) else str(a)
+                d = a.get("text") or a.get("desc") or "" if isinstance(a, dict) else ""
+                steps.append((f"{letters[i]}: {t}", d, colors[i % len(colors)]))
+        else:
+            claim = spec.get("primary_claim", "Nội dung chuẩn hóa đào tạo.")
+            steps = [
+                (letters[i], claim, colors[i])
+                for i in range(4)
+            ]
 
         card_w = (width - 36.0) / 4.0
         for i, (title, desc, color) in enumerate(steps):
@@ -2027,15 +2158,26 @@ class StrategicFrameworksEngine:
         surface = self._get_token("colors", "surface", "#0B132B")
         ink = self._get_token("colors", "ink", "#FFFFFF")
 
-        stages = [
-            ("1. ACQUISITION (TIẾP CẬN)", "Người dùng biết đến Make Slide Pro qua bài trình chiếu mẫu xuất sắc", "#0284C7", 1.00),
-            ("2. ACTIVATION (KÍCH HOẠT)", "Trải nghiệm lần đầu xuất slide thành công với 100% Native Tables/Charts", "#38BDF8", 0.88),
-            ("3. RETENTION (GIỮ CHÂN)", "Sử dụng thường xuyên cho các báo cáo định kỳ tuần, tháng, quý", "#10B981", 0.76),
-            ("4. REVENUE (DOANH THU)", "Nâng cấp lên gói Business hoặc Enterprise để mở khóa 165+ Archetypes", "#F59E0B", 0.64),
-            ("5. REFERRAL (LAN TỎA)", "Giới thiệu cho đồng nghiệp và đối tác nhờ chuyển động Apple Morph ma thuật", "#EC4899", 0.52)
-        ]
+        atoms = spec.get("atoms", [])
+        colors = ["#0284C7", "#38BDF8", "#10B981", "#F59E0B", "#EC4899"]
+        w_factors = [1.00, 0.88, 0.76, 0.64, 0.52]
+        default_names = ["1. TIẾP CẬN (ACQUISITION)", "2. KÍCH HOẠT (ACTIVATION)", "3. DUY TRÌ (RETENTION)", "4. GIÁ TRỊ (REVENUE)", "5. LAN TỎA (REFERRAL)"]
+        if spec.get("stages"):
+            stages = spec["stages"]
+        elif atoms:
+            stages = []
+            for i, a in enumerate(atoms[:5]):
+                t = a.get("title", default_names[i]) if isinstance(a, dict) else str(a)
+                d = a.get("text") or a.get("desc") or "" if isinstance(a, dict) else ""
+                stages.append((f"{default_names[i]}: {t}", d, colors[i % len(colors)], w_factors[i % len(w_factors)]))
+        else:
+            claim = spec.get("primary_claim", "Nội dung chuẩn hóa phễu phát triển.")
+            stages = [
+                (default_names[i], claim, colors[i], w_factors[i])
+                for i in range(5)
+            ]
 
-        row_h = (height - 20.0) / 5.0
+        row_h = (height - 20.0) / len(stages)
         for i, (title, desc, color, w_factor) in enumerate(stages):
             ry = top + i * (row_h + 5.0)
             rw = width * w_factor

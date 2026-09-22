@@ -68,13 +68,22 @@ class ProcessesEngine:
         border = self._get_token("colors", "card_border", "#1E293B")
 
         data = spec.get("process_data", {})
-        steps = data.get("steps", [
-            {"step": "01", "title": "Khảo Sát Hiện Trạng", "desc": "Thu thập dữ liệu thực địa, phỏng vấn chuyên sâu các phòng ban."},
-            {"step": "02", "title": "Phân Tích Khoảng Trống", "desc": "Xác định điểm nghẽn quy trình và định lượng tổn thất vận hành."},
-            {"step": "03", "title": "Thiết Kế Kiến Trúc", "desc": "Mô hình hóa giải pháp số hóa thế hệ mới chuẩn quốc tế."},
-            {"step": "04", "title": "Triển Khai & Kiểm Thử", "desc": "Thiết lập môi trường Sandbox, chạy thử nghiệm pilot 30 ngày."},
-            {"step": "05", "title": "Bàn Giao & Mở Rộng", "desc": "Đào tạo nhân sự toàn diện và bàn giao tài liệu kỹ thuật."}
-        ])
+        atoms = spec.get("atoms", [])
+        if data.get("steps"):
+            steps = data["steps"]
+        elif atoms:
+            steps = []
+            for i, a in enumerate(atoms):
+                title = a.get("title", f"Bước {i+1}") if isinstance(a, dict) else f"Bước {i+1}"
+                desc = a.get("text") or a.get("desc") or str(a) if isinstance(a, dict) else str(a)
+                step_num = a.get("step", f"{i+1:02d}") if isinstance(a, dict) else f"{i+1:02d}"
+                steps.append({"step": step_num, "title": title, "desc": desc})
+        else:
+            claim = spec.get("primary_claim", "Nội dung quy trình chuẩn hóa.")
+            steps = [
+                {"step": f"{i+1:02d}", "title": f"Giai Đoạn 0{i+1}", "desc": claim}
+                for i in range(3)
+            ]
 
         count = max(2, min(len(steps), 7))
         gap = 8.0
@@ -87,6 +96,7 @@ class ProcessesEngine:
             s = steps[i]
             sx = left + i * (step_w + gap)
             is_active = (i == count - 1) or s.get("highlight", False)
+            step_shapes = []
 
             # Chevron Header Shape
             chev = slide.Shapes.AddShape(msoShapeChevron, sx, top, step_w, chevron_h)
@@ -95,14 +105,14 @@ class ProcessesEngine:
             chev.Line.Visible = msoTrue
             chev.Line.ForeColor.RGB = hex_to_bgr(brand if is_active else border)
             chev.Line.Weight = 1.5
-            shapes.append(chev)
+            step_shapes.append(chev)
 
             ctf = chev.TextFrame
             ctf.WordWrap = msoTrue
             cp = ctf.TextRange
             cp.Text = f"BƯỚC {s.get('step', str(i+1))}\n{s.get('title', f'Giai Đoạn {i+1}')}"
             cp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            cp.Font.Size = 10 if count > 4 else 11.5
+            cp.Font.Size = 11.5 if count > 4 else 13.5
             cp.Font.Bold = msoTrue
             cp.Font.Color.RGB = hex_to_bgr("#FFFFFF" if is_active else ink)
             cp.ParagraphFormat.Alignment = ppAlignCenter
@@ -113,19 +123,60 @@ class ProcessesEngine:
             card.Fill.ForeColor.RGB = hex_to_bgr(surface)
             card.Line.Visible = msoTrue
             card.Line.ForeColor.RGB = hex_to_bgr(brand if is_active else border)
-            card.Line.Weight = 1.2
-            shapes.append(card)
+            card.Line.Weight = 1.5
+            step_shapes.append(card)
 
-            btb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, sx + 8, card_top + 10, step_w - 16, card_h - 20)
+            # Accent Pill inside card
+            pill = slide.Shapes.AddShape(msoShapeRoundedRectangle, sx + 14, card_top + 14, step_w - 28, 26.0)
+            pill.Fill.Solid()
+            pill.Fill.ForeColor.RGB = hex_to_bgr(self._get_token("colors", "badge_bg", "#082F49"))
+            pill.Line.Visible = msoFalse
+            pt = pill.TextFrame.TextRange
+            pt.Text = f"TIÊU ĐIỂM BƯỚC 0{i+1}"
+            pt.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
+            pt.Font.Size = 10.5
+            pt.Font.Bold = msoTrue
+            pt.Font.Color.RGB = hex_to_bgr(brand if is_active else "#38BDF8")
+            pill.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
+            step_shapes.append(pill)
+
+            # Body Text Box
+            tb_top = card_top + 48.0
+            tb_h = card_h - 92.0
+            btb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, sx + 14, tb_top, step_w - 28, tb_h)
             btf = btb.TextFrame
             btf.WordWrap = msoTrue
+            btf.MarginLeft = 0
+            btf.MarginRight = 0
             bp = btf.TextRange
             bp.Text = s.get("desc", "")
-            bp.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            bp.Font.Size = 9.5 if count > 4 else 10.5
-            bp.Font.Color.RGB = hex_to_bgr(muted)
+            bp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+            bp.Font.Size = 12.5 if count > 4 else 14.5
+            bp.Font.Color.RGB = hex_to_bgr(ink if is_active else muted)
             bp.ParagraphFormat.Alignment = ppAlignLeft
-            shapes.append(btb)
+            bp.ParagraphFormat.LineRuleWithin = msoTrue
+            bp.ParagraphFormat.SpaceWithin = 1.3
+            step_shapes.append(btb)
+
+            # Bottom Key Takeaway Badge
+            badge = slide.Shapes.AddShape(msoShapeRoundedRectangle, sx + 14, card_top + card_h - 36.0, step_w - 28, 24.0)
+            badge.Fill.Solid()
+            badge.Fill.ForeColor.RGB = hex_to_bgr("#0F172A" if self.theme == "DARK" else "#E2E8F0")
+            badge.Line.Visible = msoTrue
+            badge.Line.ForeColor.RGB = hex_to_bgr(brand if is_active else border)
+            badge.Line.Weight = 1.0
+            bt = badge.TextFrame.TextRange
+            bt.Text = f"✔ Chuẩn Đầu Ra 0{i+1}"
+            bt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+            bt.Font.Size = 10.0
+            bt.Font.Bold = msoTrue
+            bt.Font.Color.RGB = hex_to_bgr(brand if is_active else muted)
+            badge.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
+            step_shapes.append(badge)
+
+            # Pre-group each step atomically so clicks animate the entire step synchronously
+            step_grp = safe_group(slide, step_shapes, f"Process_Step_{i+1}")
+            shapes.append(step_grp)
 
         return shapes
 
@@ -242,62 +293,81 @@ class ProcessesEngine:
         count = len(nodes)
         cx = left + width / 2.0
         cy = top + height / 2.0
-        radius = min(width, height) * 0.38
+        radius_x = width * 0.31
+        radius_y = height * 0.35
 
-        core_r = min(width, height) * 0.18
-        core = slide.Shapes.AddShape(msoShapeOval, cx - core_r, cy - core_r, core_r * 2, core_r * 2)
+        # Center core badge with outer accent ring (2 shapes -> valid msoGroup)
+        core_w = 176.0
+        core_h = 96.0
+        ring = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx - core_w / 2.0 - 4.0, cy - core_h / 2.0 - 4.0, core_w + 8.0, core_h + 8.0)
+        ring.Fill.Solid()
+        ring.Fill.ForeColor.RGB = hex_to_bgr(surface)
+        ring.Line.Visible = msoTrue
+        ring.Line.ForeColor.RGB = hex_to_bgr(self._get_token("colors", "card_border", "#1E293B"))
+        ring.Line.Weight = 1.0
+
+        core = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx - core_w / 2.0, cy - core_h / 2.0, core_w, core_h)
         core.Fill.Solid()
         core.Fill.ForeColor.RGB = hex_to_bgr(surface)
         core.Line.Visible = msoTrue
         core.Line.ForeColor.RGB = hex_to_bgr(brand)
-        core.Line.Weight = 2.5
-        shapes.append(core)
+        core.Line.Weight = 2.0
 
         ctf = core.TextFrame
         ctf.WordWrap = msoTrue
+        ctf.MarginLeft = 6
+        ctf.MarginRight = 6
         cp = ctf.TextRange
-        cp.Text = cycle_name
+        cp.Text = f"🔄 {cycle_name}"
         cp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        cp.Font.Size = 11
+        cp.Font.Size = 12.5
         cp.Font.Bold = msoTrue
         cp.Font.Color.RGB = hex_to_bgr(brand)
         cp.ParagraphFormat.Alignment = ppAlignCenter
+        core_grp = safe_group(slide, [ring, core], "Cycle_Core_Group")
+        shapes.append(core_grp)
 
-        node_w = min(width * 0.28, 170.0)
-        node_h = min(height * 0.24, 90.0)
+        node_w = 248.0
+        node_h = 104.0
 
         for i in range(count):
             nd = nodes[i]
             angle = (2 * math.pi / count) * i - (math.pi / 2.0)
-            nx = cx + radius * math.cos(angle) - (node_w / 2.0)
-            ny = cy + radius * math.sin(angle) - (node_h / 2.0)
+            nx = cx + radius_x * math.cos(angle) - (node_w / 2.0)
+            ny = cy + radius_y * math.sin(angle) - (node_h / 2.0)
 
             n_card = slide.Shapes.AddShape(msoShapeRoundedRectangle, nx, ny, node_w, node_h)
             n_card.Fill.Solid()
             n_card.Fill.ForeColor.RGB = hex_to_bgr(surface)
             n_card.Line.Visible = msoTrue
-            n_card.Line.ForeColor.RGB = hex_to_bgr(border)
-            n_card.Line.Weight = 1.5
-            shapes.append(n_card)
+            n_card.Line.ForeColor.RGB = hex_to_bgr(brand if i == 0 else border)
+            n_card.Line.Weight = 1.8 if i == 0 else 1.2
 
-            tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, nx + 8, ny + 6, node_w - 16, node_h - 12)
+            tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, nx + 12, ny + 10, node_w - 24, node_h - 18)
             tf = tb.TextFrame
             tf.WordWrap = msoTrue
+            tf.MarginLeft = 0
+            tf.MarginRight = 0
             p1 = tf.TextRange.Paragraphs(1)
-            p1.Text = f"{nd.get('step', '')}: {nd.get('title', '')}\n"
+            p1.Text = f"{nd.get('step', f'BƯỚC 0{i+1}')}: {nd.get('title', '')}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 10.5
+            p1.Font.Size = 13.0
             p1.Font.Bold = msoTrue
-            p1.Font.Color.RGB = hex_to_bgr(brand)
-            p1.ParagraphFormat.Alignment = ppAlignCenter
+            p1.Font.Color.RGB = hex_to_bgr(brand if i == 0 else ink)
+            p1.ParagraphFormat.SpaceAfter = 5
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = nd.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 9.0
+            p2.Font.Size = 11.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
-            p2.ParagraphFormat.Alignment = ppAlignCenter
-            shapes.append(tb)
+            try:
+                p2.ParagraphFormat.SpaceWithin = 1.22
+            except Exception:
+                pass
+
+            node_grp = safe_group(slide, [n_card, tb], f"Cycle_Node_{i+1}")
+            shapes.append(node_grp)
 
         return shapes
 
@@ -587,64 +657,89 @@ class ProcessesEngine:
         border = self._get_token("colors", "card_border", "#1E293B")
 
         data = spec.get("process_data", {})
-        lanes = data.get("lanes", [
-            {"dept": "KHÁCH HÀNG", "task": "Gửi yêu cầu dịch vụ trực tuyến qua Mobile App."},
-            {"dept": "HỆ THỐNG AI", "task": "Tự động phân tích hồ sơ và chấm điểm rủi ro."},
-            {"dept": "CHUYÊN VIÊN", "task": "Phê duyệt các trường hợp đặc biệt ngoài luồng."},
-            {"dept": "KHO BẠC / TÀI CHÍNH", "task": "Giải ngân trực tiếp vào tài khoản trong 5 phút."}
-        ])
+        lanes = data.get("lanes")
+        if not lanes:
+            atoms = spec.get("atoms", [])
+            if atoms:
+                lanes = []
+                for i, a in enumerate(atoms[:4]):
+                    d = a.get("title", f"CẤP ĐỘ 0{i+1}")
+                    t = a.get("text") or a.get("desc") or ""
+                    lanes.append({"dept": d, "task": t})
+            else:
+                lanes = [
+                    {"dept": "TRUNG ƯƠNG", "task": "Ban hành chiến lược, khung pháp lý và phân bổ ngân sách quốc gia."},
+                    {"dept": "TỈNH / THÀNH PHỐ", "task": "Lập kế hoạch hành động, điều phối mạng lưới và giám sát chất lượng."},
+                    {"dept": "Y TẾ CƠ SỞ", "task": "Trực tiếp cung ứng dịch vụ dân số, tư vấn và quản lý địa bàn."},
+                    {"dept": "CỘNG ĐỒNG", "task": "Chủ động tham gia, thụ hưởng và thực hiện trách nhiệm tài chính."}
+                ]
 
         count = len(lanes)
-        lane_h = (height - (count - 1) * 8.0) / count
-        header_w = 140.0
+        gap = 10.0
+        lane_h = (height - (count - 1) * gap) / count
+        header_w = 160.0
 
         for i in range(count):
             ln = lanes[i]
-            ly = top + i * (lane_h + 8.0)
+            ly = top + i * (lane_h + gap)
+            lane_shapes = []
 
-            hdr = slide.Shapes.AddShape(msoShapeRectangle, left, ly, header_w, lane_h)
+            # 1. Lane Header
+            hdr = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, ly, header_w, lane_h)
             hdr.Fill.Solid()
-            hdr.Fill.ForeColor.RGB = hex_to_bgr(brand)
-            hdr.Line.Visible = msoFalse
-            shapes.append(hdr)
+            hdr.Fill.ForeColor.RGB = hex_to_bgr(brand if i == 0 else "#1E293B")
+            hdr.Line.Visible = msoTrue
+            hdr.Line.ForeColor.RGB = hex_to_bgr(brand)
+            hdr.Line.Weight = 1.5 if i == 0 else 1.0
+            lane_shapes.append(hdr)
 
             htf = hdr.TextFrame
             htf.WordWrap = msoTrue
             hp = htf.TextRange
-            hp.Text = ln.get("dept", f"LÀN {i+1}")
+            hp.Text = ln.get("dept", f"LÀN 0{i+1}")
             hp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            hp.Font.Size = 10.5
+            hp.Font.Size = 12.0
             hp.Font.Bold = msoTrue
-            hp.Font.Color.RGB = hex_to_bgr("#FFFFFF")
+            hp.Font.Color.RGB = hex_to_bgr("#FFFFFF" if i == 0 else self._get_token("colors", "brand", "#38BDF8"))
             hp.ParagraphFormat.Alignment = ppAlignCenter
 
-            track_w = width - header_w - 6.0
-            track = slide.Shapes.AddShape(msoShapeRectangle, left + header_w + 6.0, ly, track_w, lane_h)
+            # 2. Track Surface
+            track_w = width - header_w - 8.0
+            track = slide.Shapes.AddShape(msoShapeRoundedRectangle, left + header_w + 8.0, ly, track_w, lane_h)
             track.Fill.Solid()
             track.Fill.ForeColor.RGB = hex_to_bgr(surface)
             track.Line.Visible = msoTrue
             track.Line.ForeColor.RGB = hex_to_bgr(border)
             track.Line.Weight = 1.0
-            shapes.append(track)
+            lane_shapes.append(track)
 
-            box_w = track_w * 0.75
-            box_x = left + header_w + 20.0 + (i * (track_w * 0.2) / count)
-            tbox = slide.Shapes.AddShape(msoShapeRoundedRectangle, box_x, ly + 6.0, box_w, lane_h - 12.0)
+            # 3. Action Task Box inside track
+            box_w = track_w - 32.0
+            box_x = left + header_w + 24.0
+            tbox = slide.Shapes.AddShape(msoShapeRoundedRectangle, box_x, ly + 8.0, box_w, lane_h - 16.0)
             tbox.Fill.Solid()
             tbox.Fill.ForeColor.RGB = hex_to_bgr(self._get_token("colors", "badge_bg", "#082F49"))
             tbox.Line.Visible = msoTrue
             tbox.Line.ForeColor.RGB = hex_to_bgr(brand)
             tbox.Line.Weight = 1.0
-            shapes.append(tbox)
+            lane_shapes.append(tbox)
 
             tbt = tbox.TextFrame
             tbt.WordWrap = msoTrue
+            tbt.MarginLeft = 14
+            tbt.MarginRight = 14
             tp = tbt.TextRange
             tp.Text = ln.get("task", "")
-            tp.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            tp.Font.Size = 10
+            tp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+            tp.Font.Size = 12.5
             tp.Font.Color.RGB = hex_to_bgr(ink)
             tp.ParagraphFormat.Alignment = ppAlignLeft
+            tp.ParagraphFormat.LineRuleWithin = msoTrue
+            tp.ParagraphFormat.SpaceWithin = 1.25
+
+            # Atomic encapsulation per lane
+            lane_grp = safe_group(slide, lane_shapes, f"Swimlane_Lane_{i+1}")
+            shapes.append(lane_grp)
 
         return shapes
 
@@ -684,7 +779,6 @@ class ProcessesEngine:
             step_box.Line.Visible = msoTrue
             step_box.Line.ForeColor.RGB = hex_to_bgr(brand)
             step_box.Line.Weight = 1.5
-            shapes.append(step_box)
 
             tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, sx + 8, sy + 10, step_w - 16, sh - 20)
             tf = tb.TextFrame
@@ -692,7 +786,7 @@ class ProcessesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"{st.get('level', '')} ({st.get('kpi', '')})\n"
             p1.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            p1.Font.Size = 11
+            p1.Font.Size = 12
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr("#FFFFFF" if is_top else brand)
             p1.ParagraphFormat.Alignment = ppAlignCenter
@@ -700,7 +794,7 @@ class ProcessesEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = st.get("title", "") + "\n"
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 10.5
+            p2.Font.Size = 12
             p2.Font.Bold = msoTrue
             p2.Font.Color.RGB = hex_to_bgr("#FFFFFF" if is_top else ink)
             p2.ParagraphFormat.Alignment = ppAlignCenter
@@ -708,10 +802,16 @@ class ProcessesEngine:
             p3 = tf.TextRange.Paragraphs(3)
             p3.Text = st.get("desc", "")
             p3.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p3.Font.Size = 9.0
+            p3.Font.Size = 10.5
             p3.Font.Color.RGB = hex_to_bgr("#E2E8F0" if is_top else muted)
+            try:
+                p3.ParagraphFormat.SpaceWithin = 1.2
+            except Exception:
+                pass
             p3.ParagraphFormat.Alignment = ppAlignCenter
-            shapes.append(tb)
+
+            step_grp = safe_group(slide, [step_box, tb], f"Stairs_Step_{i+1}")
+            shapes.append(step_grp)
 
         return shapes
 
@@ -727,16 +827,27 @@ class ProcessesEngine:
         border = self._get_token("colors", "card_border", "#1E293B")
 
         data = spec.get("process_data", {})
-        milestones = data.get("milestones", [
-            {"date": "Q1/2024", "title": "Nghiên Cứu Khả Thi", "desc": "Đạt mốc 10.000 người dùng thử nghiệm."},
-            {"date": "Q2/2024", "title": "Phát Hành Bản Beta", "desc": "Tích hợp thành công 12 module cốt lõi."},
-            {"date": "Q3/2024", "title": "Bùng Nổ Doanh Thu", "desc": "Vượt chỉ tiêu 150% kế hoạch năm."},
-            {"date": "Q4/2024", "title": "Vươn Tầm Quốc Tế", "desc": "Mở rộng 3 thị trường Đông Nam Á."}
-        ])
+        milestones = data.get("milestones")
+        if not milestones:
+            atoms = spec.get("atoms", [])
+            if atoms:
+                milestones = []
+                for i, a in enumerate(atoms[:4]):
+                    d = a.get("num") or f"GIAI ĐOẠN 0{i+1}"
+                    t = a.get("title", f"Mốc 0{i+1}")
+                    dsc = a.get("text") or a.get("desc") or ""
+                    milestones.append({"date": d, "title": t, "desc": dsc})
+            else:
+                milestones = [
+                    {"date": "Giai Đoạn 1", "title": "Khảo Sát & Đánh Giá", "desc": "Nghiên cứu thực trạng địa bàn và xác định nhu cầu dịch vụ thiết yếu."},
+                    {"date": "Giai Đoạn 2", "title": "Thiết Kế Mô Hình", "desc": "Chuẩn hóa phác đồ can thiệp và tập huấn kỹ thuật cho đội ngũ y tế cơ sở."},
+                    {"date": "Giai Đoạn 3", "title": "Triển Khai Cung Ứng", "desc": "Mở rộng độ bao phủ dịch vụ gắn liền tiếp thị xã hội và truyền thông."},
+                    {"date": "Giai Đoạn 4", "title": "Đánh Giá Tác Động", "desc": "Nghiệm thu chỉ số đầu ra và duy trì tính bền vững tài chính."}
+                ]
 
         count = len(milestones)
-        spine_y = top + 80.0
-        ribbon = slide.Shapes.AddShape(msoShapeRectangle, left, spine_y, width, 6.0)
+        spine_y = top + 75.0
+        ribbon = slide.Shapes.AddShape(msoShapeRectangle, left, spine_y, width, 5.0)
         ribbon.Fill.Solid()
         ribbon.Fill.ForeColor.RGB = hex_to_bgr(brand)
         ribbon.Line.Visible = msoFalse
@@ -746,50 +857,81 @@ class ProcessesEngine:
         for i in range(count):
             m = milestones[i]
             mx = left + i * (col_w + 16.0)
+            step_shapes = []
 
-            flag = slide.Shapes.AddShape(msoShapeRoundedRectangle, mx + (col_w - 90)/2.0, top + 35.0, 90, 32)
+            # 1. Flag Header
+            flag = slide.Shapes.AddShape(msoShapeRoundedRectangle, mx + (col_w - 110)/2.0, top + 32.0, 110, 32)
             flag.Fill.Solid()
-            flag.Fill.ForeColor.RGB = hex_to_bgr(brand)
+            flag.Fill.ForeColor.RGB = hex_to_bgr(brand if i == 0 else "#0369A1")
             flag.Line.Visible = msoFalse
-            shapes.append(flag)
+            step_shapes.append(flag)
 
             ftf = flag.TextFrame
             fp = ftf.TextRange
-            fp.Text = m.get("date", f"MỐC {i+1}")
+            fp.Text = m.get("date", f"MỐC 0{i+1}")
             fp.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            fp.Font.Size = 11
+            fp.Font.Size = 11.5
             fp.Font.Bold = msoTrue
             fp.Font.Color.RGB = hex_to_bgr("#FFFFFF")
             fp.ParagraphFormat.Alignment = ppAlignCenter
 
-            card_y = spine_y + 24.0
+            # 2. Main Card Body
+            card_y = spine_y + 20.0
             card_h = height - (card_y - top) - 10.0
             card = slide.Shapes.AddShape(msoShapeRoundedRectangle, mx, card_y, col_w, card_h)
             card.Fill.Solid()
             card.Fill.ForeColor.RGB = hex_to_bgr(surface)
             card.Line.Visible = msoTrue
-            card.Line.ForeColor.RGB = hex_to_bgr(border)
-            card.Line.Weight = 1.2
-            shapes.append(card)
+            card.Line.ForeColor.RGB = hex_to_bgr(brand if i == 0 else border)
+            card.Line.Weight = 1.5 if i == 0 else 1.0
+            step_shapes.append(card)
 
-            tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, mx + 10, card_y + 10, col_w - 20, card_h - 20)
+            # 3. Text Block
+            tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, mx + 12, card_y + 12, col_w - 24, card_h - 52)
             tf = tb.TextFrame
             tf.WordWrap = msoTrue
+            tf.MarginLeft = 0
+            tf.MarginTop = 0
+
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = m.get("title", "") + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 11
+            p1.Font.Size = 14.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(ink)
             p1.ParagraphFormat.Alignment = ppAlignCenter
+            p1.ParagraphFormat.SpaceAfter = 6
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = m.get("desc", "")
-            p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 9.5
+            p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+            p2.Font.Size = 12.0
             p2.Font.Color.RGB = hex_to_bgr(muted)
             p2.ParagraphFormat.Alignment = ppAlignCenter
-            shapes.append(tb)
+            p2.ParagraphFormat.LineRuleWithin = msoTrue
+            p2.ParagraphFormat.SpaceWithin = 1.3
+            step_shapes.append(tb)
+
+            # 4. Bottom Anchor Badge
+            badge_y = card_y + card_h - 34.0
+            badge = slide.Shapes.AddShape(msoShapeRoundedRectangle, mx + 12, badge_y, col_w - 24, 22.0)
+            badge.Fill.Solid()
+            badge.Fill.ForeColor.RGB = hex_to_bgr("#0F172A" if self.theme == "DARK" else "#E2E8F0")
+            badge.Line.Visible = msoTrue
+            badge.Line.ForeColor.RGB = hex_to_bgr(brand if i == 0 else border)
+            badge.Line.Weight = 1.0
+            bt = badge.TextFrame.TextRange
+            bt.Text = f"✔ Chuẩn Đầu Ra 0{i+1}"
+            bt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+            bt.Font.Size = 10.0
+            bt.Font.Bold = msoTrue
+            bt.Font.Color.RGB = hex_to_bgr(brand if i == 0 else muted)
+            bt.ParagraphFormat.Alignment = ppAlignCenter
+            step_shapes.append(badge)
+
+            # Atomic encapsulation per milestone
+            step_grp = safe_group(slide, step_shapes, f"Timeline_Step_{i+1}")
+            shapes.append(step_grp)
 
         return shapes
 
@@ -1567,12 +1709,23 @@ class ProcessesEngine:
         surface = self._get_token("colors", "surface", "#0B132B")
         ink = self._get_token("colors", "ink", "#FFFFFF")
 
-        levels = [
-            ("CẤP 1: THỬ NGHIỆM Ý TƯỞNG (PoC)", "Thử nghiệm 30 mẫu sơ khai và kiểm tra phản hồi người dùng", 0.40, "#64748B"),
-            ("CẤP 2: MỞ RỘNG TÍNH NĂNG (MVP)", "Mở rộng 112 archetypes, tích hợp 100% Native Tables/Charts", 0.60, "#0284C7"),
-            ("CẤP 3: HOÀN THIỆN ĐỈNH CAO (SCALE)", "165+ Archetypes chuẩn thế giới kèm Apple Morph Motion mượt mà", 0.82, "#38BDF8"),
-            ("CẤP 4: DẪN ĐẦU HỆ SINH THÁI (MASTERY)", "Hội đồng 16 tác tử MACC tự động tối ưu hóa mọi ấn phẩm", 1.00, "#10B981")
-        ]
+        atoms = spec.get("atoms", [])
+        colors = ["#64748B", "#0284C7", "#38BDF8", "#10B981"]
+        scales = [0.40, 0.60, 0.82, 1.00]
+        if spec.get("levels"):
+            levels = spec["levels"]
+        elif atoms:
+            levels = []
+            for i, a in enumerate(atoms[:4]):
+                t = a.get("title", f"Cấp Độ 0{i+1}") if isinstance(a, dict) else f"Cấp Độ 0{i+1}"
+                d = a.get("text") or a.get("desc") or str(a) if isinstance(a, dict) else str(a)
+                levels.append((t, d, scales[i % len(scales)], colors[i % len(colors)]))
+        else:
+            claim = spec.get("primary_claim", "Nội dung chuẩn hóa tăng trưởng đào tạo.")
+            levels = [
+                (f"Giai Đoạn 0{i+1}", claim, scales[i], colors[i])
+                for i in range(4)
+            ]
 
         row_h = (height - 18.0) / len(levels)
         for i, (title, desc, scale, color) in enumerate(levels):
@@ -1820,12 +1973,28 @@ class ProcessesEngine:
         qw = (width - 16.0) / 2.0
         qh = (height - 16.0) / 2.0
 
-        quads = [
-            (left, top, qw, qh, "P - KẾ HOẠCH (PLAN)\n\n• Nghiên cứu 1,000 template hàng đầu\n• Thiết kế 165+ Archetypes chuẩn quốc tế\n• Lập bản đồ điều phối chuyển động Apple Morph", "#0284C7"),
-            (left + qw + 16.0, top, qw, qh, "D - THỰC HIỆN (DO)\n\n• Lập trình 6 Module Component Engines\n• Xây dựng module motion_engine.py\n• Tích hợp vào pipeline author_native_com.py", "#10B981"),
-            (left, top + qh + 16.0, qw, qh, "C - KIỂM TRA (CHECK)\n\n• Chạy bộ test tự động 48/48 tiêu chí\n• Hội đồng 16 tác tử MACC duyệt không lỗi\n• Xuất slide mẫu kiểm tra thị giác 1080p", "#F59E0B"),
-            (left + qw + 16.0, top + qh + 16.0, qw, qh, "A - HÀNH ĐỘNG (ACT)\n\n• Chuẩn hóa tài liệu kiến trúc V8.6\n• Commit toàn bộ mã nguồn vào nhánh main\n• Phát hành phiên bản chính thức cho người dùng", "#8B5CF6")
+        atoms = spec.get("atoms", [])
+        colors = ["#0284C7", "#10B981", "#F59E0B", "#8B5CF6"]
+        letters = ["P - KẾ HOẠCH (PLAN)", "D - THỰC HIỆN (DO)", "C - KIỂM TRA (CHECK)", "A - HÀNH ĐỘNG (ACT)"]
+        coords = [
+            (left, top),
+            (left + qw + 16.0, top),
+            (left, top + qh + 16.0),
+            (left + qw + 16.0, top + qh + 16.0)
         ]
+        quads = []
+        if atoms:
+            for i, a in enumerate(atoms[:4]):
+                t = a.get("title", letters[i]) if isinstance(a, dict) else str(a)
+                d = a.get("text") or a.get("desc") or "" if isinstance(a, dict) else ""
+                body = f"{letters[i]}\n\n• {t}\n• {d}" if d else f"{letters[i]}\n\n• {t}"
+                cx, cy = coords[i]
+                quads.append((cx, cy, qw, qh, body, colors[i]))
+        else:
+            claim = spec.get("primary_claim", "Nội dung chuẩn hóa cải tiến liên tục.")
+            for i in range(4):
+                cx, cy = coords[i]
+                quads.append((cx, cy, qw, qh, f"{letters[i]}\n\n• {claim}", colors[i]))
 
         for qx, qy, qwidth, qheight, text, color in quads:
             q = slide.Shapes.AddShape(msoShapeRoundedRectangle, qx, qy, qwidth, qheight)
@@ -2033,18 +2202,32 @@ class ProcessesEngine:
 
         # 5 Nodes across timeline
         # Nodes: (ID, Title, Duration, Float_str, is_critical, color)
-        crit_nodes = [
-            ("NÚT 01", "Khởi Động Dự Án", "T = 2 Ngày", "Float = 0", True, "#EF4444"),
-            ("NÚT 02", "Thiết Kế 165+ Archetypes", "T = 5 Ngày", "Float = 0", True, "#EF4444"),
-            ("NÚT 03", "Lập Trình Apple Motion", "T = 4 Ngày", "Float = 0", True, "#EF4444"),
-            ("NÚT 04", "Nghiệm Thu & Bàn Giao", "T = 2 Ngày", "Float = 0", True, "#EF4444")
+        crit_nodes = spec.get("crit_nodes") or [
+            ("NÚT 01", "Khởi Động & Khảo Sát Nhu Cầu", "T = 2 Ngày", "Float = 0", True, "#EF4444"),
+            ("NÚT 02", "Phân Tích Nghiệp Vụ & Dữ Liệu", "T = 5 Ngày", "Float = 0", True, "#EF4444"),
+            ("NÚT 03", "Thiết Kế Khung Can Thiệp", "T = 4 Ngày", "Float = 0", True, "#EF4444"),
+            ("NÚT 04", "Nghiệm Thu & Triển Khai", "T = 2 Ngày", "Float = 0", True, "#EF4444")
         ]
-        branch_node = ("NÚT 2B", "Tối Ưu Bảng Màu & Font", "T = 3 Ngày", "Float = +2 Ngày", False, "#0284C7")
+        branch_node = spec.get("branch_node") or ("NÚT 2B", "Khảo Sát Thực Địa Bổ Trợ", "T = 3 Ngày", "Float = +2 Ngày", False, "#0284C7")
 
         gap = 46.0
         node_w = (width - (3 * gap)) / 4.0
         node_h = 100.0
         cy_main = top + 24.0
+
+        # Create Bottom Legend Strip first to bind with Node 0
+        leg_y = cy_main + node_h + 38.0 + node_h + 16.0
+        leg_bar = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, leg_y, width, 28)
+        leg_bar.Fill.Solid()
+        leg_bar.Fill.ForeColor.RGB = hex_to_bgr("#1E293B" if self.theme == "DARK" else "#E2E8F0")
+        leg_bar.Line.Visible = msoFalse
+        lt = leg_bar.TextFrame.TextRange
+        lt.Text = "★ Đường Găng (Critical Path, Float = 0: Tuyệt đối không được trễ)    |    ● Nhánh Phụ Song Song (Float = +2 Ngày: Có thể bù đắp thời gian)"
+        lt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+        lt.Font.Size = 10.0
+        lt.Font.Bold = msoTrue
+        lt.Font.Color.RGB = hex_to_bgr(ink)
+        leg_bar.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
 
         main_coords = []
         # Render 4 Critical Nodes
@@ -2052,6 +2235,14 @@ class ProcessesEngine:
             n_shapes = []
             cx = left + i * (node_w + gap)
             main_coords.append((cx, cy_main))
+
+            # Critical Path Incoming Arrow
+            if i > 0 and len(main_coords) > 1:
+                x_start = main_coords[i - 1][0] + node_w
+                y_mid = cy_main + node_h / 2.0
+                conn = add_vector_connector(slide, x_start, y_mid, cx, y_mid, color="#EF4444", weight=2.5, arrowhead=True)
+                if conn:
+                    n_shapes.append(conn)
 
             card = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, cy_main, node_w, node_h)
             card.Fill.Solid()
@@ -2104,6 +2295,10 @@ class ProcessesEngine:
             chip.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
             n_shapes.append(chip)
 
+            # Bind legend strip to Node 0 so it appears on transition
+            if i == 0:
+                n_shapes.append(leg_bar)
+
             node_grp = safe_group(slide, n_shapes, f"CPM_Node_{i+1}")
             shapes.append(node_grp)
 
@@ -2112,6 +2307,11 @@ class ProcessesEngine:
         cx_b = main_coords[1][0]
         cy_b = cy_main + node_h + 38.0
         b_nid, b_title, b_dur, b_float, _, b_color = branch_node
+
+        # Branch Arrow Node 1 -> Node 2B
+        conn_b1 = add_vector_connector(slide, main_coords[0][0] + node_w, cy_main + node_h * 0.75, cx_b, cy_b + node_h * 0.35, color="#0284C7", weight=1.8, dashed=True, arrowhead=True)
+        if conn_b1:
+            b_shapes.append(conn_b1)
 
         b_card = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx_b, cy_b, node_w, node_h)
         b_card.Fill.Solid()
@@ -2163,47 +2363,6 @@ class ProcessesEngine:
 
         branch_grp = safe_group(slide, b_shapes, "CPM_Branch_2B")
         shapes.append(branch_grp)
-
-        # Connectors between nodes
-        # 1. Critical Path Arrows (Red, Weight 2.5)
-        for i in range(3):
-            x_start = main_coords[i][0] + node_w
-            y_mid = cy_main + node_h / 2.0
-            x_end = main_coords[i+1][0]
-            conn = add_vector_connector(slide, x_start, y_mid, x_end, y_mid, color="#EF4444", weight=2.5, arrowhead=True)
-            if conn:
-                shapes.append(conn)
-
-        # 2. Branch Arrows (Blue, Weight 1.8, Dashed)
-        # Node 1 -> Node 2B
-        conn_b1 = add_vector_connector(slide, main_coords[0][0] + node_w, cy_main + node_h * 0.75, cx_b, cy_b + node_h * 0.35, color="#0284C7", weight=1.8, dashed=True, arrowhead=True)
-        if conn_b1:
-            shapes.append(conn_b1)
-
-        # Node 2B -> Node 3
-        conn_b2 = add_vector_connector(slide, cx_b + node_w, cy_b + node_h * 0.35, main_coords[2][0], cy_main + node_h * 0.75, color="#0284C7", weight=1.8, dashed=True, arrowhead=True)
-        if conn_b2:
-            shapes.append(conn_b2)
-
-        # 3. Bottom Legend Strip
-        leg_shapes = []
-        leg_y = cy_b + node_h + 16.0
-        leg_bar = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, leg_y, width, 28)
-        leg_bar.Fill.Solid()
-        leg_bar.Fill.ForeColor.RGB = hex_to_bgr("#1E293B" if self.theme == "DARK" else "#E2E8F0")
-        leg_bar.Line.Visible = msoFalse
-        leg_shapes.append(leg_bar)
-
-        lt = leg_bar.TextFrame.TextRange
-        lt.Text = "★ Đường Găng (Critical Path, Float = 0: Tuyệt đối không được trễ)    |    ● Nhánh Phụ Song Song (Float = +2 Ngày: Có thể bù đắp thời gian)"
-        lt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        lt.Font.Size = 10.0
-        lt.Font.Bold = msoTrue
-        lt.Font.Color.RGB = hex_to_bgr(ink)
-        leg_bar.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
-
-        leg_grp = safe_group(slide, leg_shapes, "CPM_Legend_Strip")
-        shapes.append(leg_grp)
 
         return shapes
 

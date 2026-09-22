@@ -59,7 +59,7 @@ class VisualErgonomicsAuditor(BaseCouncilAgent):
         hex_clean = c_clean.lstrip("#")
         if len(hex_clean) == 3:
             hex_clean = "".join(c * 2 for c in hex_clean)
-        if len(hex_clean) == 6:
+        if len(hex_clean) == 6 or len(hex_clean) == 8:
             try:
                 return (int(hex_clean[0:2], 16), int(hex_clean[2:4], 16), int(hex_clean[4:6], 16))
             except ValueError:
@@ -98,8 +98,11 @@ class VisualErgonomicsAuditor(BaseCouncilAgent):
             slide_id = s.get("slide_id", "unknown_slide")
 
             # 1. Slide-Level Contrast Audit
-            bg_color = s.get("bg_color") or s.get("background") or "#FFFFFF"
-            text_color = s.get("text_color") or "#1E293B"
+            theme = (context or {}).get("theme", "DARK" if s.get("theme") == "DARK" else "LIGHT").upper()
+            default_bg = "#0B1120" if theme == "DARK" else "#FFFFFF"
+            default_text = "#F8FAFC" if theme == "DARK" else "#1E293B"
+            bg_color = s.get("bg_color") or s.get("background") or default_bg
+            text_color = s.get("text_color") or default_text
 
             contrast = self._calculate_contrast(bg_color, text_color)
             if contrast is not None and contrast < 4.5:
@@ -120,7 +123,8 @@ class VisualErgonomicsAuditor(BaseCouncilAgent):
                 )
 
             # 2. Card/Atom-Level Contrast Audit
-            for cidx, card in enumerate(s.get("cards", []) + s.get("atoms", []) + s.get("content_items", [])):
+            all_cards = (s.get("cards") or []) + (s.get("atoms") or []) + (s.get("content_items") or [])
+            for cidx, card in enumerate(all_cards):
                 if isinstance(card, dict):
                     c_bg = card.get("bg_color") or card.get("background")
                     c_text = card.get("text_color") or card.get("color")
@@ -197,7 +201,8 @@ class VisualErgonomicsAuditor(BaseCouncilAgent):
                         elif "màu sắc slide" in finding.issue.lower() or "tương phản màu sắc" in finding.issue.lower():
                             s["text_color"] = finding.suggested_value
                         elif "thẻ" in finding.issue.lower() and "tương phản" in finding.issue.lower():
-                            for card in s.get("cards", []) + s.get("atoms", []) + s.get("content_items", []):
+                            all_cards = (s.get("cards") or []) + (s.get("atoms") or []) + (s.get("content_items") or [])
+                            for card in all_cards:
                                 if isinstance(card, dict) and (card.get("text_color") == finding.original_value or card.get("color") == finding.original_value):
                                     card["text_color"] = finding.suggested_value
 

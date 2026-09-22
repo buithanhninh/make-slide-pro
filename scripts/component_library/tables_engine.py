@@ -389,13 +389,13 @@ class NativeTablesEngine:
     # 8. TABLE_PRICING_TIERS (Bảng Báo Giá Gói Dịch Vụ)
     def render_pricing_tiers(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> Any:
         table_data = spec.get("table_data", {})
-        headers = table_data.get("headers", ["Tính Năng & Quyền Lợi", "Gói Khởi Động (Starter)", "Gói Chuyên Nghiệp (Pro)", "Gói Doanh Nghiệp (Enterprise)"])
+        headers = table_data.get("headers", ["Hạng Mục Đánh Giá", "Cấp Cơ Sở", "Cấp Chuyên Sâu", "Cấp Toàn Diện"])
         rows = table_data.get("rows", [
-            ["Mức Phí Thuê Bao", "990.000 đ / Tháng", "2.490.000 đ / Tháng", "Liên Hệ Báo Giá"],
-            ["Số Lượng Slide Mỗi Tháng", "50 Slide chuẩn", "Không Giới Hạn", "Không Giới Hạn"],
-            ["Kho Thư Viện Archetypes", "30 Mẫu Cơ Bản", "110+ Mẫu Đỉnh Cao", "Tùy Biến Thiết Kế Riêng"],
-            ["Hội Đồng MACC 16 Tác Tử", "1 Bước Kiểm Thử", "16 Tác Tử Tự Phục Hồi", "Audit Chuyên Sâu SLA 99.9%"],
-            ["Hỗ Trợ & Triển Khai", "Cộng đồng trực tuyến", "Ưu tiên 24/7", "Chuyên viên tư vấn riêng"]
+            ["Phạm Vi Hoạt Động", "Tại hộ gia đình và trạm y tế", "Trung tâm y tế huyện", "Bệnh viện chuyên khoa tỉnh"],
+            ["Tần Suất Thực Hiện", "Định kỳ hàng tháng", "Định kỳ hàng quý", "Thường xuyên liên tục"],
+            ["Quy Chuẩn Chuyên Môn", "Quy trình cơ bản", "Quy trình nâng cao", "Tiêu chuẩn quốc gia"],
+            ["Nguồn Lực Đảm Bảo", "Cán bộ chuyên trách", "Bác sĩ chuyên khoa", "Hội đồng chuyên môn"],
+            ["Hiệu Quả Dự Kiến", "Bao phủ 85% đối tượng", "Đạt chuẩn 95% mục tiêu", "100% đối tượng đích"]
         ])
 
         num_rows = len(rows) + 1
@@ -433,10 +433,10 @@ class NativeTablesEngine:
         table_data = spec.get("table_data", {})
         headers = table_data.get("headers", ["Mã & Tên Rủi Ro", "Xác Suất", "Tác Động", "Biện Pháp Giảm Thiểu", "Người Phụ Trách"])
         rows = table_data.get("rows", [
-            ["R01: Gián đoạn kết nối mạng", "Thấp (15%)", "Nghiêm trọng", "Dự phòng kết nối song song đa vùng", "Trưởng Kỹ Thuật"],
-            ["R02: Sai lệch dữ liệu nguồn", "Trung bình (35%)", "Trung bình", "16 tác tử MACC tự động phát hiện", "Trưởng Ban QA"],
-            ["R03: Quá tải người dùng đồng thời", "Thấp (20%)", "Cao", "Tự động co giãn cụm máy chủ Kubernetes", "DevOps Lead"],
-            ["R04: Vi phạm bảo mật thông tin", "Rất thấp (5%)", "Nghiêm trọng", "Mã hóa Zero-Trust & AES-256 E2EE", "Security Officer"]
+            ["R01: Gián đoạn kết nối thông tin", "Thấp (15%)", "Nghiêm trọng", "Dự phòng kết nối song song và báo cáo trực tiếp", "Cán bộ phụ trách"],
+            ["R02: Sai lệch dữ liệu thống kê", "Trung bình (25%)", "Trung bình", "Quy trình đối soát chéo và phúc tra định kỳ", "Hội đồng chuyên môn"],
+            ["R03: Quá tải cơ sở cung ứng dịch vụ", "Thấp (20%)", "Cao", "Điều phối nhân lực tăng cường từ tuyến trên", "Lãnh đạo đơn vị"],
+            ["R04: Vi phạm bảo mật thông tin cá nhân", "Rất thấp (5%)", "Nghiêm trọng", "Tuân thủ nghiêm ngặt quy định bảo mật hồ sơ", "Cán bộ quản lý"]
         ])
 
         num_rows = len(rows) + 1
@@ -709,13 +709,13 @@ class NativeTablesEngine:
     # 16. TABLE_PRICING_FEATURE_MATRIX (Ma Trận Tính Năng 4 Gói)
     def render_pricing_feature_matrix(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> Any:
         table_data = spec.get("table_data", {})
-        headers = table_data.get("headers", ["Tính Năng / Đặc Quyền", "Starter (Miễn Phí)", "Pro (Cá Nhân)", "Business (Nhóm)", "Enterprise (Tổ Chức)"])
+        headers = table_data.get("headers", ["Tiêu Chí Chuyên Môn", "Giai Đoạn 1", "Giai Đoạn 2", "Giai Đoạn 3", "Giai Đoạn 4"])
         rows = table_data.get("rows", [
-            ["Kho 165+ Archetypes Chuẩn Quốc Tế", "30 Archetypes", "110 Archetypes", "165 Archetypes", "Toàn Bộ + Tùy Biến Riêng"],
-            ["Xuất 100% Native Tables & Office Charts", "✕ (Ảnh tĩnh)", "✓ (Native Editable)", "✓ (Native Editable)", "✓ (Native + API Tự Động)"],
-            ["Hệ Thống Chuyển Động Apple Morph Motion", "✕ (Cơ bản)", "✓ (Standard Fade)", "✓ (Apple Morph)", "✓ (Choreographed Staggered)"],
-            ["Hội Đồng Kiểm Định 16 Tác Tử MACC", "✕", "✓ (3 Tác tử)", "✓ (8 Tác tử)", "✓ (16 Tác Tử Đầy Đủ)"],
-            ["Hỗ Trợ Kỹ Thuật & SLA Cam Kết", "Cộng đồng", "Email 48h", "Ưu tiên 12h", "SLA 99.99% Dedicated 24/7"]
+            ["Tiếp Cận Đối Tượng", "Diện hẹp (Thí điểm)", "Mở rộng 50%", "Bao phủ 85%", "Toàn diện 100%"],
+            ["Đội Ngũ Nhân Sự", "Tập huấn cơ bản", "Đào tạo thực địa", "Chứng chỉ chuyên sâu", "Chuyên gia đầu ngành"],
+            ["Quy Trình Kỹ Thuật", "Khảo sát ban đầu", "Thực hiện định kỳ", "Giám sát độc lập", "Tiêu chuẩn hóa quốc gia"],
+            ["Kiểm Định Chất Lượng", "Tự đánh giá", "Đánh giá chéo", "Kiểm định định kỳ", "Hội đồng nghiệm thu"],
+            ["Mức Độ Đạt Chuẩn", "Đạt yêu cầu", "Khá", "Tốt", "Xuất sắc"]
         ])
 
         num_rows = len(rows) + 1
@@ -748,13 +748,13 @@ class NativeTablesEngine:
     # 17. TABLE_MILESTONE_DELIVERABLES (Bảng Phân Công Bàn Giao Mốc Dự Án)
     def render_milestone_deliverables(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> Any:
         table_data = spec.get("table_data", {})
-        headers = table_data.get("headers", ["Cột Mốc / Giai Đoạn", "Sản Phẩm Bàn Giao", "Bộ Phận Chủ Trì", "Hạn Chót", "Trạng Thái"])
+        headers = table_data.get("headers", ["Cột Mốc / Giai Đoạn", "Nội Dung Bàn Giao", "Đơn Vị Chủ Trì", "Tiến Độ", "Trạng Thái"])
         rows = table_data.get("rows", [
-            ["Milestone 1: Khởi Động & Kiến Trúc", "Tài liệu kiến trúc hệ thống V8.6", "Lead Architect", "15/10/2026", "HOÀN TẤT 100%"],
-            ["Milestone 2: Mega Library 165+", "Toàn bộ 6 Module Engines", "Core Dev Team", "25/10/2026", "HOÀN TẤT 100%"],
-            ["Milestone 3: Apple Motion Engine", "Bộ điều phối Morph & Staggered Reveal", "Motion Engineer", "05/11/2026", "ĐANG THỬ NGHIỆM"],
-            ["Milestone 4: Kiểm Thử 16 Tác Tử MACC", "Báo cáo kiểm thử 48/48 tiêu chí", "QA Council", "15/11/2026", "CHUẨN BỊ"],
-            ["Milestone 5: Phát Hành Toàn Diện", "Bàn giao sản phẩm cho khách hàng", "Release Manager", "30/11/2026", "THEO KẾ HOẠCH"]
+            ["Giai Đoạn 1: Khảo Sát Ban Đầu", "Báo cáo điều tra thực địa cơ sở", "Ban Quản Lý", "Tháng 01", "HOÀN TẤT 100%"],
+            ["Giai Đoạn 2: Xây Dựng Kế Hoạch", "Kế hoạch hành động và phân bổ ngân sách", "Tổ Chuyên Môn", "Tháng 03", "HOÀN TẤT 100%"],
+            ["Giai Đoạn 3: Triển Khai Thực Địa", "Tập huấn và cung ứng dịch vụ tại cộng đồng", "Đội Ngũ Thực Hiện", "Tháng 06", "ĐANG THỰC HIỆN"],
+            ["Giai Đoạn 4: Giám Sát & Đánh Giá", "Báo cáo giám sát định kỳ độc lập", "Hội Đồng Thẩm Định", "Tháng 09", "CHUẨN BỊ"],
+            ["Giai Đoạn 5: Tổng Kết & Nhân Rộng", "Hội nghị tổng kết và đề xuất giải pháp", "Ban Chỉ Đạo", "Tháng 12", "THEO KẾ HOẠCH"]
         ])
 
         num_rows = len(rows) + 1
@@ -874,13 +874,13 @@ class NativeTablesEngine:
     # 20. TABLE_BUDGET_ALLOCATION (Bảng Phân Bổ Ngân Sách Capex/Opex)
     def render_budget_allocation(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> Any:
         table_data = spec.get("table_data", {})
-        headers = table_data.get("headers", ["Khoản Mục Đầu Tư", "Loại Chi Phí", "Dự Toán Kế Hoạch", "Thực Tế Đã Chi", "Chênh Lệch (% Var)"])
+        headers = table_data.get("headers", ["Khoản Mục Ngân Sách", "Loại Chi Phí", "Dự Toán Kế Hoạch", "Thực Tế Đã Chi", "Đánh Giá"])
         rows = table_data.get("rows", [
-            ["1. Hạ Tầng Máy Chủ & GPU Đám Mây", "CAPEX", "$250,000", "$238,500", "-4.6% (Tiết Kiệm)"],
-            ["2. Nghiên Cứu & Phát Triển Thuật Toán", "OPEX", "$400,000", "$415,000", "+3.8% (Vượt Nhẹ)"],
-            ["3. Bản Quyền & Thư Viện Đồ Họa Cao Cấp", "CAPEX", "$80,000", "$72,000", "-10.0% (Tối Ưu)"],
-            ["4. Đội Ngũ Kiểm Thử & Kiểm Toán QA", "OPEX", "$150,000", "$148,200", "-1.2% (Đạt Chuẩn)"],
-            ["TỔNG CỘNG NGÂN SÁCH ĐẦU TƯ", "TOÀN DỰ ÁN", "$880,000", "$873,700", "-0.7% (Trong Hạn Mức)"]
+            ["1. Đào Tạo & Tập Huấn Chuyên Môn", "Chi thường xuyên", "150.000.000 đ", "145.000.000 đ", "Đạt chuẩn"],
+            ["2. Truyền Thông & Giáo Dục Cộng Đồng", "Chi nghiệp vụ", "200.000.000 đ", "198.500.000 đ", "Đạt chuẩn"],
+            ["3. Trang Thiết Bị & Vật Tư Y Tế", "Đầu tư cơ sở", "350.000.000 đ", "342.000.000 đ", "Tiết kiệm 2.3%"],
+            ["4. Giám Sát Đánh Giá & Hỗ Trợ Kỹ Thuật", "Chi thường xuyên", "100.000.000 đ", "96.500.000 đ", "Đạt chuẩn"],
+            ["TỔNG CỘNG KINH PHÍ HOẠT ĐỘNG", "TOÀN DỰ ÁN", "800.000.000 đ", "782.000.000 đ", "Trong hạn mức"]
         ])
 
         num_rows = len(rows) + 1
@@ -957,13 +957,13 @@ class NativeTablesEngine:
     # 22. TABLE_OKRS_TRACKER (Bảng Theo Dõi Mục Tiêu & Kết Quả Then Chốt)
     def render_okrs_tracker(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> Any:
         table_data = spec.get("table_data", {})
-        headers = table_data.get("headers", ["Mục Tiêu Chiến Lược (Objective)", "Kết Quả Then Chốt (Key Results)", "Chỉ Tiêu", "Hiện Tại", "Độ Tự Tin"])
+        headers = table_data.get("headers", ["Mục Tiêu Trọng Tâm", "Chỉ Số Đo Lường Then Chốt", "Chỉ Tiêu Đề Ra", "Kết Quả Đạt Được", "Đánh Giá"])
         rows = table_data.get("rows", [
-            ["O1: Dẫn Đầu Thị Trường Về Độ Phủ Thị Giác", "KR 1.1: Xây dựng kho 165+ Archetypes chuẩn quốc tế", "165 Mẫu", "165 Mẫu (100%)", "RẤT CAO (0.95)"],
-            ["O1: Dẫn Đầu Thị Trường Về Độ Phủ Thị Giác", "KR 1.2: 100% Native Tables và Office Charts", "100%", "100% Đạt Chuẩn", "RẤT CAO (1.00)"],
-            ["O2: Trải Nghiệm Chuyển Động Chuẩn Apple", "KR 2.1: Bộ điều phối chuyển tiếp Apple Morph", "100% Slide", "Hoàn thành", "CAO (0.90)"],
-            ["O2: Trải Nghiệm Chuyển Động Chuẩn Apple", "KR 2.2: Staggered reveal với Ease-In-Out", "100% Card", "Hoàn thành", "CAO (0.90)"],
-            ["O3: Bảo Đảm An Toàn Tuyệt Đối", "KR 3.1: 16 Tác Tử MACC kiểm định không lỗi hồi quy", "100% Pass", "48/48 Tests Pass", "TUYỆT ĐỐI (1.00)"]
+            ["Mục Tiêu 1: Tăng Cường Bao Phủ Dịch Vụ", "Tỷ lệ tiếp cận tư vấn tiền hôn nhân", "80% đối tượng", "82% đạt chuẩn", "VƯỢT CHỈ TIÊU"],
+            ["Mục Tiêu 1: Tăng Cường Bao Phủ Dịch Vụ", "Tỷ lệ sàng lọc trước sinh và sơ sinh", "70% trẻ sinh ra", "74% đạt chuẩn", "VƯỢT CHỈ TIÊU"],
+            ["Mục Tiêu 2: Nâng Cao Năng Lực Cán Bộ", "Tập huấn chuyên sâu cho cán bộ cơ sở", "100% trạm y tế", "100% hoàn thành", "HOÀN THÀNH"],
+            ["Mục Tiêu 2: Nâng Cao Năng Lực Cán Bộ", "Đạt chuẩn kỹ thuật chăm sóc người cao tuổi", "90% địa bàn", "92% đạt chuẩn", "HOÀN THÀNH"],
+            ["Mục Tiêu 3: Đảm Bảo Chất Lượng Toàn Diện", "Chỉ số hài lòng của người thụ hưởng dịch vụ", "≥ 90% hài lòng", "94.5% hài lòng", "XUẤT SẮC"]
         ])
 
         num_rows = len(rows) + 1
@@ -1032,13 +1032,13 @@ class NativeTablesEngine:
     # 24. TABLE_PRODUCT_SPECS (Bảng So Sánh Thông Số Kỹ Thuật Sản Phẩm)
     def render_product_specs(self, slide: Any, spec: Dict[str, Any], left: float, top: float, width: float, height: float) -> Any:
         table_data = spec.get("table_data", {})
-        headers = table_data.get("headers", ["Thông Số Kỹ Thuật", "Giải Pháp Tiêu Chuẩn", "Make Slide Pro V8.5", "Make Slide Pro V8.6 (Mới)"])
+        headers = table_data.get("headers", ["Tiêu Chuẩn Đánh Giá", "Mức Cơ Bản", "Mức Nâng Cao", "Mức Đạt Chuẩn Quốc Gia"])
         rows = table_data.get("rows", [
-            ["Tổng số lượng Archetypes", "30 Archetypes", "112 Archetypes", "165+ Archetypes Đầy Đủ"],
-            ["Khả năng sửa bảng biểu & biểu đồ", "Ảnh tĩnh hoặc bán phần", "100% Native Editable", "100% Native + Excel Embedded"],
-            ["Hệ thống chuyển động & hiệu ứng", "Chuyển tiếp cơ bản", "Morph đơn lẻ", "Apple Keynote Morph + Staggered"],
-            ["Kiểm toán chất lượng tự động", "Quy tắc tĩnh đơn giản", "Hội đồng 16 tác tử", "16 Tác Tử MACC + Motion Pacing"],
-            ["Khả năng co giãn tham số (Elasticity)", "Cố định 3-4 phần tử", "Co giãn 2-8 phần tử", "Co giãn tham số đa chiều toàn diện"]
+            ["Phạm Vi Tiếp Cận Đối Tượng", "Tối thiểu 60%", "Đạt 85%", "Bao phủ 100% đối tượng đích"],
+            ["Chất Lượng Cung Ứng Kỹ Thuật", "Đạt chuẩn cơ sở", "Đạt chuẩn tuyến huyện", "Đạt chuẩn bệnh viện chuyên khoa"],
+            ["Đội Ngũ Nhân Lực Chuyên Môn", "Tập huấn định kỳ", "Có chứng chỉ thực hành", "Đào tạo liên tục chuyên sâu"],
+            ["Kiểm Định Chất Lượng Độc Lập", "Kiểm tra 6 tháng/lần", "Kiểm tra hàng quý", "Giám sát thời gian thực"],
+            ["Mức Độ Hài Lòng Của Người Dân", "≥ 75% hài lòng", "≥ 85% hài lòng", "≥ 95% rất hài lòng"]
         ])
 
         num_rows = len(rows) + 1

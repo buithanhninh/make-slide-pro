@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import copy
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 from ..base_agent import BaseCouncilAgent
 from ..models import AgentFinding, Severity
 
@@ -126,6 +126,7 @@ class SourceFidelityFactChecker(BaseCouncilAgent):
 
             # Split slide text into logical clauses / sentences
             slide_clauses = self._split_clauses(slide_text)
+            seen_slide_missing_metrics: Set[Tuple[float, str]] = set()
 
             for clause in slide_clauses:
                 clause_lower = clause.lower()
@@ -136,6 +137,7 @@ class SourceFidelityFactChecker(BaseCouncilAgent):
                     unit_str = match.group("unit").strip()
                     val_float = self._parse_vietnamese_number(val_str)
                     raw_metric = match.group(0).strip()
+                    metric_key = (val_float, unit_str.casefold())
 
                     # ----------------------------------------------------
                     # 1. Verification of Number Existence & Pure Hallucination
@@ -147,6 +149,10 @@ class SourceFidelityFactChecker(BaseCouncilAgent):
                         exists = self._is_number_in_text(val_float, unit_str, clean_canonical)
 
                     if not exists:
+                        if metric_key in seen_slide_missing_metrics:
+                            continue
+                        seen_slide_missing_metrics.add(metric_key)
+
                         footer = s.get("source_footer", "").strip()
                         is_strict = context.get("strict_canonical_only", False)
                         if footer and not is_strict:

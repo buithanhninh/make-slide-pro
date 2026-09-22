@@ -414,96 +414,57 @@ class MasterPedagogicalRewriter:
 
 
 # ==============================================================================
-# 7. THE MASTER MULTI-AGENT CONTENT COUNCIL (MACC-QA V7.0)
+# 7. THE MASTER MULTI-AGENT CONTENT COUNCIL (MACC-QA V8.6.0 ADAPTER)
 # ==============================================================================
 
 class ContentMultiAgentCouncil:
-    """Orchestrates the 5-Agent Content Review, Adversarial Debate, and Multi-Round Self-Healing Loop."""
+    """
+    Canonical Adapter bridging to the 16-Agent Omniscient Council Framework (MACC-QA V8.6.0).
+    Coordinates all 16 specialized agents across 5 closed forensic gates:
+    Gate 1: Source Veracity & Privacy
+    Gate 2: Macro-Narrative Arc & Consistency
+    Gate 3: Micro-Pedagogy & Scientific Precision
+    Gate 4: Spatial Geometry, Typography & Motion
+    Gate 5: Supreme Arbitration & Dialectical Convergence
+    """
 
-    def __init__(self, max_rounds: int = 3):
+    def __init__(self, max_rounds: int = 5, target_score: float = 99.5):
         self.max_rounds = max_rounds
-        self.scholar = DomainPedagogyScholar()
-        self.purist = NaturalLanguagePurist()
-        self.arbiter = AssertionCognitiveArbiter()
-        self.critic = AdversarialContentCritic()
-        self.rewriter = MasterPedagogicalRewriter()
+        self.target_score = target_score
+        try:
+            from macc_council import MultiRoundCouncilOrchestrator
+            self._orchestrator = MultiRoundCouncilOrchestrator(max_rounds=max_rounds, target_score=target_score)
+        except ImportError:
+            from scripts.macc_council import MultiRoundCouncilOrchestrator
+            self._orchestrator = MultiRoundCouncilOrchestrator(max_rounds=max_rounds, target_score=target_score)
 
     def review_and_refine_blueprints(self, blueprints: Dict[str, Any], canonical_text: str = "") -> Dict[str, Any]:
         current_bp = json.loads(json.dumps(blueprints))
-        round_history = []
-
         print("\n" + "=" * 80)
-        print("   MACC-QA V7.0: MULTI-AGENT FORENSIC CONTENT COUNCIL ACTIVATED")
+        print("   MACC-QA V8.6.0: 16-AGENT OMNISCIENT FORENSIC COUNCIL ACTIVATED")
         print("=" * 80)
 
-        for rnd in range(1, self.max_rounds + 1):
-            print(f"\n--- [ROUND {rnd}/{self.max_rounds}] Independent 5-Agent Content Inspection ---")
-            round_findings = []
-            all_slides = current_bp.get("slides", [])
+        report = self._orchestrator.run_council(
+            blueprints=current_bp,
+            canonical_source=canonical_text,
+            max_rounds=self.max_rounds
+        )
 
-            for slide in all_slides:
-                # Dispatch audits
-                s_findings = []
-                s_findings.extend(self.scholar.audit(slide, canonical_text))
-                s_findings.extend(self.purist.audit(slide))
-                s_findings.extend(self.arbiter.audit(slide))
-                s_findings.extend(self.critic.audit(slide))
-                round_findings.extend(s_findings)
+        if report.remediated_slides:
+            current_bp["slides"] = report.remediated_slides
+            current_bp["total_slides"] = len(report.remediated_slides)
 
-            p0_count = sum(1 for f in round_findings if f["severity"] == "P0")
-            p1_count = sum(1 for f in round_findings if f["severity"] == "P1")
-            p2_count = sum(1 for f in round_findings if f["severity"] == "P2")
-
-            # Score calculation
-            score = max(0.0, 100.0 - (p0_count * 25.0 + p1_count * 5.0 + p2_count * 1.5))
-            if p0_count == 0 and p1_count == 0 and p2_count == 0:
-                status = "CERTIFIED"
-            elif p0_count == 0 and p1_count == 0 and score >= 98.0:
-                status = "CERTIFIED" if rnd == self.max_rounds else "POLISHING"
-            else:
-                status = "NEEDS_REPAIR"
-
-            print(f"      Defects Detected: P0={p0_count}, P1={p1_count}, P2={p2_count} | Score: {score:.1f}/100 [{status}]")
-            for f in round_findings[:5]:
-                print(f"      [!] {f['agent']} ({f['slide_id']}) [{f['severity']}]: {f['issue']}")
-            if len(round_findings) > 5:
-                print(f"      ... and {len(round_findings) - 5} more findings.")
-
-            round_history.append({
-                "round": rnd,
-                "score": score,
-                "p0": p0_count,
-                "p1": p1_count,
-                "p2": p2_count,
-                "status": "CERTIFIED" if score >= 98.0 and p0_count == 0 and p1_count == 0 else status,
-                "findings_count": len(round_findings)
-            })
-
-            if status == "CERTIFIED" or rnd == self.max_rounds:
-                if status == "CERTIFIED" or (score >= 98.0 and p0_count == 0 and p1_count == 0):
-                    print(f"      >>> 100% CONTENT CERTIFIED AT ROUND {rnd}! Exiting refinement loop.")
-                else:
-                    print(f"      >>> Reached maximum rounds ({self.max_rounds}). Final content certified.")
-                break
-
-            # Self-healing rewrite step
-            print(f"      >>> Activating MasterPedagogicalRewriter to resolve {len(round_findings)} findings...")
-            refined_slides = []
-            for slide in all_slides:
-                slide_findings = [f for f in round_findings if f["slide_id"] == slide.get("slide_id")]
-                if slide_findings:
-                    refined = self.rewriter.rewrite_slide(slide, slide_findings)
-                    refined_slides.append(refined)
-                else:
-                    refined_slides.append(slide)
-            current_bp["slides"] = refined_slides
+        status_str = "CERTIFIED" if report.certified else "REJECTED"
+        print(f"      ✔ MACC-QA V8.6.0 Council: Converged Score = {report.final_score:.1f}/100 in {report.total_rounds} rounds | P0={report.p0_count}, P1={report.p1_count}, P2={report.p2_count} [{status_str}]")
 
         current_bp["content_qa_certification"] = {
-            "version": "MACC-QA V7.0",
-            "certified_score": round_history[-1]["score"],
-            "status": round_history[-1]["status"],
-            "total_rounds": len(round_history),
-            "round_history": round_history
+            "version": "MACC-QA V8.6.0",
+            "certified_score": report.final_score,
+            "status": status_str,
+            "total_rounds": report.total_rounds,
+            "p0_count": report.p0_count,
+            "p1_count": report.p1_count,
+            "p2_count": report.p2_count
         }
         return current_bp
 

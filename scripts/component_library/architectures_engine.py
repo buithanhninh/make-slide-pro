@@ -1138,7 +1138,12 @@ class ArchitecturesEngine:
         cons.Line.Weight = 2.0
         shapes.append(cons)
         t_cons = cons.TextFrame.TextRange
-        t_cons.Text = "XỬ LÝ DỮ LIỆU ĐÍCH\n(EVENT CONSUMERS)\n\n• Native COM Worker Nodes\n• 16 Tác Tử MACC QA\n• Notification Webhook\n• Cloud S3 Storage Sync"
+        atoms = spec.get("atoms", [])
+        if atoms and len(atoms) > 1:
+            c_items = [f"• {a.get('title', '')}: {a.get('text', '')}" if isinstance(a, dict) else f"• {str(a)}" for a in atoms[1:4]]
+            t_cons.Text = "TIẾP NHẬN & XỬ LÝ\n(DATA CONSUMERS)\n\n" + "\n".join(c_items)
+        else:
+            t_cons.Text = "TIẾP NHẬN & XỬ LÝ\n(DATA CONSUMERS)\n\n• Cơ sở y tế tiếp nhận\n• Đội ngũ cán bộ chuyên trách\n• Hệ thống lưu trữ hồ sơ\n• Báo cáo giám sát định kỳ"
         t_cons.Font.Size = 10.5
         t_cons.Font.Color.RGB = hex_to_bgr(ink)
 
@@ -1217,7 +1222,7 @@ class ArchitecturesEngine:
         ink = self._get_token("colors", "ink", "#FFFFFF")
         muted = self._get_token("colors", "muted", "#94A3B8")
 
-        tiers = [
+        tiers = spec.get("medallion_tiers") or [
             {
                 "tier": "TẦNG 01: BRONZE",
                 "sub": "RAW DATA INGESTION",
@@ -1261,12 +1266,41 @@ class ArchitecturesEngine:
         card_h = min(height - 40.0, 275.0)
         card_y = top + 10.0
 
+        # Create Bottom Architecture Summary Strip first so it binds with Tier 0
+        sum_shapes = []
+        sum_y = card_y + card_h + 14.0
+        sum_bar = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, sum_y, width, 26)
+        sum_bar.Fill.Solid()
+        sum_bar.Fill.ForeColor.RGB = hex_to_bgr("#1E293B" if self.theme == "DARK" else "#E2E8F0")
+        sum_bar.Line.Visible = msoFalse
+        sum_shapes.append(sum_bar)
+
+        st = sum_bar.TextFrame.TextRange
+        summary_text = spec.get("summary_strip") or spec.get("architecture_summary") or spec.get("summary_text") or spec.get("bottom_note")
+        if not summary_text:
+            summary_text = "HỆ THỐNG PHÂN CẤP CHỈ ĐẠO & CUNG ỨNG DỊCH VỤ DÂN SỐ LIÊN HOÀN TOÀN TUYẾN"
+        st.Text = summary_text
+        st.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
+        st.Font.Size = 10.0
+        st.Font.Bold = msoTrue
+        st.Font.Color.RGB = hex_to_bgr("#38BDF8")
+        sum_bar.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
+
         card_coords = []
         for i, item in enumerate(tiers):
             t_shapes = []
             cx = left + i * (card_w + card_gap)
             card_coords.append((cx, card_y))
             color = item["color"]
+
+            # Flow Arrow incoming from previous tier (atoms bound to current tier)
+            if i > 0 and len(card_coords) > 1:
+                x_start = card_coords[i - 1][0] + card_w
+                y_mid = card_y + card_h / 2.0
+                x_end = cx
+                conn = add_vector_connector(slide, x_start, y_mid, x_end, y_mid, color=color, weight=2.5, arrowhead=True)
+                if conn:
+                    t_shapes.append(conn)
 
             card = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, card_y, card_w, card_h)
             card.Fill.Solid()
@@ -1340,37 +1374,12 @@ class ArchitecturesEngine:
             chip.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
             t_shapes.append(chip)
 
+            # Anchor summary bar to Tier 0 so it appears on slide transition without an extra click
+            if i == 0:
+                t_shapes.append(sum_bar)
+
             tier_grp = safe_group(slide, t_shapes, f"Medallion_Tier_{i+1}")
             shapes.append(tier_grp)
-
-        # Flow Arrows between Bronze -> Silver and Silver -> Gold
-        for i in range(2):
-            x_start = card_coords[i][0] + card_w
-            y_mid = card_y + card_h / 2.0
-            x_end = card_coords[i+1][0]
-            conn = add_vector_connector(slide, x_start, y_mid, x_end, y_mid, color="#38BDF8", weight=2.5, arrowhead=True)
-            if conn:
-                shapes.append(conn)
-
-        # Bottom Architecture Summary Strip
-        sum_shapes = []
-        sum_y = card_y + card_h + 14.0
-        sum_bar = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, sum_y, width, 26)
-        sum_bar.Fill.Solid()
-        sum_bar.Fill.ForeColor.RGB = hex_to_bgr("#1E293B" if self.theme == "DARK" else "#E2E8F0")
-        sum_bar.Line.Visible = msoFalse
-        sum_shapes.append(sum_bar)
-
-        st = sum_bar.TextFrame.TextRange
-        st.Text = "HẠ TẦNG DỮ LIỆU ĐỒNG BỘ: DELTA LAKE / APACHE ICEBERG TRÊN ĐÁM MÂY HYBRID • ACID GUARANTEED"
-        st.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        st.Font.Size = 10.0
-        st.Font.Bold = msoTrue
-        st.Font.Color.RGB = hex_to_bgr("#38BDF8")
-        sum_bar.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
-
-        sum_grp = safe_group(slide, sum_shapes, "Medallion_Summary_Strip")
-        shapes.append(sum_grp)
 
         return shapes
 
@@ -1604,6 +1613,15 @@ class ArchitecturesEngine:
             card_coords.append((cx, card_y))
             color = item["color"]
 
+            # Flow arrow incoming from previous stage (atoms bound to current stage)
+            if i > 0 and len(card_coords) > 1:
+                x_start = card_coords[i - 1][0] + card_w
+                y_mid = card_y + card_h / 2.0
+                x_end = cx
+                conn = add_vector_connector(slide, x_start, y_mid, x_end, y_mid, color="#38BDF8", weight=2.2, arrowhead=True)
+                if conn:
+                    s_shapes.append(conn)
+
             card = slide.Shapes.AddShape(msoShapeRoundedRectangle, cx, card_y, card_w, card_h)
             card.Fill.Solid()
             card.Fill.ForeColor.RGB = hex_to_bgr(surface)
@@ -1678,15 +1696,6 @@ class ArchitecturesEngine:
 
             step_grp = safe_group(slide, s_shapes, f"RAG_Step_{i+1}")
             shapes.append(step_grp)
-
-        # Flow Arrows between Stages
-        for i in range(3):
-            x_start = card_coords[i][0] + card_w
-            y_mid = card_y + card_h / 2.0
-            x_end = card_coords[i+1][0]
-            conn = add_vector_connector(slide, x_start, y_mid, x_end, y_mid, color="#38BDF8", weight=2.2, arrowhead=True)
-            if conn:
-                shapes.append(conn)
 
         return shapes
 

@@ -285,6 +285,30 @@ class NarrativeArcDirector(BaseCouncilAgent):
             }
             slides.append(conclusion_slide)
 
+        # 3. Remediate missing problem/context in Minto SCQA
+        needs_problem = any("Missing Problem/Context" in f.issue for f in findings)
+        if needs_problem and len(slides) >= 3:
+            first_content = slides[1]
+            old_sec = first_content.get("section", "")
+            if not any(k in old_sec.lower() for k in self.PROBLEM_KEYWORDS):
+                first_content["section"] = f"BỐI CẢNH & {old_sec}".strip("& ")
+            old_title = first_content.get("assertion_title", "")
+            if not any(k in old_title.lower() for k in self.PROBLEM_KEYWORDS):
+                first_content["assertion_title"] = f"Bối Cảnh Thực Trạng & Thách Thức: {old_title}".strip()
+            if first_content.get("atoms"):
+                first_content["atoms"][0]["title"] = f"Thực trạng bối cảnh: {first_content['atoms'][0].get('title', '')}".strip(": ")
+
+        # 4. Remediate missing solution/resolution in Minto SCQA
+        needs_solution = any("Missing Resolution" in f.issue for f in findings)
+        if needs_solution and len(slides) >= 3:
+            last_content = slides[-2]
+            old_sec = last_content.get("section", "")
+            if not any(k in old_sec.lower() for k in self.SOLUTION_KEYWORDS):
+                last_content["section"] = f"GIẢI PHÁP & {old_sec}".strip("& ")
+            old_title = last_content.get("assertion_title", "")
+            if not any(k in old_title.lower() for k in self.SOLUTION_KEYWORDS):
+                last_content["assertion_title"] = f"Giải Pháp Trọng Tâm: {old_title}".strip()
+
         # Re-index slide_ids sequentially if new slides were inserted/appended
         if needs_agenda or needs_conclusion:
             for idx, s in enumerate(slides):
