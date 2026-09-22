@@ -58,6 +58,8 @@ def main():
         print(f"\n[{idx}/{total_files}] STARTING PROCESSING: {fname}")
         t0 = time.time()
         try:
+            import pythoncom
+            pythoncom.CoInitialize()
             res = process_single_document(
                 input_file=fpath,
                 output_dir=OUTPUT_DIR,
