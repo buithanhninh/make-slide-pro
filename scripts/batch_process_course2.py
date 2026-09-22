@@ -23,6 +23,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from make_slide_pro import process_single_document
+from scripts.audit_deck_deep_v92 import audit_deck
 
 INPUT_DIR = PROJECT_ROOT / "Du An" / "A Tuan Dan So 2"
 OUTPUT_DIR = PROJECT_ROOT / "Du_An_Outputs" / "A_Tuan_Dan_So_2"
@@ -47,7 +48,7 @@ def main():
     t_start = time.time()
 
     print("================================================================================")
-    print("      MAKE SLIDE PRO V9.0 - BATCH PROCESSING COURSE 2 (50 SLIDES/FILE)          ")
+    print("      MAKE SLIDE PRO V9.3 - BATCH PROCESSING COURSE 2 (KMCA V9.3)               ")
     print(f"      Total Documents: {total_files} | Target: {TARGET_SLIDES} slides/deck | Theme: {THEME}")
     print("================================================================================")
 
@@ -68,19 +69,35 @@ def main():
             )
             elapsed = time.time() - t0
             print(f"[{idx}/{total_files}] COMPLETED: {fname} in {elapsed:.1f}s")
-            results.append({"file": fname, "slides": res["total_slides"], "elapsed": elapsed, "status": "SUCCESS"})
+            
+            # Post-render Deep Forensic Audit
+            synced_deck = OUTPUT_DIR / f"{fpath.stem} - {THEME.title()}.pptx"
+            audit_status = "PASS"
+            if synced_deck.exists():
+                print(f"    -> Auditing {synced_deck.name} via Deep Forensic Audit Gate...")
+                audit_res = audit_deck(synced_deck)
+                p0_cnt = len(audit_res.get("p0_defects", []))
+                p1_cnt = len(audit_res.get("p1_defects", []))
+                if audit_res.get("overall_passed"):
+                    print(f"    ★ AUDIT PASSED: 100% Compliant (P0={p0_cnt}, P1={p1_cnt})")
+                    audit_status = "CERTIFIED"
+                else:
+                    print(f"    ✖ AUDIT FLAGGED: P0={p0_cnt}, P1={p1_cnt}")
+                    audit_status = f"FLAGGED(P0={p0_cnt}, P1={p1_cnt})"
+
+            results.append({"file": fname, "slides": res["total_slides"], "elapsed": elapsed, "status": "SUCCESS", "audit": audit_status})
         except Exception as e:
             print(f"[{idx}/{total_files}] ERROR processing {fname}: {e}")
             import traceback
             traceback.print_exc()
-            results.append({"file": fname, "slides": 0, "elapsed": 0, "status": f"FAILED: {e}"})
+            results.append({"file": fname, "slides": 0, "elapsed": 0, "status": f"FAILED: {e}", "audit": "N/A"})
 
     total_time = time.time() - t_start
     print("\n================================================================================")
     print("                           BATCH EXECUTION SUMMARY                              ")
     print("================================================================================")
     for r in results:
-        print(f" - {r['file']}: {r['slides']} slides | {r['status']} ({r['elapsed']:.1f}s)")
+        print(f" - {r['file']}: {r['slides']} slides | {r['status']} | Audit: {r['audit']} ({r['elapsed']:.1f}s)")
     print(f"\nTotal Elapsed Time: {total_time:.1f}s ({total_time/60:.1f} minutes)")
     print(f"Output Directory: {OUTPUT_DIR}")
 
