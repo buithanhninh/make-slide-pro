@@ -63,6 +63,14 @@ def slugify(text: str) -> str:
     return "_".join(cleaned.split())
 
 
+def serialize_report(rep: Any) -> Any:
+    if hasattr(rep, "model_dump"):
+        return rep.model_dump()
+    elif hasattr(rep, "dict"):
+        return rep.dict()
+    return rep
+
+
 def print_banner():
     banner = """
 ================================================================================
@@ -146,7 +154,7 @@ def process_single_document(
             json.dump(blueprints, f, ensure_ascii=False, indent=2)
 
     with open(dest_dir / "macc-council-report.json", "w", encoding="utf-8") as f:
-        json.dump(council_report.model_dump(), f, ensure_ascii=False, indent=2)
+        json.dump(serialize_report(council_report), f, ensure_ascii=False, indent=2)
 
     print(f"    ✔ MACC-QA V8.6.0 Council: Converged Score = {council_report.final_score:.1f}/100 in {council_report.total_rounds} rounds | P0={council_report.p0_count}, P1={council_report.p1_count}, P2={council_report.p2_count}")
 
@@ -171,31 +179,29 @@ def process_single_document(
         finally:
             author.close()
 
-    # Step 4: Multi-Agent Closed-Loop Self-Healing Certification (MAS-CLSH V9.0)
+    # Step 4: Multi-Agent Closed-Loop Self-Healing Certification (MAS-CLSH V9.5)
     qa_results = {}
-    if run_qa:
-        print("\n[Step 4/4] Multi-Agent Closed-Loop Self-Healing (MAS-CLSH V9.0)...")
-        for th, pptx_p in created_decks.items():
-            orchestrator_v9 = MASOrchestratorV9(theme=th, motion_mode=motion_mode)
-            report_path = dest_dir / f"mas-v9-report-{th.lower()}.json"
-            report = orchestrator_v9.run_self_healing_cycle(
-                pptx_path=pptx_p,
-                blueprints_data=blueprints,
-                canonical_ledger=canonical,
-                output_report_path=report_path,
-            )
-            qa_results[th] = report.model_dump()
-            print(f"    ✔ MAS-CLSH [{th}]: Score = {report.overall_score:.1f}/100 | Certified = {report.is_certified}")
+    print("\n[Step 4/4] Multi-Agent Closed-Loop Self-Healing (MAS-CLSH V9.5 Mandatory Gate)...")
+    for th, pptx_p in created_decks.items():
+        orchestrator_v9 = MASOrchestratorV9(theme=th, motion_mode=motion_mode, max_rounds=3, target_score=98.0)
+        report_path = dest_dir / f"mas-v9-report-{th.lower()}.json"
+        report = orchestrator_v9.run_self_healing_cycle(
+            pptx_path=pptx_p,
+            blueprints_data=blueprints,
+            canonical_ledger=canonical,
+            output_report_path=report_path,
+        )
+        qa_results[th] = serialize_report(report)
+        status_label = "★ 100% CERTIFIED (PASS) ★" if report.is_certified else f"✖ P0={report.p0_count}, P1={report.p1_count} ✖"
+        print(f"    ✔ MAS-CLSH V9.5 [{th}]: Score = {report.overall_score:.1f}/100 | {status_label}")
 
-            # Re-sync healed deck to parent output directory
-            sync_copy = output_dir / f"{file_stem} - {th.title()}.pptx"
-            shutil.copy2(pptx_p, sync_copy)
-            print(f"        -> Re-synced healed presentation to: {sync_copy.name}")
+        # Re-sync healed deck to parent output directory
+        sync_copy = output_dir / f"{file_stem} - {th.title()}.pptx"
+        shutil.copy2(pptx_p, sync_copy)
+        print(f"        -> Re-synced healed presentation to: {sync_copy.name}")
 
-        with open(dest_dir / "mas-v9-certification-report.json", "w", encoding="utf-8") as f:
-            json.dump(qa_results, f, ensure_ascii=False, indent=2)
-    else:
-        print("\n[Step 4/4] MAS-CLSH V9.0 audit skipped by user.")
+    with open(dest_dir / "mas-v9-certification-report.json", "w", encoding="utf-8") as f:
+        json.dump(qa_results, f, ensure_ascii=False, indent=2)
 
     elapsed = time.time() - t0
     print(f"\n>>> COMPLETE: {input_file.name} processed in {elapsed:.1f}s.")

@@ -9,6 +9,9 @@ import enum
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
+if not hasattr(BaseModel, "model_dump"):
+    BaseModel.model_dump = BaseModel.dict
+
 
 class Severity(str, enum.Enum):
     P0 = "P0"  # Blocker / Veto: Hallucination, PII leak, severe math error, contradictory data

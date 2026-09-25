@@ -104,14 +104,14 @@ class ArchitecturesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"{l_data.get('tier', '')}  |  "
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 11
+            p1.Font.Size = 15.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand if is_top else ink)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = f"Công Nghệ: {l_data.get('tech', '')} — {l_data.get('desc', '')}"
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 9.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(tb)
 
@@ -153,7 +153,7 @@ class ArchitecturesEngine:
         tp = ttf.TextRange
         tp.Text = f"{top_node.get('role', '')}\n{top_node.get('name', '')}"
         tp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        tp.Font.Size = 11
+        tp.Font.Size = 15.0
         tp.Font.Bold = msoTrue
         tp.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         tp.ParagraphFormat.Alignment = ppAlignCenter
@@ -192,7 +192,7 @@ class ArchitecturesEngine:
             sp1 = stf.TextRange.Paragraphs(1)
             sp1.Text = sn.get("dept", "") + "\n"
             sp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            sp1.Font.Size = 10.5
+            sp1.Font.Size = 14.5
             sp1.Font.Bold = msoTrue
             sp1.Font.Color.RGB = hex_to_bgr(brand)
             sp1.ParagraphFormat.Alignment = ppAlignCenter
@@ -200,7 +200,7 @@ class ArchitecturesEngine:
             sp2 = stf.TextRange.Paragraphs(2)
             sp2.Text = sn.get("desc", "")
             sp2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            sp2.Font.Size = 9.0
+            sp2.Font.Size = 16.0.5
             sp2.Font.Color.RGB = hex_to_bgr(muted)
             sp2.ParagraphFormat.Alignment = ppAlignCenter
             shapes.append(stb)
@@ -245,7 +245,7 @@ class ArchitecturesEngine:
         cp = ctf.TextRange
         cp.Text = center_topic
         cp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        cp.Font.Size = 10.5
+        cp.Font.Size = 14.5
         cp.Font.Bold = msoTrue
         cp.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         cp.ParagraphFormat.Alignment = ppAlignCenter
@@ -279,14 +279,14 @@ class ArchitecturesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"★ {b_info.get('title', '')}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 11
+            p1.Font.Size = 15.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = b_info.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 9.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(tb)
 
@@ -337,14 +337,14 @@ class ArchitecturesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"[DỊCH VỤ] {svc.get('name', '')}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 10.5
+            p1.Font.Size = 14.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = f"Giao Thức: {svc.get('proto', '')}\nQuy Mô: {svc.get('scale', '')}"
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 9.0
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(tb)
 
@@ -390,14 +390,14 @@ class ArchitecturesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"🛡️ {l_info.get('tier', '')}: "
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 11
+            p1.Font.Size = 15.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr("#FFFFFF" if is_core else brand)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = l_info.get("tool", "")
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 9.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr("#E2E8F0" if is_core else muted)
             shapes.append(tb)
 
@@ -430,14 +430,14 @@ class ArchitecturesEngine:
         lp1 = ltf.TextRange.Paragraphs(1)
         lp1.Text = "HẠ TẦNG NỘI BỘ (ON-PREMISES)\n\n"
         lp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        lp1.Font.Size = 12
+        lp1.Font.Size = 15.5
         lp1.Font.Bold = msoTrue
         lp1.Font.Color.RGB = hex_to_bgr(ink)
 
         lp2 = ltf.TextRange.Paragraphs(2)
         lp2.Text = "• Cụm máy chủ Bare-Metal riêng\n• Dữ liệu tuyệt mật tuân thủ quy định\n• Kết nối VPN chuyên dụng Interconnect 10Gbps\n• Hệ thống lưu trữ SAN độ trễ thấp"
         lp2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-        lp2.Font.Size = 10
+        lp2.Font.Size = 14.5
         lp2.Font.Color.RGB = hex_to_bgr(muted)
         shapes.append(ltb)
 
@@ -457,14 +457,14 @@ class ArchitecturesEngine:
         rp1 = rtf.TextRange.Paragraphs(1)
         rp1.Text = "ĐÁM MÂY CÔNG CỘNG (PUBLIC CLOUD)\n\n"
         rp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        rp1.Font.Size = 12
+        rp1.Font.Size = 15.5
         rp1.Font.Bold = msoTrue
         rp1.Font.Color.RGB = hex_to_bgr(brand)
 
         rp2 = rtf.TextRange.Paragraphs(2)
         rp2.Text = "• Tự động co giãn theo tải (Serverless)\n• Tính toán AI GPU Cluster H100/TPU\n• Lưu trữ dữ liệu lớn Lakehouse\n• Khả năng dự phòng thảm họa đa vùng (Multi-Region)"
         rp2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-        rp2.Font.Size = 10
+        rp2.Font.Size = 14.5
         rp2.Font.Color.RGB = hex_to_bgr(muted)
         shapes.append(rtb)
 
@@ -500,7 +500,7 @@ class ArchitecturesEngine:
         bp = btf.TextRange
         bp.Text = "KAFKA / PUBSUB EVENT BUS SPINE (10M EVENT/GIÂY)"
         bp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        bp.Font.Size = 11
+        bp.Font.Size = 15.0
         bp.Font.Bold = msoTrue
         bp.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         bp.ParagraphFormat.Alignment = ppAlignCenter
@@ -525,7 +525,7 @@ class ArchitecturesEngine:
             tp1 = t_tf.TextRange
             tp1.Text = f"NGUỒN PHÁT 0{i+1}\n(Event Producer {i+1})"
             tp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            tp1.Font.Size = 9.5
+            tp1.Font.Size = 16.0.5
             tp1.Font.Bold = msoTrue
             tp1.Font.Color.RGB = hex_to_bgr(ink)
             tp1.ParagraphFormat.Alignment = ppAlignCenter
@@ -546,7 +546,7 @@ class ArchitecturesEngine:
             bp1 = b_tf.TextRange
             bp1.Text = f"BỘ TIÊU THỤ 0{i+1}\n(Event Consumer {i+1})"
             bp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            bp1.Font.Size = 9.5
+            bp1.Font.Size = 16.0.5
             bp1.Font.Bold = msoTrue
             bp1.Font.Color.RGB = hex_to_bgr(brand)
             bp1.ParagraphFormat.Alignment = ppAlignCenter
@@ -585,7 +585,7 @@ class ArchitecturesEngine:
         cp = ctf.TextRange
         cp.Text = "LÕI NGHIỆP VỤ\n(DOMAIN ENTITIES)\nĐộc lập hoàn toàn"
         cp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        cp.Font.Size = 11
+        cp.Font.Size = 15.0
         cp.Font.Bold = msoTrue
         cp.Font.Color.RGB = hex_to_bgr(brand)
         cp.ParagraphFormat.Alignment = ppAlignCenter
@@ -606,7 +606,7 @@ class ArchitecturesEngine:
         ip = itf.TextRange
         ip.Text = "CỔNG VÀO (INBOUND)\n\n• REST Controller\n• GraphQL Resolvers\n• CLI Commands\n• Webhook Listeners"
         ip.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        ip.Font.Size = 10
+        ip.Font.Size = 14.5
         ip.Font.Color.RGB = hex_to_bgr(ink)
         shapes.append(itb)
 
@@ -625,7 +625,7 @@ class ArchitecturesEngine:
         op = otf.TextRange
         op.Text = "CỔNG RA (OUTBOUND)\n\n• Database Repositories\n• External API Clients\n• Message Queue Pubs\n• File Cloud S3"
         op.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        op.Font.Size = 10
+        op.Font.Size = 14.5
         op.Font.Color.RGB = hex_to_bgr(ink)
         shapes.append(otb)
 
@@ -670,7 +670,7 @@ class ArchitecturesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"0{i+1}\n{it.get('role', '')}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 11
+            p1.Font.Size = 15.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr("#FFFFFF" if is_platform else brand)
             p1.ParagraphFormat.Alignment = ppAlignCenter
@@ -678,7 +678,7 @@ class ArchitecturesEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = it.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 9.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr("#E2E8F0" if is_platform else muted)
             p2.ParagraphFormat.Alignment = ppAlignCenter
             shapes.append(tb)
@@ -718,7 +718,7 @@ class ArchitecturesEngine:
             cp = ctf.TextRange
             cp.Text = depts[c]
             cp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            cp.Font.Size = 10
+            cp.Font.Size = 14.5
             cp.Font.Bold = msoTrue
             cp.Font.Color.RGB = hex_to_bgr("#FFFFFF")
             cp.ParagraphFormat.Alignment = ppAlignCenter
@@ -737,7 +737,7 @@ class ArchitecturesEngine:
             rp = rtf.TextRange
             rp.Text = projects[r]
             rp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            rp.Font.Size = 10
+            rp.Font.Size = 14.5
             rp.Font.Bold = msoTrue
             rp.Font.Color.RGB = hex_to_bgr(ink)
             rp.ParagraphFormat.Alignment = ppAlignCenter
@@ -755,7 +755,7 @@ class ArchitecturesEngine:
                 cp_cell = cell_tf.TextRange
                 cp_cell.Text = f"Nhân Sự {depts[c][:4]} - {projects[r][-1]}"
                 cp_cell.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-                cp_cell.Font.Size = 9.0
+                cp_cell.Font.Size = 16.0.5
                 cp_cell.Font.Color.RGB = hex_to_bgr(muted)
                 cp_cell.ParagraphFormat.Alignment = ppAlignCenter
 
@@ -790,7 +790,7 @@ class ArchitecturesEngine:
         cp = ctf.TextRange
         cp.Text = "KHÁCH HÀNG\n\n• Web Browser\n• Mobile iOS/Android\n• Public REST API\n• SDK Third-Party"
         cp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        cp.Font.Size = 10
+        cp.Font.Size = 14.5
         cp.Font.Color.RGB = hex_to_bgr(ink)
         shapes.append(ctb)
 
@@ -810,7 +810,7 @@ class ArchitecturesEngine:
         gp1 = gtf.TextRange.Paragraphs(1)
         gp1.Text = "API GATEWAY TRUNG TÂM\n\n"
         gp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        gp1.Font.Size = 11.5
+        gp1.Font.Size = 15.0
         gp1.Font.Bold = msoTrue
         gp1.Font.Color.RGB = hex_to_bgr(brand)
         gp1.ParagraphFormat.Alignment = ppAlignCenter
@@ -818,7 +818,7 @@ class ArchitecturesEngine:
         gp2 = gtf.TextRange.Paragraphs(2)
         gp2.Text = "• Cân Bằng Tải (Load Balancer)\n• Xác Thực Token JWT & Rate Limit\n• Chuyển Đổi Giao Thức (REST → gRPC)\n• Bộ Nhớ Đệm Redis Cache Phản Hồi"
         gp2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-        gp2.Font.Size = 9.5
+        gp2.Font.Size = 16.0.5
         gp2.Font.Color.RGB = hex_to_bgr(muted)
         shapes.append(gtb)
 
@@ -837,7 +837,7 @@ class ArchitecturesEngine:
         sp = stf.TextRange
         sp.Text = "CỤM DỊCH VỤ NỘI BỘ\n\n• Dịch Vụ Tạo Bài Học AI\n• Dịch Vụ Render PowerPoint COM\n• Dịch Vụ Thanh Toán & Thuê Bao\n• Dịch Vụ Quản Lý Tài Khoản"
         sp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        sp.Font.Size = 10
+        sp.Font.Size = 14.5
         sp.Font.Color.RGB = hex_to_bgr(ink)
         shapes.append(stb)
 
@@ -882,7 +882,7 @@ class ArchitecturesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"{dm.get('name', '')}\n\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 11
+            p1.Font.Size = 15.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
             p1.ParagraphFormat.Alignment = ppAlignCenter
@@ -890,7 +890,7 @@ class ArchitecturesEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = f"• Quản Trị: {dm.get('owner', '')}\n• Tiêu Chuẩn: {dm.get('sla', '')}\n• Xuất Xứ: Lineage Tracked\n• Bảo Mật: PII Masked"
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 9.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(tb)
 
@@ -935,7 +935,7 @@ class ArchitecturesEngine:
         cp = ctf.TextRange
         cp.Text = labels[2]
         cp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        cp.Font.Size = 10.5
+        cp.Font.Size = 14.5
         cp.Font.Bold = msoTrue
         cp.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         cp.ParagraphFormat.Alignment = ppAlignCenter
@@ -972,14 +972,14 @@ class ArchitecturesEngine:
         mp1 = mtf.TextRange.Paragraphs(1)
         mp1.Text = "K8S CONTROL PLANE (MASTER)\n\n"
         mp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        mp1.Font.Size = 11
+        mp1.Font.Size = 15.0
         mp1.Font.Bold = msoTrue
         mp1.Font.Color.RGB = hex_to_bgr(brand)
 
         mp2 = mtf.TextRange.Paragraphs(2)
         mp2.Text = "• kube-apiserver: Cổng điều khiển trung tâm\n• etcd: Kho lưu trạng thái phân tán\n• kube-scheduler: Phân bổ tài nguyên Pod\n• controller-manager: Duy trì trạng thái mong muốn"
         mp2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-        mp2.Font.Size = 9.5
+        mp2.Font.Size = 16.0.5
         mp2.Font.Color.RGB = hex_to_bgr(muted)
         shapes.append(mtb)
 
@@ -999,14 +999,14 @@ class ArchitecturesEngine:
             wp1 = wtf.TextRange.Paragraphs(1)
             wp1.Text = f"WORKER NODE 0{w_idx+1}\n\n"
             wp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            wp1.Font.Size = 11
+            wp1.Font.Size = 15.0
             wp1.Font.Bold = msoTrue
             wp1.Font.Color.RGB = hex_to_bgr(ink)
 
             wp2 = wtf.TextRange.Paragraphs(2)
             wp2.Text = "• kubelet & kube-proxy\n• Container Runtime (containerd)\n• Pod 1: AI Reasoning Engine\n• Pod 2: PowerPoint COM Worker"
             wp2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            wp2.Font.Size = 9.5
+            wp2.Font.Size = 16.0.5
             wp2.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(wtb)
 
@@ -1039,7 +1039,7 @@ class ArchitecturesEngine:
         op = otf.TextRange
         op.Text = "AI AGENT ORCHESTRATOR TRUNG TÂM\nĐiều Phối & Tổng Hợp Kết Quả Đa Chiều"
         op.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        op.Font.Size = 11.5
+        op.Font.Size = 15.0
         op.Font.Bold = msoTrue
         op.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         op.ParagraphFormat.Alignment = ppAlignCenter
@@ -1075,7 +1075,7 @@ class ArchitecturesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"TÁC TỬ 0{i+1}\n{ag.get('role', '')}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 10
+            p1.Font.Size = 14.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
             p1.ParagraphFormat.Alignment = ppAlignCenter
@@ -1083,7 +1083,7 @@ class ArchitecturesEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = ag.get("task", "")
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 8.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             p2.ParagraphFormat.Alignment = ppAlignCenter
             shapes.append(tb)
@@ -1111,7 +1111,7 @@ class ArchitecturesEngine:
         shapes.append(prod)
         t_prod = prod.TextFrame.TextRange
         t_prod.Text = "NGUỒN PHÁT SỰ KIỆN\n(EVENT PRODUCERS)\n\n• Web Studio Frontend\n• AI Agent Workflow API\n• Batch PPTX Generator\n• Webhook Triggers"
-        t_prod.Font.Size = 10.5
+        t_prod.Font.Size = 14.5
         t_prod.Font.Color.RGB = hex_to_bgr(ink)
 
         # Center Column: Kafka Event Streaming Bus
@@ -1124,7 +1124,7 @@ class ArchitecturesEngine:
         shapes.append(bus)
         t_bus = bus.TextFrame.TextRange
         t_bus.Text = "CỤM KAFKA STREAMING BUS\n(DISTRIBUTED LOG TOPICS)\n\n[Topic 1: Deck_Creation_Requests]\n[Topic 2: Agent_Audit_Events]\n[Topic 3: Motion_Render_Tasks]\n[Topic 4: High_Res_PNG_Exports]"
-        t_bus.Font.Size = 11.0
+        t_bus.Font.Size = 15.0
         t_bus.Font.Bold = msoTrue
         t_bus.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         t_bus.ParagraphFormat.Alignment = ppAlignCenter
@@ -1144,7 +1144,7 @@ class ArchitecturesEngine:
             t_cons.Text = "TIẾP NHẬN & XỬ LÝ\n(DATA CONSUMERS)\n\n" + "\n".join(c_items)
         else:
             t_cons.Text = "TIẾP NHẬN & XỬ LÝ\n(DATA CONSUMERS)\n\n• Cơ sở y tế tiếp nhận\n• Đội ngũ cán bộ chuyên trách\n• Hệ thống lưu trữ hồ sơ\n• Báo cáo giám sát định kỳ"
-        t_cons.Font.Size = 10.5
+        t_cons.Font.Size = 14.5
         t_cons.Font.Color.RGB = hex_to_bgr(ink)
 
         return shapes
@@ -1175,7 +1175,7 @@ class ArchitecturesEngine:
 
             tr = c.TextFrame.TextRange
             tr.Text = f"{title}\n\n{desc}"
-            tr.Font.Size = 11.0
+            tr.Font.Size = 15.0
             tr.Font.Bold = msoTrue
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignCenter
@@ -1209,7 +1209,7 @@ class ArchitecturesEngine:
 
             tr = sh.TextFrame.TextRange
             tr.Text = f"{title}: {desc}"
-            tr.Font.Size = 10.5
+            tr.Font.Size = 14.5
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignLeft
 
@@ -1281,7 +1281,7 @@ class ArchitecturesEngine:
             summary_text = "HỆ THỐNG PHÂN CẤP CHỈ ĐẠO & CUNG ỨNG DỊCH VỤ DÂN SỐ LIÊN HOÀN TOÀN TUYẾN"
         st.Text = summary_text
         st.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        st.Font.Size = 10.0
+        st.Font.Size = 14.5
         st.Font.Bold = msoTrue
         st.Font.Color.RGB = hex_to_bgr("#38BDF8")
         sum_bar.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1318,7 +1318,7 @@ class ArchitecturesEngine:
             pt = pill.TextFrame.TextRange
             pt.Text = item["tier"]
             pt.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            pt.Font.Size = 11.0
+            pt.Font.Size = 15.0
             pt.Font.Bold = msoTrue
             pt.Font.Color.RGB = hex_to_bgr("#0F172A" if color == "#EAB308" else "#FFFFFF")
             pill.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1333,7 +1333,7 @@ class ArchitecturesEngine:
             stt = stf.TextRange
             stt.Text = item["sub"]
             stt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            stt.Font.Size = 10.5
+            stt.Font.Size = 14.5
             stt.Font.Bold = msoTrue
             stt.Font.Color.RGB = hex_to_bgr(color)
             stt.ParagraphFormat.Alignment = ppAlignCenter
@@ -1355,7 +1355,7 @@ class ArchitecturesEngine:
             btt = btf.TextRange
             btt.Text = "\n\n".join(item["specs"])
             btt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            btt.Font.Size = 10.0
+            btt.Font.Size = 14.5
             btt.Font.Color.RGB = hex_to_bgr(ink if self.theme == "DARK" else "#334155")
             btt.ParagraphFormat.Alignment = ppAlignLeft
             t_shapes.append(tb_spec)
@@ -1368,7 +1368,7 @@ class ArchitecturesEngine:
             ct = chip.TextFrame.TextRange
             ct.Text = item["chip"]
             ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            ct.Font.Size = 9.0
+            ct.Font.Size = 16.0.5
             ct.Font.Bold = msoTrue
             ct.Font.Color.RGB = hex_to_bgr(color)
             chip.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1410,7 +1410,7 @@ class ArchitecturesEngine:
 
             tr = c.TextFrame.TextRange
             tr.Text = f"{title}\n\n{desc}"
-            tr.Font.Size = 11.0
+            tr.Font.Size = 15.0
             tr.Font.Bold = msoTrue
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignCenter
@@ -1439,7 +1439,7 @@ class ArchitecturesEngine:
         shapes.append(hub)
         t_hub = hub.TextFrame.TextRange
         t_hub.Text = "TRUNG TÂM ĐIỀU HÀNH (CORE HUB)\n\n• Transit Gateway Router\n• Shared Database Cluster\n• Central Authentication SSO\n• Master Component Registry"
-        t_hub.Font.Size = 10.5
+        t_hub.Font.Size = 14.5
         t_hub.Font.Bold = msoTrue
         t_hub.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         t_hub.ParagraphFormat.Alignment = ppAlignCenter
@@ -1454,7 +1454,7 @@ class ArchitecturesEngine:
         s1.Line.ForeColor.RGB = hex_to_bgr("#38BDF8")
         shapes.append(s1)
         s1.TextFrame.TextRange.Text = "SPOKE 1: WEB STUDIO\nFrontend Interactive Editor"
-        s1.TextFrame.TextRange.Font.Size = 10.0
+        s1.TextFrame.TextRange.Font.Size = 14.5
         s1.TextFrame.TextRange.Font.Color.RGB = hex_to_bgr(ink)
 
         s2 = slide.Shapes.AddShape(msoShapeRoundedRectangle, left, top + spoke_h + 16.0, spoke_w, spoke_h)
@@ -1464,7 +1464,7 @@ class ArchitecturesEngine:
         s2.Line.ForeColor.RGB = hex_to_bgr("#38BDF8")
         shapes.append(s2)
         s2.TextFrame.TextRange.Text = "SPOKE 2: DESKTOP COM ENGINE\nNative PowerPoint Automation"
-        s2.TextFrame.TextRange.Font.Size = 10.0
+        s2.TextFrame.TextRange.Font.Size = 14.5
         s2.TextFrame.TextRange.Font.Color.RGB = hex_to_bgr(ink)
 
         # Right Spokes (Spoke 3 & Spoke 4)
@@ -1476,7 +1476,7 @@ class ArchitecturesEngine:
         s3.Line.ForeColor.RGB = hex_to_bgr("#10B981")
         shapes.append(s3)
         s3.TextFrame.TextRange.Text = "SPOKE 3: MACC QA AUDIT\n16 Tác Tử Kiểm Định Đa Chiều"
-        s3.TextFrame.TextRange.Font.Size = 10.0
+        s3.TextFrame.TextRange.Font.Size = 14.5
         s3.TextFrame.TextRange.Font.Color.RGB = hex_to_bgr(ink)
 
         s4 = slide.Shapes.AddShape(msoShapeRoundedRectangle, rx, top + spoke_h + 16.0, spoke_w, spoke_h)
@@ -1486,7 +1486,7 @@ class ArchitecturesEngine:
         s4.Line.ForeColor.RGB = hex_to_bgr("#10B981")
         shapes.append(s4)
         s4.TextFrame.TextRange.Text = "SPOKE 4: APPLE MOTION\nChuyển Động Morph & Reveal"
-        s4.TextFrame.TextRange.Font.Size = 10.0
+        s4.TextFrame.TextRange.Font.Size = 14.5
         s4.TextFrame.TextRange.Font.Color.RGB = hex_to_bgr(ink)
 
         return shapes
@@ -1509,7 +1509,7 @@ class ArchitecturesEngine:
         shapes.append(app_sh)
         t_app = app_sh.TextFrame.TextRange
         t_app.Text = "TẦNG ỨNG DỤNG DÙNG CHUNG (SHARED APPLICATION TIER)\n\n• Load Balancer • Định Tuyến Tenant Router • 165+ Archetype Engine"
-        t_app.Font.Size = 11.5
+        t_app.Font.Size = 15.0
         t_app.Font.Bold = msoTrue
         t_app.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         t_app.ParagraphFormat.Alignment = ppAlignCenter
@@ -1537,7 +1537,7 @@ class ArchitecturesEngine:
 
             tr = tdb.TextFrame.TextRange
             tr.Text = f"{t_name}\n\n{t_desc}"
-            tr.Font.Size = 10.5
+            tr.Font.Size = 14.5
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignCenter
 
@@ -1638,7 +1638,7 @@ class ArchitecturesEngine:
             pt = pill.TextFrame.TextRange
             pt.Text = item["step"]
             pt.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            pt.Font.Size = 9.5
+            pt.Font.Size = 16.0.5
             pt.Font.Bold = msoTrue
             pt.Font.Color.RGB = hex_to_bgr("#FFFFFF")
             pill.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1653,7 +1653,7 @@ class ArchitecturesEngine:
             ttt = ttf.TextRange
             ttt.Text = item["title"]
             ttt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            ttt.Font.Size = 11.5
+            ttt.Font.Size = 15.0
             ttt.Font.Bold = msoTrue
             ttt.Font.Color.RGB = hex_to_bgr(ink)
             ttt.ParagraphFormat.Alignment = ppAlignCenter
@@ -1675,7 +1675,7 @@ class ArchitecturesEngine:
             btt = btf.TextRange
             btt.Text = "\n\n".join(item["specs"])
             btt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            btt.Font.Size = 9.5
+            btt.Font.Size = 16.0.5
             btt.Font.Color.RGB = hex_to_bgr(muted)
             btt.ParagraphFormat.Alignment = ppAlignLeft
             s_shapes.append(tb_spec)
@@ -1688,7 +1688,7 @@ class ArchitecturesEngine:
             ct = chip.TextFrame.TextRange
             ct.Text = item["chip"]
             ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            ct.Font.Size = 8.5
+            ct.Font.Size = 16.0.5
             ct.Font.Bold = msoTrue
             ct.Font.Color.RGB = hex_to_bgr(color)
             chip.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1726,7 +1726,7 @@ class ArchitecturesEngine:
 
             tr = c.TextFrame.TextRange
             tr.Text = f"{title}\n\n{desc}"
-            tr.Font.Size = 11.0
+            tr.Font.Size = 15.0
             tr.Font.Bold = msoTrue
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignCenter
@@ -1773,7 +1773,7 @@ class ArchitecturesEngine:
 
             tr = m.TextFrame.TextRange
             tr.Text = f"{title}\n\n{desc}"
-            tr.Font.Size = 10.5
+            tr.Font.Size = 14.5
             tr.Font.Bold = msoTrue
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignCenter

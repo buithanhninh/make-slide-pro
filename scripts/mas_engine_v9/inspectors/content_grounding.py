@@ -136,30 +136,45 @@ class ContentGroundingAgent:
                 )
                 score -= 10.0
 
-        # 3. Check text density & word count limits
+        # 3. Check text density & word count limits (Anti-superficial content gate)
         word_count = len(full_slide_text.split())
-        if word_count < 15 and slide_index > 1:
+        if word_count < 22 and slide_index > 1:
             defects.append(
                 DefectIssue(
                     slide_index=slide_index,
-                    severity="P1",
+                    severity="P0" if word_count < 12 else "P1",
                     domain="CONTENT",
-                    root_cause=f"Slide is overly sparse ({word_count} words). Fails deep curriculum requirement.",
-                    remediation_action="Enrich cards with detailed bullet points, KPI chips, and operational guidelines.",
+                    root_cause=f"Slide is overly sparse ({word_count} words). Fails deep pedagogical curriculum requirement.",
+                    remediation_action="Enrich cards with detailed factual arguments, empirical metrics, and operational guidelines from source ledger.",
                 )
             )
-            score -= 15.0
-        elif word_count > 220:
+            score -= 25.0 if word_count < 12 else 15.0
+        elif word_count > 250:
             defects.append(
                 DefectIssue(
                     slide_index=slide_index,
                     severity="P2",
                     domain="CONTENT",
-                    root_cause=f"Cognitive overload: slide contains {word_count} words (>220 words limit).",
+                    root_cause=f"Cognitive overload: slide contains {word_count} words (>250 words limit).",
                     remediation_action="Distill paragraphs into crisp, high-impact bulleted assertions.",
                 )
             )
             score -= 5.0
+
+        # 3.1 Check for superficial generic placeholders
+        generic_placeholders = ["luận điểm cốt lõi", "trọng tâm chuyên đề", "cơ chế & thực thi", "mục tiêu đo lường", "nhiệm vụ thực thi"]
+        for gp in generic_placeholders:
+            if gp in full_slide_text.lower():
+                defects.append(
+                    DefectIssue(
+                        slide_index=slide_index,
+                        severity="P1",
+                        domain="CONTENT",
+                        root_cause=f"Superficial generic placeholder found: '{gp}'.",
+                        remediation_action="Replace with authentic domain concept title derived directly from source document.",
+                    )
+                )
+                score -= 10.0
 
         # 4. Check Cardinality Mismatch between Title and Content
         title_chunk = text_chunks[0] if text_chunks else ""

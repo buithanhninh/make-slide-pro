@@ -29,19 +29,10 @@ class RootCauseDiagnosticAgent:
         severity_rank = {"P0": 0, "P1": 1, "P2": 2}
         sorted_defects = sorted(defects, key=lambda d: severity_rank.get(d.severity, 3))
 
-        for defect in sorted_defects:
-            # We formulate prescriptive directives based on domain & root cause
-            directive = RemediationDirective(
-                slide_index=slide_index,
-                target_domain=defect.domain,
-                root_cause=defect.root_cause,
-                remediation_action=defect.remediation_action,
-                updated_blueprint=None,
-            )
-
-            if current_blueprint:
-                updated_bp = dict(current_blueprint)
-                # Apply domain-specific surgical blueprint patches
+        import copy
+        if current_blueprint:
+            updated_bp = copy.deepcopy(current_blueprint)
+            for defect in sorted_defects:
                 if defect.domain == "CONTENT":
                     updated_bp = self._patch_content_blueprint(updated_bp, defect)
                 elif defect.domain == "MOTION":
@@ -51,9 +42,14 @@ class RootCauseDiagnosticAgent:
                 elif defect.domain == "DATAVIZ":
                     updated_bp = self._patch_dataviz_blueprint(updated_bp, defect)
 
-                directive.updated_blueprint = updated_bp
-
-            directives.append(directive)
+            master_directive = RemediationDirective(
+                slide_index=slide_index,
+                target_domain="CONSOLIDATED",
+                root_cause="; ".join(d.root_cause for d in sorted_defects),
+                remediation_action="; ".join(d.remediation_action for d in sorted_defects),
+                updated_blueprint=updated_bp,
+            )
+            return [master_directive]
 
         return directives
 
@@ -129,9 +125,11 @@ class RootCauseDiagnosticAgent:
     def _patch_motion_blueprint(self, bp: Dict[str, Any], defect: DefectIssue) -> Dict[str, Any]:
         """Ensures 100% Morph on content slides and correct presenter triggers."""
         slide_id = bp.get("slide_id", "SLIDE_02")
-        is_cover = slide_id in ["SLIDE_01", "SLIDE_1"]
+        role = bp.get("role", "CONTENT").upper()
+        is_cover = slide_id in ["SLIDE_01", "SLIDE_1"] or role == "COVER"
+        is_outro = role in ["OUTRO", "CONCLUSION", "CLOSING"] or "outro" in slide_id.lower()
         
-        if is_cover:
+        if is_cover or is_outro:
             bp["transition"] = "fade"
             bp["transition_duration"] = 0.65
         else:
@@ -145,7 +143,8 @@ class RootCauseDiagnosticAgent:
     def _patch_layout_blueprint(self, bp: Dict[str, Any], defect: DefectIssue) -> Dict[str, Any]:
         """Adjusts visual system and card sizing to eliminate dead space."""
         bp["zero_dead_space"] = True
-        bp["target_card_height"] = 295.0
+        bp["target_card_height"] = 360.0
+        bp["typography_floor"] = 16.0
         bp["centered_y"] = True
         return bp
 

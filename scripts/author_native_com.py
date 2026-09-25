@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -101,11 +102,12 @@ DARK_TOKENS = {
     },
     "sizes": {
         "title": 28,
-        "kicker": 12,
-        "body": 15,
-        "small": 13,
-        "metric": 52,
-        "footer": 10,
+        "kicker": 13.5,
+        "card_title": 19.0,
+        "body": 16.5,
+        "small": 15.0,
+        "metric": 52.0,
+        "footer": 11.0,
     }
 }
 
@@ -134,11 +136,12 @@ LIGHT_TOKENS = {
     },
     "sizes": {
         "title": 28,
-        "kicker": 12,
-        "body": 15,
-        "small": 13,
-        "metric": 52,
-        "footer": 10,
+        "kicker": 13.5,
+        "card_title": 19.0,
+        "body": 16.5,
+        "small": 15.0,
+        "metric": 52.0,
+        "footer": 11.0,
     }
 }
 
@@ -180,6 +183,7 @@ class NativeDeckAuthor:
         self.set_theme(theme)
         self.motion_mode = motion_mode.lower()
         self.motion_trigger = msoAnimTriggerOnPageClick if self.motion_mode == "presenter_click" else msoAnimTriggerWithPrevious
+        self.seen_images = set()
         pythoncom.CoInitialize()
         self.app = win32com.client.DispatchEx("PowerPoint.Application")
         if visible:
@@ -239,9 +243,9 @@ class NativeDeckAuthor:
         clean_stem = re.sub(r"_(Dark|Light)$", "", output_pptx.stem, flags=re.IGNORECASE)
         clean_stem = re.sub(r" - (Dark|Light)$", "", clean_stem, flags=re.IGNORECASE)
         self.doc_slug = blueprints.get("doc_slug") or "_".join(re.sub(r"[^\w\-_]", "_", clean_stem).split())
+        self.seen_images = set()
 
-        # V8.6.0: Always author 100% native PowerPoint decks with genuine vector shapes,
-        # native Office tables, and embedded Excel charts via MasterComponentDispatcher.
+        # KMCA V9.3: 100% Native Vector Shapes & Kinetic Morph Continuity Engine
 
         self.presentation = self.app.Presentations.Add(WithWindow=msoTrue)
         self.presentation.PageSetup.SlideWidth = CANVAS_WIDTH
@@ -260,16 +264,21 @@ class NativeDeckAuthor:
                 AppleSlideTransitionOrchestrator.apply_transition(
                     slide, s_idx, total_slides, spec, prev_spec
                 )
+            trans = slide.SlideShowTransition
+            is_fade = (
+                s_idx == 1 
+                or s_idx == total_slides 
+                or role in ("COVER", "OUTRO", "CONCLUSION", "CLOSING") 
+                or spec.get("transition") == "fade"
+            )
+            if is_fade:
+                trans.EntryEffect = ppTransitionFadeSmoothly
+                trans.Duration = 0.65
             else:
-                trans = slide.SlideShowTransition
-                if s_idx == 1 or role == "COVER":
-                    trans.EntryEffect = ppTransitionFadeSmoothly
-                    trans.Duration = 0.65
-                else:
-                    trans.EntryEffect = ppEffectMorphByWord
-                    trans.Duration = 0.85
-                trans.AdvanceOnClick = msoTrue
-                trans.AdvanceOnTime = msoFalse
+                trans.EntryEffect = ppEffectMorphByWord
+                trans.Duration = 0.85
+            trans.AdvanceOnClick = msoTrue
+            trans.AdvanceOnTime = msoFalse
 
             if role == "COVER":
                 self._render_cover_slide(slide, spec, lesson_idx, s_idx == total_slides)
@@ -306,6 +315,22 @@ class NativeDeckAuthor:
                     if clean_target and (clean_target in d_clean or d_clean in clean_target):
                         return d
         return p
+
+    def _resolve_image_file(self, ill_name: Optional[str], lesson_idx: int = 1) -> Optional[Path]:
+        if not ill_name:
+            return None
+        p = Path(ill_name)
+        if p.is_absolute() and p.exists():
+            return p
+        doc_ill_dir = self._resolve_asset_dir(ILLUSTRATIONS_DIR)
+        doc_media_dir = self._resolve_asset_dir(PROJECT_ROOT / "assets" / "extracted_media")
+        if doc_ill_dir.exists() and (doc_ill_dir / ill_name).exists():
+            return doc_ill_dir / ill_name
+        if doc_media_dir.exists() and (doc_media_dir / ill_name).exists():
+            return doc_media_dir / ill_name
+        if (ILLUSTRATIONS_DIR / ill_name).exists():
+            return ILLUSTRATIONS_DIR / ill_name
+        return None
 
     def _insert_icon(self, slide: Any, icon_name: str, left: float, top: float, size: float = 24.0):
         clean_name = icon_name.lower().strip()
@@ -426,24 +451,22 @@ class NativeDeckAuthor:
         slide.Background.Fill.ForeColor.RGB = hex_to_bgr(TOKENS["colors"]["navy"])
 
         doc_slug = getattr(self, "doc_slug", "")
-        doc_ill_dir = self._resolve_asset_dir(ILLUSTRATIONS_DIR)
         ill_name = spec.get("illustration") or spec.get("image") or spec.get("image_path")
-        ill_file = None
-        if ill_name and Path(ill_name).is_absolute() and Path(ill_name).exists():
-            ill_file = Path(ill_name)
-        elif ill_name and doc_ill_dir.exists() and (doc_ill_dir / ill_name).exists():
-            ill_file = doc_ill_dir / ill_name
-        elif doc_ill_dir.exists() and (doc_ill_dir / "cover_hero.png").exists():
-            ill_file = doc_ill_dir / "cover_hero.png"
-        elif doc_ill_dir.exists() and (doc_ill_dir / "cover_hero.jpg").exists():
-            ill_file = doc_ill_dir / "cover_hero.jpg"
-        elif ill_name and (ILLUSTRATIONS_DIR / ill_name).exists():
-            ill_file = ILLUSTRATIONS_DIR / ill_name
-        elif (ILLUSTRATIONS_DIR / f"illustration_bai_{lesson_idx}.jpg").exists() and lesson_idx in [1, 2, 3, 4, 5, 6] and ("bai_" in doc_slug.lower() or "bài" in doc_slug.lower()):
-            ill_file = ILLUSTRATIONS_DIR / f"illustration_bai_{lesson_idx}.jpg"
-        else:
-            ill_file = None
+        ill_file = self._resolve_image_file(ill_name, lesson_idx)
+        if not ill_file and lesson_idx in [1, 2, 3, 4, 5, 6] and ("bai_" in doc_slug.lower() or "bài" in doc_slug.lower()):
+            cand = ILLUSTRATIONS_DIR / f"illustration_bai_{lesson_idx}.jpg"
+            if cand.exists():
+                ill_file = cand
+        if not ill_file:
+            doc_ill_dir = self._resolve_asset_dir(ILLUSTRATIONS_DIR)
+            if (doc_ill_dir / "cover_hero.png").exists():
+                ill_file = doc_ill_dir / "cover_hero.png"
+            elif (doc_ill_dir / "cover_hero.jpg").exists():
+                ill_file = doc_ill_dir / "cover_hero.jpg"
+
         has_illustration = (ill_file is not None and ill_file.exists()) and not is_summary
+        if has_illustration:
+            self.seen_images.add(str(ill_file.resolve()).lower())
 
         if has_illustration:
             left_w = USABLE_WIDTH * 0.48
@@ -460,6 +483,7 @@ class NativeDeckAuthor:
 
             # Section Kicker
             sec_box = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, MARGIN_LEFT, MARGIN_TOP + 46, left_w, 24)
+            sec_box.Name = "!!Anchor_Kicker_Rail!!"
             st = sec_box.TextFrame.TextRange
             st.Text = f"CHƯƠNG TRÌNH ĐÀO TẠO DÂN SỐ HỌC  •  {section_text}"
             st.Font.Name = TOKENS["fonts"]["primary"]
@@ -529,6 +553,7 @@ class NativeDeckAuthor:
             bar.Line.Visible = msoFalse
 
             sec_box = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, MARGIN_LEFT, MARGIN_TOP + 56, USABLE_WIDTH, 24)
+            sec_box.Name = "!!Anchor_Kicker_Rail!!"
             st = sec_box.TextFrame.TextRange
             st.Text = f"CHƯƠNG TRÌNH ĐÀO TẠO DÂN SỐ HỌC  •  {section_text}"
             st.Font.Name = TOKENS["fonts"]["primary"]
@@ -603,17 +628,47 @@ class NativeDeckAuthor:
         content_height = CANVAS_HEIGHT - content_top - MARGIN_BOTTOM - 20.0
 
         # Dispatch
-        # Dispatch
         has_table_data = bool(spec.get("table_data") and spec["table_data"].get("headers"))
-        has_illustration = bool(spec.get("illustration") or visual_job in {"EDITORIAL_HERO", "ILLUSTRATION_SPLIT"})
         has_chart = bool(spec.get("chart_file") or chart_type or visual_job == "CHART_AND_INSIGHTS")
+
+        # Strict Image Resolution & Per-Deck Deduplication Gate (for non-chart slides)
+        if not has_chart:
+            ill_name = spec.get("illustration") or spec.get("image") or spec.get("image_path")
+            ill_file = self._resolve_image_file(ill_name, lesson_idx) if ill_name else None
+            if ill_file:
+                norm_p = str(ill_file.resolve()).lower()
+                if norm_p in self.seen_images:
+                    # Deduplication: Already used earlier in this deck!
+                    ill_file = None
+                    spec.pop("illustration", None)
+                    spec.pop("image_path", None)
+                    spec.pop("image", None)
+                else:
+                    self.seen_images.add(norm_p)
+            has_illustration = (ill_file is not None and ill_file.exists())
+        else:
+            has_illustration = False
+            ill_file = None
+
+        if not has_chart and not has_illustration and visual_job in {"EDITORIAL_HERO", "ILLUSTRATION_SPLIT"}:
+            cnt = len(atoms)
+            if cnt == 2:
+                visual_job = "CONTAINER_HERO_SPLIT_CARDS"
+            elif cnt == 3:
+                visual_job = "CONTAINER_THREE_PILLARS_CARDS"
+            elif cnt == 4:
+                visual_job = "CONTAINER_PILLAR_4_COLUMNS"
+            elif cnt >= 5:
+                visual_job = "CONTAINER_BENTO_COMPLEX"
+            else:
+                visual_job = "CONTAINER_THREE_PILLARS_CARDS"
 
         rendered_shapes = None
 
-        if has_illustration:
-            self._render_editorial_hero_layout(slide, spec, atoms, content_top, content_height, lesson_idx)
-        elif has_chart:
+        if has_chart:
             self._render_chart_and_insights_layout(slide, spec, atoms, content_top, content_height)
+        elif has_illustration:
+            self._render_editorial_hero_layout(slide, spec, atoms, content_top, content_height, lesson_idx, pre_resolved_file=ill_file)
         elif hasattr(self, "dispatcher") and self.dispatcher:
             resolved_archetype = None
             if self.dispatcher.can_handle(visual_job):
@@ -694,7 +749,7 @@ class NativeDeckAuthor:
         pt = h_pill.TextFrame.TextRange
         pt.Text = "TRỌNG TÂM CỐT LÕI"
         pt.Font.Name = TOKENS["fonts"]["primary"]
-        pt.Font.Size = 10
+        pt.Font.Size = 13.5
         pt.Font.Bold = msoTrue
         pt.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["brand"])
         h_pill.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -724,7 +779,7 @@ class NativeDeckAuthor:
         p2 = tf.TextRange.Paragraphs(2)
         p2.Text = h_body
         p2.Font.Name = TOKENS["fonts"]["primary"]
-        p2.Font.Size = 15
+        p2.Font.Size = 16.5
         p2.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["muted"])
         p2.ParagraphFormat.LineRuleWithin = msoTrue
         p2.ParagraphFormat.SpaceWithin = 1.3
@@ -767,7 +822,7 @@ class NativeDeckAuthor:
             pill_lbl = "MỤC TIÊU" if is_obj else "TRỌNG ĐIỂM"
             pt.Text = f"{pill_lbl} 0{i+1}"
             pt.Font.Name = TOKENS["fonts"]["primary"]
-            pt.Font.Size = 9
+            pt.Font.Size = 13.0
             pt.Font.Bold = msoTrue
             pt.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["brand"])
             pill.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -788,7 +843,7 @@ class NativeDeckAuthor:
             sp1 = stf.TextRange.Paragraphs(1)
             sp1.Text = stitle + "\n"
             sp1.Font.Name = TOKENS["fonts"]["primary"]
-            sp1.Font.Size = 16
+            sp1.Font.Size = 18.5
             sp1.Font.Bold = msoTrue
             sp1.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["ink"])
             sp1.ParagraphFormat.SpaceAfter = 4
@@ -796,45 +851,22 @@ class NativeDeckAuthor:
             sp2 = stf.TextRange.Paragraphs(2)
             sp2.Text = sbody
             sp2.Font.Name = TOKENS["fonts"]["primary"]
-            sp2.Font.Size = 14
+            sp2.Font.Size = 16.0
             sp2.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["muted"])
             sub_shapes.append(stb)
 
             # Animate Sub Card as Staggered Kinetic Cascade
             self._group_and_animate(slide, sub_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Kinetic_Card_{i+2}!!")
 
-    def _render_editorial_hero_layout(self, slide: Any, spec: Dict[str, Any], atoms: List[Any], top: float, height: float, lesson_idx: int):
+    def _render_editorial_hero_layout(self, slide: Any, spec: Dict[str, Any], atoms: List[Any], top: float, height: float, lesson_idx: int, pre_resolved_file: Optional[Path] = None):
         card_w = USABLE_WIDTH * 0.49
         right_left = MARGIN_LEFT + card_w + 18.0
         right_w = USABLE_WIDTH - card_w - 18.0
 
-        doc_slug = getattr(self, "doc_slug", "")
-        doc_ill_dir = self._resolve_asset_dir(ILLUSTRATIONS_DIR)
-        doc_media_dir = self._resolve_asset_dir(PROJECT_ROOT / "assets" / "extracted_media")
-        ill_name = spec.get("illustration") or spec.get("image") or spec.get("image_path")
-        ill_file = None
-        if ill_name and Path(ill_name).is_absolute() and Path(ill_name).exists():
-            ill_file = Path(ill_name)
-        elif ill_name and doc_ill_dir.exists() and (doc_ill_dir / ill_name).exists():
-            ill_file = doc_ill_dir / ill_name
-        elif ill_name and doc_media_dir.exists() and (doc_media_dir / ill_name).exists():
-            ill_file = doc_media_dir / ill_name
-        elif doc_ill_dir.exists():
-            # Dedicated illustrations in document sandbox
-            cands = list(doc_ill_dir.glob("editorial_*.png")) + list(doc_ill_dir.glob("editorial_*.jpg"))
-            if cands:
-                pick_idx = abs(hash(spec.get("slide_id", "0"))) % len(cands)
-                ill_file = cands[pick_idx]
-            elif (doc_ill_dir / "cover_hero.png").exists():
-                ill_file = doc_ill_dir / "cover_hero.png"
-            elif (doc_ill_dir / "cover_hero.jpg").exists():
-                ill_file = doc_ill_dir / "cover_hero.jpg"
-        elif (ILLUSTRATIONS_DIR / f"illustration_bai_{lesson_idx}.jpg").exists() and lesson_idx in [1, 2, 3, 4, 5, 6] and ("bai_" in doc_slug.lower() or "bài" in doc_slug.lower()):
-            cands = list(ILLUSTRATIONS_DIR.glob(f"*bai_{lesson_idx}*.jpg"))
-            if cands:
-                ill_file = cands[0]
-        else:
-            ill_file = None
+        ill_file = pre_resolved_file
+        if ill_file is None:
+            ill_name = spec.get("illustration") or spec.get("image") or spec.get("image_path")
+            ill_file = self._resolve_image_file(ill_name, lesson_idx)
 
         # === 1. Left Image Container & Takeaway Card Group ===
         left_shapes = []
@@ -862,30 +894,33 @@ class NativeDeckAuthor:
             callout_card.Line.Weight = 1.5
             left_shapes.append(callout_card)
 
-            # Concentric callout icon badge
-            left_shapes.extend(self._create_icon_badge(slide, "bookmark", MARGIN_LEFT + 28, callout_top + 28, 28, 18))
+            # Pill Tag for Callout
+            pill = slide.Shapes.AddShape(msoShapeRoundedRectangle, MARGIN_LEFT + 14, callout_top + 10, 160, 24)
+            pill.Fill.Solid()
+            pill.Fill.ForeColor.RGB = hex_to_bgr(TOKENS["colors"]["badge_bg"])
+            pill.Line.Visible = msoFalse
+            pt = pill.TextFrame.TextRange
+            pt.Text = "THÔNG ĐIỆP CỐT LÕI"
+            pt.Font.Name = TOKENS["fonts"]["primary"]
+            pt.Font.Size = 13.5
+            pt.Font.Bold = msoTrue
+            pt.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["brand"])
+            pill.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
+            left_shapes.append(pill)
 
-            callout_tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, MARGIN_LEFT + 48, callout_top + 10, card_w - 58, callout_h - 18)
+            # Dedicated Claim Textbox (High-Contrast 16.5pt Body)
+            callout_tb = slide.Shapes.AddTextbox(msoTextOrientationHorizontal, MARGIN_LEFT + 14, callout_top + 40, card_w - 28, callout_h - 48)
             ctf = callout_tb.TextFrame
             ctf.WordWrap = msoTrue
             ctf.MarginLeft = 0
             ctf.MarginTop = 0
-
-            cp1 = ctf.TextRange.Paragraphs(1)
-            cp1.Text = "THÔNG ĐIỆP CỐT LÕI\n"
-            cp1.Font.Name = TOKENS["fonts"]["primary"]
-            cp1.Font.Size = 11
-            cp1.Font.Bold = msoTrue
-            cp1.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["brand"])
-            cp1.ParagraphFormat.SpaceAfter = 3
-
-            cp2 = ctf.TextRange.Paragraphs(2)
-            cp2.Text = spec.get("primary_claim", "Nền tảng định lượng và lý luận cốt lõi của bài học.")
-            cp2.Font.Name = TOKENS["fonts"]["primary"]
-            cp2.Font.Size = 12.5
-            cp2.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["ink"])
-            cp2.ParagraphFormat.LineRuleWithin = msoTrue
-            cp2.ParagraphFormat.SpaceWithin = 1.2
+            ct = ctf.TextRange
+            ct.Text = spec.get("primary_claim", "Nền tảng định lượng và lý luận cốt lõi của bài học.")
+            ct.Font.Name = TOKENS["fonts"]["primary"]
+            ct.Font.Size = 16.5
+            ct.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["ink"])
+            ct.ParagraphFormat.LineRuleWithin = msoTrue
+            ct.ParagraphFormat.SpaceWithin = 1.25
             left_shapes.append(callout_tb)
         else:
             fallback_card = slide.Shapes.AddShape(msoShapeRoundedRectangle, MARGIN_LEFT, top, card_w, height)
@@ -929,8 +964,8 @@ class NativeDeckAuthor:
                     {"title": "Giải Pháp Bền Vững", "text": "Kết nối chặt chẽ giữa tuyến chuyên sâu và mạng lưới cơ sở.", "icon": "shield"}
                 ]
 
-        count = max(1, min(len(effective_atoms), 3))
-        card_h = (height - (12.0 * (count - 1))) / count
+        count = max(1, min(len(effective_atoms), 2))
+        card_h = (height - (16.0 * (count - 1))) / count
 
         for i, atom in enumerate(effective_atoms[:count]):
             card_shapes = []
@@ -959,7 +994,7 @@ class NativeDeckAuthor:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = title_t + "\n"
             p1.Font.Name = TOKENS["fonts"]["primary"]
-            p1.Font.Size = 16
+            p1.Font.Size = 18.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["ink"])
             p1.ParagraphFormat.SpaceAfter = 4
@@ -967,7 +1002,7 @@ class NativeDeckAuthor:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = body_t
             p2.Font.Name = TOKENS["fonts"]["primary"]
-            p2.Font.Size = 14
+            p2.Font.Size = 16.0
             p2.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["muted"])
             card_shapes.append(tb)
 
@@ -1045,13 +1080,13 @@ class NativeDeckAuthor:
             p_s1 = tf_stat.TextRange.Paragraphs(1)
             p_s1.Text = "CHỈ SỐ THỰC CHỨNG & ĐỊNH LƯỢNG\n"
             p_s1.Font.Name = TOKENS["fonts"]["primary"]
-            p_s1.Font.Size = 13
+            p_s1.Font.Size = 14.5
             p_s1.Font.Bold = msoTrue
             p_s1.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["brand"])
             p_s2 = tf_stat.TextRange.Paragraphs(2)
             p_s2.Text = spec.get("primary_claim", "Phân tích số liệu và xu hướng phát triển thực tế.")
             p_s2.Font.Name = TOKENS["fonts"]["primary"]
-            p_s2.Font.Size = 15
+            p_s2.Font.Size = 17.5
             p_s2.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["white"])
             chart_shapes.append(tb_stat)
 
@@ -1069,12 +1104,12 @@ class NativeDeckAuthor:
 
         # === 2. Right Column: Insights Cards ===
         right_left = MARGIN_LEFT + chart_w + gutter
-        count = max(1, min(len(atoms), 3))
-        card_h = (height - (12.0 * (count - 1))) / count
+        count = max(1, min(len(atoms), 2))
+        card_h = (height - (16.0 * (count - 1))) / count
 
         for i, atom in enumerate(atoms[:count]):
             card_shapes = []
-            c_top = top + i * (card_h + 12.0)
+            c_top = top + i * (card_h + 16.0)
 
             card = slide.Shapes.AddShape(msoShapeRoundedRectangle, right_left, c_top, insights_w, card_h)
             card.Fill.Solid()
@@ -1099,7 +1134,7 @@ class NativeDeckAuthor:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = title_t + "\n"
             p1.Font.Name = TOKENS["fonts"]["primary"]
-            p1.Font.Size = 16
+            p1.Font.Size = 18.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["ink"])
             p1.ParagraphFormat.SpaceAfter = 4
@@ -1107,7 +1142,7 @@ class NativeDeckAuthor:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = body_t
             p2.Font.Name = TOKENS["fonts"]["primary"]
-            p2.Font.Size = 14
+            p2.Font.Size = 16.0
             p2.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["muted"])
             card_shapes.append(tb)
 
@@ -1196,7 +1231,7 @@ class NativeDeckAuthor:
             bt = badge.TextFrame.TextRange
             bt.Text = f"{i+1:02d}"
             bt.Font.Name = TOKENS["fonts"]["numeric"]
-            bt.Font.Size = 13
+            bt.Font.Size = 14.0
             bt.Font.Bold = msoTrue
             bt.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["white"])
             badge.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1218,7 +1253,7 @@ class NativeDeckAuthor:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = title_text + "\n"
             p1.Font.Name = TOKENS["fonts"]["primary"]
-            p1.Font.Size = 17
+            p1.Font.Size = 18.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["ink"])
             p1.ParagraphFormat.SpaceAfter = 6
@@ -1226,7 +1261,7 @@ class NativeDeckAuthor:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = body_text
             p2.Font.Name = TOKENS["fonts"]["primary"]
-            p2.Font.Size = 15
+            p2.Font.Size = 16.0
             p2.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["muted"])
             step_shapes.append(tb)
 
@@ -1256,7 +1291,7 @@ class NativeDeckAuthor:
             pt = pill.TextFrame.TextRange
             pt.Text = "TIÊU CHÍ SO SÁNH" if i == 0 else "ĐẶC TRƯNG CỐT LÕI"
             pt.Font.Name = TOKENS["fonts"]["primary"]
-            pt.Font.Size = 9
+            pt.Font.Size = 13.0
             pt.Font.Bold = msoTrue
             pt.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["accent"] if i == 1 else TOKENS["colors"]["brand"])
             pill.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1338,7 +1373,7 @@ class NativeDeckAuthor:
         p2 = tfc.TextRange.Paragraphs(2)
         p2.Text = metric_ctx
         p2.Font.Name = TOKENS["fonts"]["primary"]
-        p2.Font.Size = 14
+        p2.Font.Size = 16.5
         p2.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["muted"])
         hero_shapes.append(tb_ctx)
 
@@ -1384,7 +1419,7 @@ class NativeDeckAuthor:
             sp1 = stf.TextRange.Paragraphs(1)
             sp1.Text = title_t + "\n"
             sp1.Font.Name = TOKENS["fonts"]["primary"]
-            sp1.Font.Size = 16
+            sp1.Font.Size = 18.5
             sp1.Font.Bold = msoTrue
             sp1.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["ink"])
             sp1.ParagraphFormat.SpaceAfter = 4
@@ -1392,7 +1427,7 @@ class NativeDeckAuthor:
             sp2 = stf.TextRange.Paragraphs(2)
             sp2.Text = body_t
             sp2.Font.Name = TOKENS["fonts"]["primary"]
-            sp2.Font.Size = 14
+            sp2.Font.Size = 16.0
             sp2.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["muted"])
             self._group_and_animate(slide, rcard_shapes, duration=0.45, delay=0.12 * (i + 1), group_name=f"!!Kinetic_Card_{i+2}!!")
 
@@ -1424,7 +1459,7 @@ class NativeDeckAuthor:
         pt = pill.TextFrame.TextRange
         pt.Text = "CÔNG THỨC ĐỊNH LƯỢNG CHUẨN"
         pt.Font.Name = TOKENS["fonts"]["primary"]
-        pt.Font.Size = 9
+        pt.Font.Size = 13.5
         pt.Font.Bold = msoTrue
         pt.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["brand"])
         pill.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1483,7 +1518,7 @@ class NativeDeckAuthor:
                 p1 = tf.TextRange.Paragraphs(1)
                 p1.Text = p_title + "\n"
                 p1.Font.Name = TOKENS["fonts"]["primary"]
-                p1.Font.Size = 16
+                p1.Font.Size = 18.5
                 p1.Font.Bold = msoTrue
                 p1.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["ink"])
                 p1.ParagraphFormat.SpaceAfter = 6
@@ -1491,7 +1526,7 @@ class NativeDeckAuthor:
                 p2 = tf.TextRange.Paragraphs(2)
                 p2.Text = p_body
                 p2.Font.Name = TOKENS["fonts"]["primary"]
-                p2.Font.Size = 13.5
+                p2.Font.Size = 16.0
                 p2.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["muted"])
                 p2.ParagraphFormat.LineRuleWithin = msoTrue
                 p2.ParagraphFormat.SpaceWithin = 1.25
@@ -1533,15 +1568,15 @@ class NativeDeckAuthor:
                 p1 = tf.TextRange.Paragraphs(1)
                 p1.Text = p_title + "\n"
                 p1.Font.Name = TOKENS["fonts"]["primary"]
-                p1.Font.Size = 15
+                p1.Font.Size = 18.0
                 p1.Font.Bold = msoTrue
                 p1.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["ink"])
-                p1.ParagraphFormat.SpaceAfter = 3
+                p1.ParagraphFormat.SpaceAfter = 4
 
                 p2 = tf.TextRange.Paragraphs(2)
                 p2.Text = p_body
                 p2.Font.Name = TOKENS["fonts"]["primary"]
-                p2.Font.Size = 12.5
+                p2.Font.Size = 16.0
                 p2.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["muted"])
                 p2.ParagraphFormat.LineRuleWithin = msoTrue
                 p2.ParagraphFormat.SpaceWithin = 1.2
@@ -1589,7 +1624,7 @@ class NativeDeckAuthor:
             tr = cell.Shape.TextFrame.TextRange
             tr.Text = str(h_text).upper()
             tr.Font.Name = TOKENS["fonts"]["primary"]
-            tr.Font.Size = 13
+            tr.Font.Size = 14.5
             tr.Font.Bold = msoTrue
             tr.Font.Color.RGB = hex_to_bgr("#FFFFFF")
             tr.ParagraphFormat.Alignment = ppAlignCenter if c_idx > 1 else ppAlignLeft
@@ -1610,7 +1645,7 @@ class NativeDeckAuthor:
                 tr = cell.Shape.TextFrame.TextRange
                 tr.Text = str(val)
                 tr.Font.Name = TOKENS["fonts"]["primary"]
-                tr.Font.Size = 12
+                tr.Font.Size = 14.0
                 tr.Font.Bold = msoTrue if c_idx == 1 else msoFalse
                 tr.Font.Color.RGB = hex_to_bgr(TOKENS["colors"]["ink"])
                 tr.ParagraphFormat.Alignment = ppAlignCenter if (c_idx > 1 and len(str(val)) <= 18) else ppAlignLeft

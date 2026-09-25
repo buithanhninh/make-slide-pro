@@ -138,7 +138,22 @@ class ContentIngestor:
                     except Exception:
                         pass
 
+        # Pre-process paragraphs to stitch orphaned numbering/prefixes into subsequent paragraphs
+        stitched_paras = []
+        pending_prefix = ""
         for p in doc.paragraphs:
+            t = clean_source_text(p.text)
+            if not t:
+                continue
+            if re.match(r"^[\d\.\s\-\–\—\*\•\:\;\,\(\)]+$", t) or re.match(r"^[a-z0-9]\)\.?$", t.lower()) or len(t) < 4:
+                pending_prefix = t.strip()
+                continue
+            if pending_prefix:
+                t = f"{pending_prefix} {t}"
+                pending_prefix = ""
+            stitched_paras.append((p, t))
+
+        for p, text in stitched_paras:
             # Check for embedded drawings/images in paragraph
             if hasattr(p, "_p"):
                 drawings = p._p.xpath('.//w:drawing')
@@ -164,14 +179,16 @@ class ContentIngestor:
                                 "destination": "VISIBLE_SLIDE"
                             })
 
-            text = clean_source_text(p.text)
-            if not text:
+            # Source citations (Nguồn: ...) are metadata footers, not section headings
+            if text.lower().startswith(("nguồn:", "nguồn trích dẫn:", "nguồn số liệu:")):
+                current_section["source_footer"] = text
                 continue
 
             style = p.style.name.lower()
             is_heading_style = "heading" in style
-            is_heading_pattern = bool(re.match(r"^(Chương|Bài|Phần|Mục|[I|V|X]+\.|\d+\.|\d+\.\d+)\s+[A-ZÀ-Ỹ]", text))
-            is_bold_short = len(text) < 90 and any(r.bold for r in p.runs if r.text.strip())
+            word_count = len(text.split())
+            is_heading_pattern = bool(re.match(r"^(Chương|Bài|Phần|Mục|[I|V|X]+\.|\d+(\.\d+)*\.?)\s+[A-ZÀ-Ỹ]", text)) and word_count <= 12
+            is_bold_short = word_count <= 14 and any(r.bold for r in p.runs if r.text.strip()) and not text.lower().startswith(("nguồn", "chú thích", "ghi chú"))
 
             if is_heading_style or is_heading_pattern or is_bold_short:
                 if current_section["paragraphs"] or current_section["atoms"]:
@@ -180,7 +197,7 @@ class ContentIngestor:
                 level = 1
                 if "heading 2" in style or bool(re.match(r"^\d+\.\d+\s+", text)):
                     level = 2
-                elif "heading 3" in style or bool(re.match(r"^\d+\.\d+\.\d+\s+", text)):
+                elif "heading 3" in style or bool(re.match(r"^\d+\.\d+\.\d+", text)):
                     level = 3
                 current_section = {
                     "section_id": f"SEC_{sec_counter:02d}",

@@ -145,8 +145,22 @@ class InterSlideKineticMorphAgent:
 
             timeline = ppt_slide_obj.TimeLine.MainSequence
             triggers = []
+            morph_suppression_defect = None
             for a_idx in range(1, timeline.Count + 1):
-                triggers.append(timeline(a_idx).Timing.TriggerType)
+                try:
+                    effect = timeline(a_idx)
+                    triggers.append(effect.Timing.TriggerType)
+                    anim_shape = effect.Shape
+                    if anim_shape and getattr(anim_shape, "Name", "") == "!!Kinetic_Card_1!!":
+                        morph_suppression_defect = DefectIssue(
+                            slide_index=slide_index,
+                            severity="P1",
+                            domain="MOTION",
+                            root_cause="!!Kinetic_Card_1!! has intra-slide animation in MainSequence (suppresses Morph transition).",
+                            remediation_action="Remove intra-slide entrance effect on Card 0 so it participates directly in slide transition Morph.",
+                        )
+                except Exception:
+                    pass
 
             group_count = 0
             for j in range(1, ppt_slide_obj.Shapes.Count + 1):
@@ -155,7 +169,7 @@ class InterSlideKineticMorphAgent:
 
             has_atomic_groups = (group_count > 0)
 
-            return self.inspect_deck_transitions(
+            score, defects = self.inspect_deck_transitions(
                 slide_index=slide_index,
                 total_slides=total_slides,
                 entry_effect=entry_eff,
@@ -163,6 +177,10 @@ class InterSlideKineticMorphAgent:
                 timeline_triggers=triggers,
                 has_atomic_groups=has_atomic_groups,
             )
+            if morph_suppression_defect:
+                defects.append(morph_suppression_defect)
+                score = max(0.0, score - 20.0)
+            return score, defects
         except Exception as e:
             return 50.0, [
                 DefectIssue(

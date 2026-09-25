@@ -112,7 +112,7 @@ class StrategicFrameworksEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = q.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 12.5
+            p2.Font.Size = 15.5
             p2.Font.Color.RGB = hex_to_bgr("#E2E8F0" if (is_hl and self.theme == "DARK") else muted)
             try:
                 p2.ParagraphFormat.SpaceWithin = 1.25
@@ -130,7 +130,7 @@ class StrategicFrameworksEngine:
         else:
             at.Text = axis_x
         at.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        at.Font.Size = 10.5
+        at.Font.Size = 14.5
         at.Font.Bold = msoTrue
         at.Font.Color.RGB = hex_to_bgr(brand)
         at.ParagraphFormat.Alignment = ppAlignCenter
@@ -184,14 +184,14 @@ class StrategicFrameworksEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = item["title"] + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 12
+            p1.Font.Size = 15.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr("#FFFFFF" if self.theme == "DARK" else "#0F172A")
             p1.ParagraphFormat.Alignment = ppAlignCenter
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = f"[{tag}]"
-            p2.Font.Size = 10
+            p2.Font.Size = 14.5
             p2.Font.Bold = msoTrue
             p2.Font.Color.RGB = hex_to_bgr(fg_c)
             p2.ParagraphFormat.Alignment = ppAlignCenter
@@ -229,7 +229,7 @@ class StrategicFrameworksEngine:
         ct = c_box.TextFrame.TextRange
         ct.Text = forces["center"]
         ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        ct.Font.Size = 11
+        ct.Font.Size = 15.0
         ct.Font.Bold = msoTrue
         ct.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         c_box.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -253,7 +253,7 @@ class StrategicFrameworksEngine:
             bt = card.TextFrame.TextRange
             bt.Text = text
             bt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            bt.Font.Size = 10.5
+            bt.Font.Size = 14.5
             bt.Font.Color.RGB = hex_to_bgr(ink)
             card.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
 
@@ -295,7 +295,7 @@ class StrategicFrameworksEngine:
             st = strip.TextFrame.TextRange
             st.Text = f"  {s_text}"
             st.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            st.Font.Size = 10.5
+            st.Font.Size = 14.5
             st.Font.Bold = msoTrue
             st.Font.Color.RGB = hex_to_bgr(ink)
             strip.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignLeft
@@ -314,7 +314,7 @@ class StrategicFrameworksEngine:
             pt = chev.TextFrame.TextRange
             pt.Text = p_text
             pt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            pt.Font.Size = 10.5
+            pt.Font.Size = 14.5
             pt.Font.Bold = msoTrue
             pt.Font.Color.RGB = hex_to_bgr("#FFFFFF")
             chev.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -328,7 +328,7 @@ class StrategicFrameworksEngine:
         mt = margin_shape.TextFrame.TextRange
         mt.Text = "BIÊN\nLỢI\nNHUẬN\n(MARGIN)"
         mt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        mt.Font.Size = 10
+        mt.Font.Size = 14.5
         mt.Font.Bold = msoTrue
         mt.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         margin_shape.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -408,7 +408,7 @@ class StrategicFrameworksEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = item["title"] + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 13
+            p1.Font.Size = 16.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(item["color"])
             p1.ParagraphFormat.SpaceAfter = 6
@@ -416,7 +416,7 @@ class StrategicFrameworksEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = "\n".join([f"• {x}" for x in item.get("items", [])])
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 11.5
+            p2.Font.Size = 15.0
             p2.Font.Color.RGB = hex_to_bgr(muted)
             try:
                 p2.ParagraphFormat.SpaceWithin = 1.2
@@ -471,7 +471,7 @@ class StrategicFrameworksEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"[{item['code']}] {item['name']}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 11.5
+            p1.Font.Size = 15.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(COLORS[idx % len(COLORS)])
             p1.ParagraphFormat.Alignment = ppAlignCenter
@@ -479,7 +479,7 @@ class StrategicFrameworksEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = item.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 10
+            p2.Font.Size = 14.5
             p2.Font.Color.RGB = hex_to_bgr(ink)
             p2.ParagraphFormat.Alignment = ppAlignCenter
             shapes.append(tb)
@@ -520,7 +520,7 @@ class StrategicFrameworksEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = item["title"] + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 13
+            p1.Font.Size = 16.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(item["color"])
             p1.ParagraphFormat.SpaceAfter = 6
@@ -528,7 +528,7 @@ class StrategicFrameworksEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = "\n".join([f"• {g}" for g in item.get("goals", [])])
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 11.5
+            p2.Font.Size = 15.0
             p2.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(tb)
 
@@ -580,7 +580,7 @@ class StrategicFrameworksEngine:
         rt = roof_bar.TextFrame.TextRange
         rt.Text = f"★  {roof_title}  ★"
         rt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        rt.Font.Size = 13.5
+        rt.Font.Size = 16.0.5
         rt.Font.Bold = msoTrue
         rt.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         roof_bar.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -616,7 +616,7 @@ class StrategicFrameworksEngine:
             pt = pill.TextFrame.TextRange
             pt.Text = f"0{idx+1}"
             pt.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            pt.Font.Size = 12
+            pt.Font.Size = 15.5
             pt.Font.Bold = msoTrue
             pt.Font.Color.RGB = hex_to_bgr("#FFFFFF")
             pill.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -631,7 +631,7 @@ class StrategicFrameworksEngine:
             ttr = ttf.TextRange
             ttr.Text = pil.get("title", f"Trụ Cột {idx+1}")
             ttr.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            ttr.Font.Size = 12.5
+            ttr.Font.Size = 15.5
             ttr.Font.Bold = msoTrue
             ttr.Font.Color.RGB = hex_to_bgr(ink)
             ttr.ParagraphFormat.Alignment = ppAlignCenter
@@ -654,7 +654,7 @@ class StrategicFrameworksEngine:
             dtr = dtf.TextRange
             dtr.Text = desc_text
             dtr.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            dtr.Font.Size = 10.5
+            dtr.Font.Size = 14.5
             dtr.Font.Color.RGB = hex_to_bgr(muted)
             dtr.ParagraphFormat.Alignment = ppAlignCenter
             p_shapes.append(tb_desc)
@@ -674,7 +674,7 @@ class StrategicFrameworksEngine:
             ct = chip.TextFrame.TextRange
             ct.Text = f"✔ {chip_label}"
             ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            ct.Font.Size = 10.0
+            ct.Font.Size = 14.5
             ct.Font.Bold = msoTrue
             ct.Font.Color.RGB = hex_to_bgr(p_color)
             chip.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -697,7 +697,7 @@ class StrategicFrameworksEngine:
         ft = found_bar.TextFrame.TextRange
         ft.Text = foundation
         ft.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        ft.Font.Size = 11.5
+        ft.Font.Size = 15.0
         ft.Font.Bold = msoTrue
         ft.Font.Color.RGB = hex_to_bgr("#FFFFFF" if self.theme == "DARK" else "#0F172A")
         found_bar.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -742,7 +742,7 @@ class StrategicFrameworksEngine:
             st = shape.TextFrame.TextRange
             st.Text = l_data["tier"]
             st.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            st.Font.Size = 12
+            st.Font.Size = 15.5
             st.Font.Bold = msoTrue
             st.Font.Color.RGB = hex_to_bgr("#FFFFFF" if i < 3 or self.theme == "DARK" else "#0F172A")
             shape.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -759,7 +759,7 @@ class StrategicFrameworksEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = l_data["title"] + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 13
+            p1.Font.Size = 16.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand if i == 0 else ink)
             p1.ParagraphFormat.SpaceAfter = 4
@@ -767,7 +767,7 @@ class StrategicFrameworksEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = l_data["desc"]
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 11.5
+            p2.Font.Size = 15.0
             p2.Font.Color.RGB = hex_to_bgr(self._get_token("colors", "muted", "#CBD5E1"))
             try:
                 p2.ParagraphFormat.SpaceWithin = 1.2
@@ -827,7 +827,7 @@ class StrategicFrameworksEngine:
             bt = bar.TextFrame.TextRange
             bt.Text = f"{item['stage']} | {item['metric']}"
             bt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            bt.Font.Size = 10.5
+            bt.Font.Size = 14.5
             bt.Font.Bold = msoTrue
             bt.Font.Color.RGB = hex_to_bgr("#FFFFFF")
             bar.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -845,7 +845,7 @@ class StrategicFrameworksEngine:
             p1 = ctf.TextRange.Paragraphs(1)
             p1.Text = f"Tỷ lệ: {item['rate']} - {item['desc']}"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 11
+            p1.Font.Size = 15.0
             p1.Font.Color.RGB = hex_to_bgr(ink)
             shapes.append(ctb)
 
@@ -879,7 +879,7 @@ class StrategicFrameworksEngine:
         ct = core.TextFrame.TextRange
         ct.Text = "LÕI ĐỘNG LỰC\nTĂNG TRƯỞNG"
         ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        ct.Font.Size = 10
+        ct.Font.Size = 14.5
         ct.Font.Bold = msoTrue
         ct.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         core.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -908,14 +908,14 @@ class StrategicFrameworksEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = n_data["title"] + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 12
+            p1.Font.Size = 15.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand if i == 0 else ink)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = n_data.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 10.5
+            p2.Font.Size = 14.5
             p2.Font.Color.RGB = hex_to_bgr(self._get_token("colors", "muted", "#CBD5E1"))
             shapes.append(tb)
 
@@ -951,7 +951,7 @@ class StrategicFrameworksEngine:
         ht = hub.TextFrame.TextRange
         ht.Text = hub_title
         ht.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        ht.Font.Size = 11
+        ht.Font.Size = 15.0
         ht.Font.Bold = msoTrue
         ht.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         hub.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -977,14 +977,14 @@ class StrategicFrameworksEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = sp_item["title"] + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 12
+            p1.Font.Size = 15.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand if idx == 0 else ink)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = sp_item.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 10.5
+            p2.Font.Size = 14.5
             p2.Font.Color.RGB = hex_to_bgr(self._get_token("colors", "muted", "#CBD5E1"))
             shapes.append(tb)
 
@@ -1038,14 +1038,14 @@ class StrategicFrameworksEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = r_data["name"] + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 12
+            p1.Font.Size = 15.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(COLORS[idx])
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = r_data.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 11
+            p2.Font.Size = 15.0
             p2.Font.Color.RGB = hex_to_bgr(ink)
             shapes.append(tb)
 
@@ -1088,7 +1088,7 @@ class StrategicFrameworksEngine:
         st = stb.TextFrame.TextRange
         st.Text = intersection_title
         st.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        st.Font.Size = 11
+        st.Font.Size = 15.0
         st.Font.Bold = msoTrue
         st.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         stb.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1117,7 +1117,7 @@ class StrategicFrameworksEngine:
         p2 = etf.TextRange.Paragraphs(2)
         p2.Text = f"• Tập Hợp A: {circle_left_title}\n• Tập Hợp B: {circle_right_title}\n\nĐiểm ngọt mang lại lợi thế độc quyền không thể sao chép khi công nghệ giải quyết triệt để bài toán thị trường."
         p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        p2.Font.Size = 11.5
+        p2.Font.Size = 15.0
         p2.Font.Color.RGB = hex_to_bgr(self._get_token("colors", "muted", "#CBD5E1"))
         shapes.append(etb)
 
@@ -1175,7 +1175,7 @@ class StrategicFrameworksEngine:
         p2 = tf.TextRange.Paragraphs(2)
         p2.Text = "1. Niềm Đam Mê & Sứ Mệnh (Xanh Lam)\n2. Năng Lực Cạnh Tranh Xuất Sắc (Xanh Ngọc)\n3. Hiệu Quả Kinh Tế & Khả Năng Sinh Lời (Vàng Cam)\n\nĐiểm giao giữa cả 3 yếu tố chính là Ikigai — định vị giá trị bền vững lâu dài của tổ chức."
         p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        p2.Font.Size = 11.5
+        p2.Font.Size = 15.0
         p2.Font.Color.RGB = hex_to_bgr(self._get_token("colors", "muted", "#CBD5E1"))
         shapes.append(tb)
 
@@ -1213,7 +1213,7 @@ class StrategicFrameworksEngine:
             ct = card.TextFrame.TextRange
             ct.Text = node["title"]
             ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            ct.Font.Size = 11
+            ct.Font.Size = 15.0
             ct.Font.Bold = msoTrue
             ct.Font.Color.RGB = hex_to_bgr(brand if idx == 0 else ink)
             card.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1255,7 +1255,7 @@ class StrategicFrameworksEngine:
         ct = core.TextFrame.TextRange
         ct.Text = "SHARED\nVALUES\n(GIÁ TRỊ CỐT LÕI)"
         ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        ct.Font.Size = 9.5
+        ct.Font.Size = 16.0.5
         ct.Font.Bold = msoTrue
         ct.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         core.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1286,7 +1286,7 @@ class StrategicFrameworksEngine:
             st = card.TextFrame.TextRange
             st.Text = s_text
             st.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            st.Font.Size = 10
+            st.Font.Size = 14.5
             st.Font.Bold = msoTrue
             st.Font.Color.RGB = hex_to_bgr(ink)
             card.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1316,7 +1316,7 @@ class StrategicFrameworksEngine:
         c_text = clock_face.TextFrame.TextRange
         c_text.Text = "ĐỒNG HỒ CHIẾN LƯỢC\n(BOWMAN CLOCK)"
         c_text.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        c_text.Font.Size = 11
+        c_text.Font.Size = 15.0
         c_text.Font.Bold = msoTrue
         c_text.Font.Color.RGB = hex_to_bgr(brand)
         clock_face.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1335,7 +1335,7 @@ class StrategicFrameworksEngine:
 
         p2 = tf.TextRange.Paragraphs(2)
         p2.Text = "1. Giá thấp / Giá trị thấp (No frills)\n2. Giá thấp chuẩn (Low price)\n3. Lai ghép Tối ưu (Hybrid - Khuyên dùng)\n4. Khác biệt hóa cao (Differentiation)\n5. Khác biệt hóa tập trung (Focused)\n6. Giá cao rủi ro (Risky high margins)\n7. Độc quyền độc đoán (Monopoly)\n8. Thất bại chắc chắn (Loss of market share)"
-        p2.Font.Size = 11
+        p2.Font.Size = 15.0
         p2.Font.Color.RGB = hex_to_bgr(ink)
         shapes.append(tb)
 
@@ -1373,14 +1373,14 @@ class StrategicFrameworksEngine:
             tf.WordWrap = msoTrue
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = s_data["lvl"] + "\n"
-            p1.Font.Size = 10.5
+            p1.Font.Size = 14.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr("#FFFFFF")
             p1.ParagraphFormat.Alignment = ppAlignCenter
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = s_data["desc"]
-            p2.Font.Size = 9
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr("#E2E8F0")
             p2.ParagraphFormat.Alignment = ppAlignCenter
             shapes.append(tb)
@@ -1452,7 +1452,7 @@ class StrategicFrameworksEngine:
         shapes.append(tip)
         tt = tip.TextFrame.TextRange
         tt.Text = "PHẦN NỔI (10%)\nSự kiện nhìn thấy"
-        tt.Font.Size = 10
+        tt.Font.Size = 14.5
         tt.Font.Bold = msoTrue
         tt.Font.Color.RGB = hex_to_bgr("#0F172A")
         tip.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1465,7 +1465,7 @@ class StrategicFrameworksEngine:
         shapes.append(bulk)
         bt = bulk.TextFrame.TextRange
         bt.Text = "PHẦN CHÌM (90% - BẢN CHẤT CỐT LÕI)\n\n• Xu hướng & Khuôn mẫu hành vi lặp lại\n• Cấu trúc hệ thống & Ràng buộc thể chế\n• Mô hình tâm trí & Niềm tin ngầm định sâu sắc"
-        bt.Font.Size = 11.5
+        bt.Font.Size = 15.0
         bt.Font.Bold = msoTrue
         bt.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         bulk.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1494,7 +1494,7 @@ class StrategicFrameworksEngine:
         shapes.append(d1)
         t1 = d1.TextFrame.TextRange
         t1.Text = "KIM CƯƠNG 1: BÀI TOÁN (PROBLEM)\n\n1. Khám Phá (Discover)\n2. Định Nghĩa (Define)"
-        t1.Font.Size = 11.5
+        t1.Font.Size = 15.0
         t1.Font.Bold = msoTrue
         t1.Font.Color.RGB = hex_to_bgr(brand)
         d1.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1509,7 +1509,7 @@ class StrategicFrameworksEngine:
         shapes.append(d2)
         t2 = d2.TextFrame.TextRange
         t2.Text = "KIM CƯƠNG 2: GIẢI PHÁP (SOLUTION)\n\n3. Phát Triển (Develop)\n4. Bàn Giao (Deliver)"
-        t2.Font.Size = 11.5
+        t2.Font.Size = 15.0
         t2.Font.Bold = msoTrue
         t2.Font.Color.RGB = hex_to_bgr("#10B981")
         d2.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1581,7 +1581,7 @@ class StrategicFrameworksEngine:
             ttr = ttf.TextRange
             ttr.Text = item.get("label", f"Yếu Tố {i+1}")
             ttr.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            ttr.Font.Size = 11.0
+            ttr.Font.Size = 15.0
             ttr.Font.Bold = msoTrue
             ttr.Font.Color.RGB = hex_to_bgr(color)
             ttr.ParagraphFormat.Alignment = ppAlignCenter
@@ -1603,7 +1603,7 @@ class StrategicFrameworksEngine:
             dtr = dtf.TextRange
             dtr.Text = item.get("desc", "")
             dtr.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            dtr.Font.Size = 10.0
+            dtr.Font.Size = 14.5
             dtr.Font.Color.RGB = hex_to_bgr(muted)
             dtr.ParagraphFormat.Alignment = ppAlignCenter
             col_shapes.append(tb_desc)
@@ -1618,7 +1618,7 @@ class StrategicFrameworksEngine:
             tt = tag.TextFrame.TextRange
             tt.Text = "Tác Động Cao"
             tt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            tt.Font.Size = 9.0
+            tt.Font.Size = 16.0.5
             tt.Font.Bold = msoTrue
             tt.Font.Color.RGB = hex_to_bgr(color)
             tag.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1670,7 +1670,7 @@ class StrategicFrameworksEngine:
 
             tr = sh.TextFrame.TextRange
             tr.Text = f"{lane['tier']}\n{lane['desc']}"
-            tr.Font.Size = 12.0
+            tr.Font.Size = 15.5
             tr.Font.Bold = msoTrue
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignLeft
@@ -1721,7 +1721,7 @@ class StrategicFrameworksEngine:
 
             tr = b.TextFrame.TextRange
             tr.Text = text
-            tr.Font.Size = 9.5
+            tr.Font.Size = 16.0.5
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignLeft
 
@@ -1763,7 +1763,7 @@ class StrategicFrameworksEngine:
         vmt = vm_badge.TextFrame.TextRange
         vmt.Text = "■  BẢN ĐỒ GIÁ TRỊ (VALUE MAP) - SẢN PHẨM"
         vmt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        vmt.Font.Size = 11.0
+        vmt.Font.Size = 15.0
         vmt.Font.Bold = msoTrue
         vmt.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         vm_badge.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1795,14 +1795,14 @@ class StrategicFrameworksEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = stitle + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 10.5
+            p1.Font.Size = 14.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(scolor)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = sdesc
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 9.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             left_shapes.append(tb)
 
@@ -1831,7 +1831,7 @@ class StrategicFrameworksEngine:
         ftr = ftf.TextRange
         ftr.Text = "◄ FIT ►\nĐỒNG\nBỘ"
         ftr.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        ftr.Font.Size = 9.5
+        ftr.Font.Size = 16.0.5
         ftr.Font.Bold = msoTrue
         ftr.Font.Color.RGB = hex_to_bgr(success)
         ftr.ParagraphFormat.Alignment = ppAlignCenter
@@ -1861,7 +1861,7 @@ class StrategicFrameworksEngine:
         cpt = cp_badge.TextFrame.TextRange
         cpt.Text = "●  HỒ SƠ KHÁCH HÀNG (CUSTOMER PROFILE)"
         cpt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        cpt.Font.Size = 11.0
+        cpt.Font.Size = 15.0
         cpt.Font.Bold = msoTrue
         cpt.Font.Color.RGB = hex_to_bgr("#0F172A")
         cp_badge.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1891,14 +1891,14 @@ class StrategicFrameworksEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = stitle + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 10.5
+            p1.Font.Size = 14.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(scolor)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = sdesc
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 9.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             right_shapes.append(tb)
 
@@ -1934,7 +1934,7 @@ class StrategicFrameworksEngine:
 
             tr = q.TextFrame.TextRange
             tr.Text = text
-            tr.Font.Size = 11.0
+            tr.Font.Size = 15.0
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignLeft
 
@@ -1964,7 +1964,7 @@ class StrategicFrameworksEngine:
         t_lw = lw.TextFrame.TextRange
         lw_items = [f"• {a.get('title', '')}: {a.get('text', '')}" if isinstance(a, dict) else f"• {str(a)}" for a in atoms[:2]] if atoms else [f"• Yếu tố nguy cơ: {claim}"]
         t_lw.Text = "NGUYÊN NHÂN & RÀO CHẮN PHÒNG NGỪA\n\n" + "\n".join(lw_items)
-        t_lw.Font.Size = 10.5
+        t_lw.Font.Size = 14.5
         t_lw.Font.Color.RGB = hex_to_bgr(ink)
 
         # Center Knot (Top Critical Event)
@@ -1977,7 +1977,7 @@ class StrategicFrameworksEngine:
         shapes.append(knot)
         t_k = knot.TextFrame.TextRange
         t_k.Text = "SỰ CỐ TRỌNG YẾU\n(TOP EVENT)\n\nNguy Cơ\nSức Khỏe"
-        t_k.Font.Size = 11.5
+        t_k.Font.Size = 15.0
         t_k.Font.Bold = msoTrue
         t_k.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         t_k.ParagraphFormat.Alignment = ppAlignCenter
@@ -1993,7 +1993,7 @@ class StrategicFrameworksEngine:
         t_rw = rw.TextFrame.TextRange
         rw_items = [f"• {a.get('title', '')}: {a.get('text', '')}" if isinstance(a, dict) else f"• {str(a)}" for a in atoms[2:4]] if len(atoms) > 2 else [f"• Biện pháp can thiệp: Giám sát chủ động và điều trị kịp thời", f"• Kết quả bảo vệ: Nâng cao chất lượng dân số toàn diện"]
         t_rw.Text = "RÀO CHẮN GIẢM THIỂU & HẬU QUẢ\n\n" + "\n".join(rw_items)
-        t_rw.Font.Size = 10.5
+        t_rw.Font.Size = 14.5
         t_rw.Font.Color.RGB = hex_to_bgr(ink)
 
         return shapes
@@ -2036,7 +2036,7 @@ class StrategicFrameworksEngine:
 
             tr = q.TextFrame.TextRange
             tr.Text = text
-            tr.Font.Size = 11.0
+            tr.Font.Size = 15.0
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignLeft
 
@@ -2066,7 +2066,7 @@ class StrategicFrameworksEngine:
 
         t_sn = sn.TextFrame.TextRange
         t_sn.Text = f"★ CHỈ SỐ TRỌNG YẾU (CORE METRIC)\n\n{ns_title}"
-        t_sn.Font.Size = 12.0
+        t_sn.Font.Size = 15.5
         t_sn.Font.Bold = msoTrue
         t_sn.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         t_sn.ParagraphFormat.Alignment = ppAlignCenter
@@ -2103,7 +2103,7 @@ class StrategicFrameworksEngine:
 
             tr = c.TextFrame.TextRange
             tr.Text = f"{d['title']}\n\nChỉ số: {d['metric']}\n\n{d['desc']}"
-            tr.Font.Size = 11.0
+            tr.Font.Size = 15.0
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignCenter
 
@@ -2146,7 +2146,7 @@ class StrategicFrameworksEngine:
 
             tr = c.TextFrame.TextRange
             tr.Text = f"{title}\n\n{desc}"
-            tr.Font.Size = 11.0
+            tr.Font.Size = 15.0
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignCenter
 
@@ -2193,7 +2193,7 @@ class StrategicFrameworksEngine:
 
             tr = s.TextFrame.TextRange
             tr.Text = f"{title}: {desc}"
-            tr.Font.Size = 10.5
+            tr.Font.Size = 14.5
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignCenter
 

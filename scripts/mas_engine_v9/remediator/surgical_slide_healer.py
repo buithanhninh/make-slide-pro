@@ -89,6 +89,8 @@ class SurgicalSlideRemediator:
                 pass
 
         # 2. Hot-swap in PowerPoint COM
+        import pythoncom
+        pythoncom.CoInitialize()
         ppt_app = win32com.client.DispatchEx("PowerPoint.Application")
         deck = None
         try:
@@ -98,8 +100,22 @@ class SurgicalSlideRemediator:
             total_slides = deck.Slides.Count
 
             if 1 <= slide_index <= total_slides:
+                orig_slide = deck.Slides(slide_index)
+                orig_effect = orig_slide.SlideShowTransition.EntryEffect
+                orig_duration = orig_slide.SlideShowTransition.Duration
+
                 # Insert the healed slide immediately AFTER the target slide
                 deck.Slides.InsertFromFile(str(temp_pptx_path.resolve()), slide_index, 1, 1)
+                new_slide = deck.Slides(slide_index + 1)
+                
+                # Enforce KMCA V9.3 Continuous Morph standard
+                if 1 < slide_index < total_slides:
+                    new_slide.SlideShowTransition.EntryEffect = 3955  # ppEffectMorphByWord
+                    new_slide.SlideShowTransition.Duration = 0.85
+                else:
+                    new_slide.SlideShowTransition.EntryEffect = orig_effect
+                    new_slide.SlideShowTransition.Duration = orig_duration
+
                 # Delete the old defective slide (which is now at slide_index)
                 deck.Slides(slide_index).Delete()
                 deck.Save()

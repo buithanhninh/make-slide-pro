@@ -56,6 +56,8 @@ class MASOrchestratorV9:
         self, pptx_path: Path, canonical_ledger: Optional[Dict[str, Any]] = None
     ) -> MASAuditReport:
         """Runs all 4 forensic inspectors across the entire presentation deck via COM."""
+        import pythoncom
+        pythoncom.CoInitialize()
         ppt_app = win32com.client.DispatchEx("PowerPoint.Application")
         deck = None
         slide_audits: Dict[int, SlideAuditResult] = {}
@@ -72,11 +74,46 @@ class MASOrchestratorV9:
             )
             total_slides = deck.Slides.Count
 
+            seen_assertion_titles: Dict[str, int] = {}
             for i in range(1, total_slides + 1):
                 slide = deck.Slides(i)
+                is_cover = (i == 1)
+                is_outro = (i == total_slides)
+
+                # Check Duplicate Assertion Title
+                title_defects = []
+                ass_title = ""
+                for j in range(1, slide.Shapes.Count + 1):
+                    try:
+                        shp = slide.Shapes(j)
+                        if "Anchor_Assertion_Title" in shp.Name and shp.HasTextFrame and shp.TextFrame.HasText:
+                            ass_title = shp.TextFrame.TextRange.Text.strip()
+                            break
+                    except Exception:
+                        pass
+                
+                if ass_title and not (is_cover or is_outro):
+                    norm_title = " ".join(ass_title.split()).lower()
+                    if norm_title in seen_assertion_titles:
+                        prev_slide = seen_assertion_titles[norm_title]
+                        title_defects.append(
+                            DefectIssue(
+                                slide_index=i,
+                                severity="P0",
+                                domain="CONTENT",
+                                root_cause=f"Duplicate Assertion Title with Slide {prev_slide:02d}: '{ass_title}'",
+                                remediation_action="Rewrite title into distinct pedagogical sentence headline.",
+                            )
+                        )
+                    else:
+                        seen_assertion_titles[norm_title] = i
 
                 # 1. Content Grounding
                 c_score, c_defects = self.content_agent.inspect_com_slide(i, slide)
+                c_defects.extend(title_defects)
+                if title_defects:
+                    c_score = max(0.0, c_score - 30.0)
+
                 for d in c_defects:
                     if "ai slop" in d.root_cause.lower():
                         slop_words_found.append(f"Slide {i}: {d.root_cause}")
@@ -86,7 +123,7 @@ class MASOrchestratorV9:
                 # 2. Inter-Slide Motion
                 m_score, m_defects = self.motion_agent.inspect_com_slide(i, total_slides, slide)
                 # 3. Layout Typography
-                l_score, l_defects = self.layout_agent.inspect_com_slide(i, slide)
+                l_score, l_defects = self.layout_agent.inspect_com_slide(i, slide, total_slides=total_slides)
                 # 4. DataViz Math & Visual Assets
                 d_score, d_defects, d_flags = self.dataviz_agent.inspect_com_slide(i, slide)
 
@@ -240,7 +277,8 @@ class MASOrchestratorV9:
 
         if output_report_path and final_report:
             with open(output_report_path, "w", encoding="utf-8") as f:
-                json.dump(final_report.model_dump(), f, ensure_ascii=False, indent=2)
+                dump_data = final_report.model_dump() if hasattr(final_report, "model_dump") else final_report.dict()
+                json.dump(dump_data, f, ensure_ascii=False, indent=2)
             print(f"\n[MAS-CLSH Report] Saved to: {output_report_path.resolve()}")
 
         return final_report

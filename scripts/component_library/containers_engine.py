@@ -84,7 +84,7 @@ class AdvancedContainersEngine:
         pt = h_pill.TextFrame.TextRange
         pt.Text = atoms[0].get("badge", "TIÊU ĐIỂM")
         pt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        pt.Font.Size = 10.0
+        pt.Font.Size = 14.5
         pt.Font.Bold = msoTrue
         pt.Font.Color.RGB = hex_to_bgr(brand)
         pt.ParagraphFormat.Alignment = ppAlignCenter
@@ -140,7 +140,7 @@ class AdvancedContainersEngine:
             rp2 = rtf.TextRange.Paragraphs(2)
             rp2.Text = a_data.get("text", "")
             rp2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            rp2.Font.Size = 12.5
+            rp2.Font.Size = 15.5
             rp2.Font.Color.RGB = hex_to_bgr(muted)
             rp2.ParagraphFormat.LineRuleWithin = msoTrue
             rp2.ParagraphFormat.SpaceWithin = 1.2
@@ -163,7 +163,7 @@ class AdvancedContainersEngine:
         bp1 = btf.TextRange.Paragraphs(1)
         bp1.Text = f"★ {last_atom.get('title', 'TỔNG KẾT')}: {last_atom.get('text', '')}"
         bp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        bp1.Font.Size = 13.0
+        bp1.Font.Size = 16.0
         bp1.Font.Bold = msoTrue
         bp1.Font.Color.RGB = hex_to_bgr("#FFFFFF" if self.theme == "DARK" else "#0F172A")
 
@@ -246,7 +246,7 @@ class AdvancedContainersEngine:
             icon_arrow = "▲ " if is_pos else "▼ "
             ct.Text = icon_arrow + k.get("delta", "Mục tiêu")
             ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            ct.Font.Size = 10.0
+            ct.Font.Size = 14.5
             ct.Font.Bold = msoTrue
             ct.Font.Color.RGB = hex_to_bgr(chip_bg[1])
             ct.ParagraphFormat.Alignment = ppAlignCenter
@@ -272,7 +272,7 @@ class AdvancedContainersEngine:
             lp2 = ltf.TextRange.Paragraphs(2)
             lp2.Text = k["desc"]
             lp2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            lp2.Font.Size = 12.5
+            lp2.Font.Size = 15.5
             lp2.Font.Color.RGB = hex_to_bgr(muted)
             lp2.ParagraphFormat.LineRuleWithin = msoTrue
             lp2.ParagraphFormat.SpaceWithin = 1.3
@@ -289,7 +289,7 @@ class AdvancedContainersEngine:
             bt = badge.TextFrame.TextRange
             bt.Text = "◈ Chỉ Tiêu Đến 2030"
             bt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            bt.Font.Size = 10.0
+            bt.Font.Size = 14.5
             bt.Font.Bold = msoTrue
             bt.Font.Color.RGB = hex_to_bgr(brand if idx == 0 else muted)
             bt.ParagraphFormat.Alignment = ppAlignCenter
@@ -390,7 +390,7 @@ class AdvancedContainersEngine:
         pt1 = b_pill.TextFrame.TextRange
         pt1.Text = before_pill
         pt1.Font.Name = font_name
-        pt1.Font.Size = 10.5
+        pt1.Font.Size = 14.5
         pt1.Font.Bold = msoTrue
         pt1.Font.Color.RGB = hex_to_bgr("#FB7185" if self.theme == "DARK" else "#BE123C")
         pt1.ParagraphFormat.Alignment = ppAlignCenter
@@ -404,7 +404,7 @@ class AdvancedContainersEngine:
         bb_txt = b_badge.TextFrame.TextRange
         bb_txt.Text = f"◈ {before_badge}"
         bb_txt.Font.Name = font_name
-        bb_txt.Font.Size = 11.0
+        bb_txt.Font.Size = 15.0
         bb_txt.Font.Bold = msoTrue
         bb_txt.Font.Color.RGB = hex_to_bgr("#FDA4AF" if self.theme == "DARK" else "#9F1239")
         bb_txt.ParagraphFormat.Alignment = ppAlignCenter
@@ -430,7 +430,7 @@ class AdvancedContainersEngine:
         bp2 = btf.TextRange.Paragraphs(2)
         bp2.Text = "\n".join([f"• {it}" for it in before_bullets])
         bp2.Font.Name = font_name
-        bp2.Font.Size = 13.0
+        bp2.Font.Size = 16.0
         bp2.Font.Color.RGB = hex_to_bgr(muted)
         bp2.ParagraphFormat.LineRuleWithin = msoTrue
         bp2.ParagraphFormat.SpaceWithin = 1.22
@@ -462,7 +462,7 @@ class AdvancedContainersEngine:
         pt2 = a_pill.TextFrame.TextRange
         pt2.Text = after_pill
         pt2.Font.Name = font_name
-        pt2.Font.Size = 10.5
+        pt2.Font.Size = 14.5
         pt2.Font.Bold = msoTrue
         pt2.Font.Color.RGB = hex_to_bgr("#34D399" if self.theme == "DARK" else "#047857")
         pt2.ParagraphFormat.Alignment = ppAlignCenter
@@ -476,7 +476,7 @@ class AdvancedContainersEngine:
         ab_txt = a_badge.TextFrame.TextRange
         ab_txt.Text = f"★ {after_badge}"
         ab_txt.Font.Name = font_name
-        ab_txt.Font.Size = 11.0
+        ab_txt.Font.Size = 15.0
         ab_txt.Font.Bold = msoTrue
         ab_txt.Font.Color.RGB = hex_to_bgr("#6EE7B7" if self.theme == "DARK" else "#065F46")
         ab_txt.ParagraphFormat.Alignment = ppAlignCenter
@@ -502,7 +502,7 @@ class AdvancedContainersEngine:
         ap2 = atf.TextRange.Paragraphs(2)
         ap2.Text = "\n".join([f"✔ {it}" for it in after_bullets])
         ap2.Font.Name = font_name
-        ap2.Font.Size = 13.0
+        ap2.Font.Size = 16.0
         ap2.Font.Color.RGB = hex_to_bgr("#FFFFFF" if self.theme == "DARK" else "#0F172A")
         ap2.ParagraphFormat.LineRuleWithin = msoTrue
         ap2.ParagraphFormat.SpaceWithin = 1.22
@@ -561,7 +561,7 @@ class AdvancedContainersEngine:
         p2 = tf.TextRange.Paragraphs(2)
         p2.Text = f"— {author_name.upper()}  |  {author_title}"
         p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        p2.Font.Size = 12
+        p2.Font.Size = 15.5
         p2.Font.Bold = msoTrue
         p2.Font.Color.RGB = hex_to_bgr(brand)
         shapes.append(tb)
@@ -604,7 +604,7 @@ class AdvancedContainersEngine:
             yt = ytb.TextFrame.TextRange
             yt.Text = m["year"]
             yt.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            yt.Font.Size = 11
+            yt.Font.Size = 15.0
             yt.Font.Bold = msoTrue
             yt.Font.Color.RGB = hex_to_bgr(brand)
             yt.ParagraphFormat.Alignment = ppAlignRight
@@ -635,14 +635,14 @@ class AdvancedContainersEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = m["title"] + "  —  "
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 12
+            p1.Font.Size = 15.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(ink)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = m["desc"]
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 11
+            p2.Font.Size = 15.0
             p2.Font.Color.RGB = hex_to_bgr(self._get_token("colors", "muted", "#CBD5E1"))
             shapes.append(tb)
 
@@ -681,7 +681,7 @@ class AdvancedContainersEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = s_data["step"] + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 11.5
+            p1.Font.Size = 15.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr("#FFFFFF")
             p1.ParagraphFormat.Alignment = ppAlignCenter
@@ -689,7 +689,7 @@ class AdvancedContainersEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = s_data.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 9.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr("#E2E8F0")
             p2.ParagraphFormat.Alignment = ppAlignCenter
             shapes.append(tb)
@@ -759,7 +759,7 @@ class AdvancedContainersEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"TRỤ CỘT 0{idx + 1}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 10.5
+            p1.Font.Size = 14.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
             p1.ParagraphFormat.SpaceAfter = 4
@@ -775,7 +775,7 @@ class AdvancedContainersEngine:
             p3 = tf.TextRange.Paragraphs(3)
             p3.Text = p.get("sub", "")
             p3.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p3.Font.Size = 12.5
+            p3.Font.Size = 15.5
             p3.Font.Color.RGB = hex_to_bgr(muted)
             p3.ParagraphFormat.LineRuleWithin = msoTrue
             p3.ParagraphFormat.SpaceWithin = 1.3
@@ -793,7 +793,7 @@ class AdvancedContainersEngine:
             bt = badge.TextFrame.TextRange
             bt.Text = f"★ {kpi_val}"
             bt.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            bt.Font.Size = 11.0
+            bt.Font.Size = 15.0
             bt.Font.Bold = msoTrue
             bt.Font.Color.RGB = hex_to_bgr("#10B981" if self.theme == "DARK" else "#059669")
             bt.ParagraphFormat.Alignment = ppAlignCenter
@@ -852,14 +852,14 @@ class AdvancedContainersEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"{itm.get('num', '')} | {itm.get('title', '')}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 10
+            p1.Font.Size = 14.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = itm.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 8.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(tb)
 
@@ -914,7 +914,7 @@ class AdvancedContainersEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = p.get("num", f"0{i+1}") + "\n"
             p1.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            p1.Font.Size = 11.0
+            p1.Font.Size = 15.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
             p1.ParagraphFormat.SpaceAfter = 4
@@ -930,7 +930,7 @@ class AdvancedContainersEngine:
             p3 = tf.TextRange.Paragraphs(3)
             p3.Text = p.get("desc", "") + "\n\n"
             p3.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p3.Font.Size = 12.0
+            p3.Font.Size = 15.5
             p3.Font.Color.RGB = hex_to_bgr(muted)
             p3.ParagraphFormat.LineRuleWithin = msoTrue
             p3.ParagraphFormat.SpaceWithin = 1.2
@@ -939,7 +939,7 @@ class AdvancedContainersEngine:
                 p4 = tf.TextRange.Paragraphs(4)
                 p4.Text = f"★ {p.get('kpi', '')}"
                 p4.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-                p4.Font.Size = 11.5
+                p4.Font.Size = 15.0
                 p4.Font.Bold = msoTrue
                 p4.Font.Color.RGB = hex_to_bgr(self._get_token("colors", "success", "#10B981"))
 
@@ -1000,21 +1000,21 @@ class AdvancedContainersEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = s["tag"] + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 10
+            p1.Font.Size = 14.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(s["color"])
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = s["title"] + "\n\n"
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 13
+            p2.Font.Size = 16.0
             p2.Font.Bold = msoTrue
             p2.Font.Color.RGB = hex_to_bgr(ink)
 
             p3 = tf.TextRange.Paragraphs(3)
             p3.Text = s["desc"]
             p3.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p3.Font.Size = 10
+            p3.Font.Size = 14.5
             p3.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(tb)
 
@@ -1087,14 +1087,14 @@ class AdvancedContainersEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"{lv.get('name', '')}: {lv.get('target', '')}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 10
+            p1.Font.Size = 14.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(colors[2 - i])
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = lv.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 9.0
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(tb)
 
@@ -1129,14 +1129,14 @@ class AdvancedContainersEngine:
         lp1 = ltf.TextRange.Paragraphs(1)
         lp1.Text = "CHI PHÍ ĐẦU TƯ BAN ĐẦU\n\n"
         lp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        lp1.Font.Size = 12
+        lp1.Font.Size = 15.5
         lp1.Font.Bold = msoTrue
         lp1.Font.Color.RGB = hex_to_bgr(danger)
 
         lp2 = ltf.TextRange.Paragraphs(2)
         lp2.Text = "• Chi phí bản quyền hệ thống AI\n• Thời gian đào tạo chuyển giao 2 tuần\n• Thiết lập hạ tầng Sandbox thử nghiệm\n• Ngân sách dự phòng rủi ro 10%"
         lp2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-        lp2.Font.Size = 10
+        lp2.Font.Size = 14.5
         lp2.Font.Color.RGB = hex_to_bgr(muted)
         shapes.append(ltb)
 
@@ -1156,14 +1156,14 @@ class AdvancedContainersEngine:
         rp1 = rtf.TextRange.Paragraphs(1)
         rp1.Text = "GIÁ TRỊ THU HỒI VƯỢT TRỘI (ROI)\n\n"
         rp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        rp1.Font.Size = 12
+        rp1.Font.Size = 15.5
         rp1.Font.Bold = msoTrue
         rp1.Font.Color.RGB = hex_to_bgr(success)
 
         rp2 = rtf.TextRange.Paragraphs(2)
         rp2.Text = "• Hoàn vốn sau 3.5 tháng vận hành\n• Giảm 75% chi phí thuê ngoài thiết kế\n• Tốc độ phát hành tài liệu tăng gấp 10 lần\n• Chuẩn hóa 100% tài sản trí tuệ doanh nghiệp"
         rp2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-        rp2.Font.Size = 10
+        rp2.Font.Size = 14.5
         rp2.Font.Color.RGB = hex_to_bgr(muted)
         shapes.append(rtb)
 
@@ -1206,7 +1206,7 @@ class AdvancedContainersEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"{z['zone']}\n{z['range']}\n"
             p1.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            p1.Font.Size = 13
+            p1.Font.Size = 16.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(z["color"])
             p1.ParagraphFormat.Alignment = ppAlignCenter
@@ -1214,7 +1214,7 @@ class AdvancedContainersEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = f"[{z['status']}]\n\n{z['desc']}"
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 10
+            p2.Font.Size = 14.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             p2.ParagraphFormat.Alignment = ppAlignCenter
             shapes.append(tb)
@@ -1252,7 +1252,7 @@ class AdvancedContainersEngine:
         p2 = tf.TextRange.Paragraphs(2)
         p2.Text = spec.get("hero_body", "Make Slide Pro đại diện cho chuẩn mực thiết kế bài thuyết trình tương lai. Với kiến trúc 16 Tác tử AI và bộ thư viện 110+ Archetypes gốc, từng slide trở thành một tác phẩm nghệ thuật chuẩn mực quốc tế.")
         p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-        p2.Font.Size = 11.5
+        p2.Font.Size = 15.0
         p2.Font.Color.RGB = hex_to_bgr(ink)
         shapes.append(tb)
 
@@ -1293,7 +1293,7 @@ class AdvancedContainersEngine:
                 pt = pill.TextFrame.TextRange
                 pt.Text = f"THUỘC TÍNH 0{idx+1}" if "Thuộc Tính" in a.get("title", "") else f"TRỌNG TÂM 0{idx+1}"
                 pt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-                pt.Font.Size = 11.0
+                pt.Font.Size = 15.0
                 pt.Font.Bold = msoTrue
                 pt.Font.Color.RGB = hex_to_bgr(accent_c)
                 pt.ParagraphFormat.Alignment = ppAlignCenter
@@ -1312,7 +1312,7 @@ class AdvancedContainersEngine:
                 p2 = tf.TextRange.Paragraphs(2)
                 p2.Text = a.get("text", "")
                 p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-                p2.Font.Size = 13.5
+                p2.Font.Size = 16.0.5
                 p2.Font.Color.RGB = hex_to_bgr(muted)
                 p2.ParagraphFormat.SpaceWithin = 1.25
 
@@ -1343,7 +1343,7 @@ class AdvancedContainersEngine:
         lp2 = ltf.TextRange.Paragraphs(2)
         lp2.Text = hero_atom.get("text", spec.get("primary_claim", ""))
         lp2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-        lp2.Font.Size = 13.5
+        lp2.Font.Size = 16.0.5
         lp2.Font.Color.RGB = hex_to_bgr("#F0FDF4")
         lp2.ParagraphFormat.SpaceWithin = 1.25
 
@@ -1374,14 +1374,14 @@ class AdvancedContainersEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"✓ {s.get('title', '')}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 13.0
+            p1.Font.Size = 16.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = s.get("text", s.get("desc", ""))
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 12.0
+            p2.Font.Size = 15.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             p2.ParagraphFormat.SpaceWithin = 1.2
 
@@ -1415,7 +1415,7 @@ class AdvancedContainersEngine:
         tp1 = tf1.TextRange
         tp1.Text = "PHẦN 1: TƯ DUY NỀN TẢNG\n\nXây dựng tư duy hệ thống và thấu hiểu nguyên lý phân bổ thị giác là chìa khóa then chốt giúp các nhà lãnh đạo truyền đạt thông điệp thuyết phục."
         tp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        tp1.Font.Size = 11
+        tp1.Font.Size = 15.0
         tp1.Font.Color.RGB = hex_to_bgr(ink)
         shapes.append(tb1)
 
@@ -1431,7 +1431,7 @@ class AdvancedContainersEngine:
         tp2 = tf2.TextRange
         tp2.Text = "PHẦN 2: THỰC THI ĐỘT PHÁ\n\nChuyển hóa chiến lược thành hành động với tốc độ thần tốc, bảo đảm mọi chi tiết kỹ thuật đều hoàn hảo khi đưa vào vận hành thực tế."
         tp2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        tp2.Font.Size = 11
+        tp2.Font.Size = 15.0
         tp2.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         shapes.append(tb2)
 
@@ -1489,7 +1489,7 @@ class AdvancedContainersEngine:
             pt = ptf.TextRange
             pt.Text = c["badge"]
             pt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            pt.Font.Size = 9.0
+            pt.Font.Size = 16.0.5
             pt.Font.Bold = msoTrue
             pt.Font.Color.RGB = hex_to_bgr("#FFFFFF")
             pt.ParagraphFormat.Alignment = ppAlignCenter
@@ -1500,14 +1500,14 @@ class AdvancedContainersEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = c["title"] + "\n\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 12
+            p1.Font.Size = 15.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(ink)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = c["desc"]
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 10
+            p2.Font.Size = 14.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(tb)
 
@@ -1552,7 +1552,7 @@ class AdvancedContainersEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"CHẶNG 0{i+1}\n{st['stage']}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 10
+            p1.Font.Size = 14.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
             p1.ParagraphFormat.Alignment = ppAlignCenter
@@ -1560,7 +1560,7 @@ class AdvancedContainersEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = f"\nCảm Xúc:\n{st['mood']}\n\nĐiểm Chạm:\n{st['touchpoint']}\n\nHành Động:\n{st['action']}"
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 8.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(tb)
 
@@ -1602,14 +1602,14 @@ class AdvancedContainersEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = lyr["tier"] + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 11
+            p1.Font.Size = 15.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr("#FFFFFF" if i == 2 else brand)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = lyr["desc"]
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 9.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr("#E2E8F0" if i == 2 else muted)
             shapes.append(tb)
 
@@ -1641,7 +1641,7 @@ class AdvancedContainersEngine:
             tp = ttf.TextRange
             tp.Text = t
             tp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            tp.Font.Size = 10
+            tp.Font.Size = 14.5
             tp.Font.Bold = msoTrue
             tp.Font.Color.RGB = hex_to_bgr("#FFFFFF" if i == 0 else muted)
             tp.ParagraphFormat.Alignment = ppAlignCenter
@@ -1662,14 +1662,14 @@ class AdvancedContainersEngine:
         p1 = tf.TextRange.Paragraphs(1)
         p1.Text = "NỘI DUNG CHI TIẾT TAB HIỆN TẠI (ĐANG KÍCH HOẠT)\n\n"
         p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        p1.Font.Size = 13
+        p1.Font.Size = 16.0
         p1.Font.Bold = msoTrue
         p1.Font.Color.RGB = hex_to_bgr(brand)
 
         p2 = tf.TextRange.Paragraphs(2)
         p2.Text = "Kiến trúc tab điều hướng ảo cho phép tối ưu không gian trình bày, phân bổ thông tin thành từng lớp logic mạch lạc giúp người nghe dễ dàng theo dõi theo từng giai đoạn triển khai dự án."
         p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-        p2.Font.Size = 11
+        p2.Font.Size = 15.0
         p2.Font.Color.RGB = hex_to_bgr(ink)
         shapes.append(tb)
 
@@ -1704,7 +1704,7 @@ class AdvancedContainersEngine:
         bp = btf.TextRange
         bp.Text = "★  BÁO CÁO ĐIỀU HÀNH TỔNG THỂ: TĂNG TRƯỞNG VƯỢT KỲ VỌNG 135% TOÀN CÔNG TY  ★"
         bp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        bp.Font.Size = 12.0
+        bp.Font.Size = 15.5
         bp.Font.Bold = msoTrue
         bp.Font.Color.RGB = hex_to_bgr(brand)
         bp.ParagraphFormat.Alignment = ppAlignCenter
@@ -1747,7 +1747,7 @@ class AdvancedContainersEngine:
             pt = pill.TextFrame.TextRange
             pt.Text = k["cat"]
             pt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            pt.Font.Size = 9.0
+            pt.Font.Size = 16.0.5
             pt.Font.Bold = msoTrue
             pt.Font.Color.RGB = hex_to_bgr(k_color)
             pill.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1773,7 +1773,7 @@ class AdvancedContainersEngine:
             lp = ltf.TextRange
             lp.Text = k["label"]
             lp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            lp.Font.Size = 12.0
+            lp.Font.Size = 15.5
             lp.Font.Bold = msoTrue
             lp.Font.Color.RGB = hex_to_bgr(ink)
             lp.ParagraphFormat.Alignment = ppAlignCenter
@@ -1791,7 +1791,7 @@ class AdvancedContainersEngine:
             dt = delta_box.TextFrame.TextRange
             dt.Text = f"▲  {k['delta']}"
             dt.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            dt.Font.Size = 10.5
+            dt.Font.Size = 14.5
             dt.Font.Bold = msoTrue
             dt.Font.Color.RGB = hex_to_bgr(success)
             delta_box.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -1850,7 +1850,7 @@ class AdvancedContainersEngine:
         p2 = tf.TextRange.Paragraphs(2)
         p2.Text = spec.get("cta_sub", "Liên hệ ngay với đội ngũ chuyên gia của chúng tôi để nhận bản dùng thử miễn phí và hỗ trợ triển khai hệ thống toàn diện trong 24 giờ.")
         p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-        p2.Font.Size = 11
+        p2.Font.Size = 15.0
         p2.Font.Color.RGB = hex_to_bgr(muted)
         p2.ParagraphFormat.Alignment = ppAlignCenter
         shapes.append(tb)
@@ -1870,7 +1870,7 @@ class AdvancedContainersEngine:
         bp = btf.TextRange
         bp.Text = spec.get("cta_btn", "ĐĂNG KÝ TRẢI NGHIỆM NGAY →")
         bp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        bp.Font.Size = 11
+        bp.Font.Size = 15.0
         bp.Font.Bold = msoTrue
         bp.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         bp.ParagraphFormat.Alignment = ppAlignCenter
@@ -1925,7 +1925,7 @@ class AdvancedContainersEngine:
         wt = w_title.TextFrame.TextRange
         wt.Text = "Make Slide Pro V8.6 — Executive Studio Workspace"
         wt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        wt.Font.Size = 9.0
+        wt.Font.Size = 16.0.5
         wt.Font.Color.RGB = hex_to_bgr(muted)
         wt.ParagraphFormat.Alignment = ppAlignCenter
         m_shapes.append(w_title)
@@ -1955,7 +1955,7 @@ class AdvancedContainersEngine:
         sb_tr = sb_tf.TextRange
         sb_tr.Text = "⚡ TÁC TỬ MACC\n\n📁 Thư Viện 165+\n📊 Native Tables\n📈 Office Charts\n✨ Apple Motion\n⚙ Thiết Lập"
         sb_tr.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        sb_tr.Font.Size = 8.5
+        sb_tr.Font.Size = 16.0.5
         sb_tr.Font.Color.RGB = hex_to_bgr(muted)
         m_shapes.append(sb_tb)
 
@@ -1987,7 +1987,7 @@ class AdvancedContainersEngine:
             p1 = ttf.TextRange.Paragraphs(1)
             p1.Text = f"{m_val}  "
             p1.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            p1.Font.Size = 11.0
+            p1.Font.Size = 15.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(m_col)
             p1.ParagraphFormat.Alignment = ppAlignCenter
@@ -1995,7 +1995,7 @@ class AdvancedContainersEngine:
             p2 = ttf.TextRange.Paragraphs(2)
             p2.Text = m_lbl
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 8.0
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             p2.ParagraphFormat.Alignment = ppAlignCenter
             m_shapes.append(ttb)
@@ -2017,7 +2017,7 @@ class AdvancedContainersEngine:
         pp1 = ptf.TextRange.Paragraphs(1)
         pp1.Text = "KHUNG THIẾT BỊ ĐỈNH CAO: TRỰC QUAN HÓA TOÀN BỘ HỆ SINH THÁI MAKE SLIDE PRO\n"
         pp1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        pp1.Font.Size = 11.0
+        pp1.Font.Size = 15.0
         pp1.Font.Bold = msoTrue
         pp1.Font.Color.RGB = hex_to_bgr("#38BDF8")
         pp1.ParagraphFormat.Alignment = ppAlignCenter
@@ -2025,7 +2025,7 @@ class AdvancedContainersEngine:
         pp2 = ptf.TextRange.Paragraphs(2)
         pp2.Text = "Tự động hóa trình chiếu trực tiếp trên PowerPoint Native COM • Sẵn sàng cho hội nghị C-Level & Apple Keynote"
         pp2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        pp2.Font.Size = 9.5
+        pp2.Font.Size = 16.0.5
         pp2.Font.Color.RGB = hex_to_bgr(ink)
         pp2.ParagraphFormat.Alignment = ppAlignCenter
         m_shapes.append(prev_tb)
@@ -2106,7 +2106,7 @@ class AdvancedContainersEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = f"{st['label']}\n"
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 11.0
+            p2.Font.Size = 15.0
             p2.Font.Bold = msoTrue
             p2.Font.Color.RGB = hex_to_bgr(ink)
             p2.ParagraphFormat.Alignment = ppAlignCenter
@@ -2114,7 +2114,7 @@ class AdvancedContainersEngine:
             p3 = tf.TextRange.Paragraphs(3)
             p3.Text = st["badge"]
             p3.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p3.Font.Size = 9.0
+            p3.Font.Size = 16.0.5
             p3.Font.Bold = msoTrue
             p3.Font.Color.RGB = hex_to_bgr(st["color"])
             p3.ParagraphFormat.Alignment = ppAlignCenter
@@ -2204,7 +2204,7 @@ class AdvancedContainersEngine:
             pt = pill.TextFrame.TextRange
             pt.Text = item["pill"]
             pt.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            pt.Font.Size = 11.0
+            pt.Font.Size = 15.0
             pt.Font.Bold = msoTrue
             pt.Font.Color.RGB = hex_to_bgr(ink)
             pill.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -2240,7 +2240,7 @@ class AdvancedContainersEngine:
             dtt = dtf.TextRange
             dtt.Text = "\n\n".join(item["bullets"])
             dtt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            dtt.Font.Size = 12.5
+            dtt.Font.Size = 15.5
             dtt.Font.Color.RGB = hex_to_bgr(muted)
             dtt.ParagraphFormat.Alignment = ppAlignLeft
             dtt.ParagraphFormat.SpaceWithin = 1.2
@@ -2255,7 +2255,7 @@ class AdvancedContainersEngine:
                 ct = chip.TextFrame.TextRange
                 ct.Text = f"✔  {item['chip']}"
                 ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-                ct.Font.Size = 9.5
+                ct.Font.Size = 16.0.5
                 ct.Font.Bold = msoTrue
                 ct.Font.Color.RGB = hex_to_bgr(color)
                 chip.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -2347,7 +2347,7 @@ class AdvancedContainersEngine:
             pt = pill.TextFrame.TextRange
             pt.Text = item["badge"]
             pt.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            pt.Font.Size = 10.5
+            pt.Font.Size = 14.5
             pt.Font.Bold = msoTrue
             pt.Font.Color.RGB = hex_to_bgr("#FFFFFF")
             pill.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -2362,7 +2362,7 @@ class AdvancedContainersEngine:
             ttt = ttf.TextRange
             ttt.Text = item["title"]
             ttt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            ttt.Font.Size = 12.5
+            ttt.Font.Size = 15.5
             ttt.Font.Bold = msoTrue
             ttt.Font.Color.RGB = hex_to_bgr(ink)
             ttt.ParagraphFormat.Alignment = ppAlignCenter
@@ -2385,7 +2385,7 @@ class AdvancedContainersEngine:
             dtt = dtf.TextRange
             dtt.Text = "\n\n".join(item["bullets"])
             dtt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            dtt.Font.Size = 10.0
+            dtt.Font.Size = 14.5
             dtt.Font.Color.RGB = hex_to_bgr(muted)
             dtt.ParagraphFormat.Alignment = ppAlignLeft
             c_shapes.append(tb_desc)
@@ -2399,7 +2399,7 @@ class AdvancedContainersEngine:
                 ct = chip.TextFrame.TextRange
                 ct.Text = f"▲  {item['chip']}"
                 ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-                ct.Font.Size = 9.5
+                ct.Font.Size = 16.0.5
                 ct.Font.Bold = msoTrue
                 ct.Font.Color.RGB = hex_to_bgr(color)
                 chip.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -2436,7 +2436,7 @@ class AdvancedContainersEngine:
         shapes.append(core)
         tr = core.TextFrame.TextRange
         tr.Text = f"TRỌNG TÂM\n{center_label.upper()}"
-        tr.Font.Size = 10.0
+        tr.Font.Size = 14.5
         tr.Font.Bold = msoTrue
         tr.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         tr.ParagraphFormat.Alignment = ppAlignCenter
@@ -2472,7 +2472,7 @@ class AdvancedContainersEngine:
 
             htr = h.TextFrame.TextRange
             htr.Text = feat
-            htr.Font.Size = 10.0
+            htr.Font.Size = 14.5
             htr.Font.Bold = msoTrue
             htr.Font.Color.RGB = hex_to_bgr(ink)
             htr.ParagraphFormat.Alignment = ppAlignCenter
@@ -2526,13 +2526,13 @@ class AdvancedContainersEngine:
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = f"{quote}\n\n"
-            p2.Font.Size = 10.5
+            p2.Font.Size = 14.5
             p2.Font.Color.RGB = hex_to_bgr(ink)
             p2.ParagraphFormat.Alignment = ppAlignCenter
 
             p3 = tf.TextRange.Paragraphs(3)
             p3.Text = author
-            p3.Font.Size = 9.5
+            p3.Font.Size = 16.0.5
             p3.Font.Bold = msoTrue
             p3.Font.Color.RGB = hex_to_bgr("#38BDF8")
             p3.ParagraphFormat.Alignment = ppAlignCenter
@@ -2583,7 +2583,7 @@ class AdvancedContainersEngine:
 
         p2 = tf_l.TextRange.Paragraphs(2)
         p2.Text = stat_label.upper()
-        p2.Font.Size = 13.0
+        p2.Font.Size = 16.0
         p2.Font.Bold = msoTrue
         p2.Font.Color.RGB = hex_to_bgr(ink)
         p2.ParagraphFormat.Alignment = ppAlignCenter
@@ -2603,7 +2603,7 @@ class AdvancedContainersEngine:
         tf_r.WordWrap = msoTrue
         rp = tf_r.TextRange
         rp.Text = f"{detail_title}\n\n" + "\n\n".join(detail_bullets)
-        rp.Font.Size = 11.0
+        rp.Font.Size = 15.0
         rp.Font.Color.RGB = hex_to_bgr(ink)
         shapes.append(tb_r)
 
@@ -2676,7 +2676,7 @@ class AdvancedContainersEngine:
         pt = pill.TextFrame.TextRange
         pt.Text = author_text
         pt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        pt.Font.Size = 10.5
+        pt.Font.Size = 14.5
         pt.Font.Bold = msoTrue
         pt.Font.Color.RGB = hex_to_bgr("#38BDF8")
         pill.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter

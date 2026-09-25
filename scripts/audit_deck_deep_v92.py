@@ -55,6 +55,11 @@ SLOP_PATTERNS = [
     r"bronze sla",
     r"silver sla",
     r"scrum master",
+    r"yếu tố\s*2\b",
+    r"mô tả chi tiết",
+    r"khuyến nghị áp dụng",
+    r"vận dụng đồng bộ các nguyên tắc",
+    r"\b\d+\.\d+\.\d+\.\.\.",
 ]
 
 
@@ -77,6 +82,7 @@ def audit_deck(pptx_path: Path) -> Dict[str, Any]:
         deck = ppt_app.Presentations.Open(str(pptx_path.resolve()), ReadOnly=True, Untitled=False, WithWindow=False)
         total_slides = deck.Slides.Count
         results["total_slides"] = total_slides
+        slide_assertions: Dict[str, int] = {}
 
         for i in range(1, total_slides + 1):
             s = deck.Slides(i)
@@ -172,6 +178,81 @@ def audit_deck(pptx_path: Path) -> Dict[str, Any]:
                 if m:
                     results["p0_defects"].append(f"Slide {i:02d}: Leaked slop pattern '{m.group(0)}'")
 
+            # Duplicate Title Check (P0)
+            ass_title = ""
+            for j in range(1, shape_count + 1):
+                try:
+                    shp = s.Shapes(j)
+                    if "Anchor_Assertion_Title" in shp.Name and shp.HasTextFrame and shp.TextFrame.HasText:
+                        ass_title = shp.TextFrame.TextRange.Text.strip()
+                        break
+                except Exception:
+                    pass
+            if not ass_title and slide_texts:
+                ass_title = slide_texts[0]
+
+            if ass_title and not (is_cover or is_outro):
+                # Normalize title for comparison
+                norm_title = " ".join(ass_title.split()).lower()
+                if norm_title in slide_assertions:
+                    results["p0_defects"].append(f"Slide {i:02d}: DUPLICATE ASSERTION TITLE with Slide {slide_assertions[norm_title]:02d}! Title: '{ass_title[:60]}'")
+                else:
+                    slide_assertions[norm_title] = i
+
+            # 5. Typography & Readability Inspector (Min 14.5pt on Content Body Text, Min 24pt on Title)
+            if not (is_cover or is_outro):
+                for j in range(1, shape_count + 1):
+                    shp = s.Shapes(j)
+                    s_top = float(shp.Top)
+                    s_name = getattr(shp, "Name", "")
+                    is_footer = ("Anchor_Source_Footer" in s_name or s_top > 495.0 or "nguồn" in s_name.lower())
+                    if is_footer:
+                        continue
+
+                    # Top rail kicker and tracker are category headers (allowed at 13-14pt)
+                    is_top_rail = (s_top < 50.0 or "Anchor_Kicker" in s_name or "Anchor_Slide_Tracker" in s_name)
+                    if is_top_rail:
+                        continue
+
+                    # Assertion Title font size check
+                    if "Anchor_Assertion_Title" in s_name:
+                        if shp.HasTextFrame and shp.TextFrame.HasText:
+                            try:
+                                t_sz = float(shp.TextFrame.TextRange.Font.Size)
+                                if t_sz < 24.0:
+                                    results["p0_defects"].append(f"Slide {i:02d}: Assertion Title font size {t_sz:.1f}pt < 24pt!")
+                            except Exception:
+                                pass
+
+                    # Inspect shapes and groups for tiny fonts (<14.5pt)
+                    text_ranges = []
+                    if shp.HasTextFrame and shp.TextFrame.HasText:
+                        text_ranges.append(shp.TextFrame.TextRange)
+                    elif shp.Type == 6:  # group
+                        try:
+                            for gi in range(1, shp.GroupItems.Count + 1):
+                                c_shp = shp.GroupItems(gi)
+                                if c_shp.HasTextFrame and c_shp.TextFrame.HasText:
+                                    text_ranges.append(c_shp.TextFrame.TextRange)
+                        except Exception:
+                            pass
+
+                    for tr in text_ranges:
+                        try:
+                            for p_idx in range(1, tr.Paragraphs().Count + 1):
+                                para = tr.Paragraphs(p_idx)
+                                p_text = para.Text.strip()
+                                if not p_text or len(p_text) < 3:
+                                    continue
+                                p_sz = float(para.Font.Size)
+                                if p_sz < 14.5:
+                                    # Allow kicker/badge down to 13.0pt if <= 25 chars
+                                    if len(p_text) <= 25 and p_sz >= 13.0:
+                                        continue
+                                    results["p0_defects"].append(f"Slide {i:02d}: Illegible text ({p_sz:.1f}pt < 14.5pt): '{p_text[:40]}...'")
+                        except Exception:
+                            pass
+
             # Cardinality check
             title_txt = slide_texts[0] if slide_texts else ""
             cardinal_m = re.search(r"\b([2-9])\s*(khối|giai đoạn|đặc trưng|trụ cột|bước|nguyên tắc|mục tiêu|khía cạnh)\b", title_txt, re.IGNORECASE)
@@ -206,9 +287,12 @@ def audit_deck(pptx_path: Path) -> Dict[str, Any]:
 
 
 if __name__ == "__main__":
-    target = PROJECT_ROOT / "Du_An_Outputs" / "A_Tuan_Dan_So_2" / "BÀI 1. Tổng quan về dịch vụ dân số - Dark.pptx"
-    if not target.exists():
-        target = PROJECT_ROOT / "Du_An_Outputs" / "A_Tuan_Dan_So_2" / "BÀI_1__Tổng_quan_về_dịch_vụ_dân_số" / "BÀI_1__Tổng_quan_về_dịch_vụ_dân_số_Dark.pptx"
+    if len(sys.argv) > 1:
+        target = Path(sys.argv[1])
+    else:
+        target = PROJECT_ROOT / "Du_An_Outputs" / "A_Tuan_Dan_So_2" / "BÀI 1. Tổng quan về dịch vụ dân số - Dark.pptx"
+        if not target.exists():
+            target = PROJECT_ROOT / "Du_An_Outputs" / "A_Tuan_Dan_So_2" / "BÀI_1__Tổng_quan_về_dịch_vụ_dân_số" / "BÀI_1__Tổng_quan_về_dịch_vụ_dân_số_Dark.pptx"
     
     print("=" * 80)
     print("   FORENSIC QUALITY AUDIT GATE: MAKE SLIDE PRO V9.2.2")

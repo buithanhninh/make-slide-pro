@@ -112,7 +112,7 @@ class ProcessesEngine:
             cp = ctf.TextRange
             cp.Text = f"BƯỚC {s.get('step', str(i+1))}\n{s.get('title', f'Giai Đoạn {i+1}')}"
             cp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            cp.Font.Size = 11.5 if count > 4 else 13.5
+            cp.Font.Size = 15.0 if count > 4 else 13.5
             cp.Font.Bold = msoTrue
             cp.Font.Color.RGB = hex_to_bgr("#FFFFFF" if is_active else ink)
             cp.ParagraphFormat.Alignment = ppAlignCenter
@@ -134,7 +134,7 @@ class ProcessesEngine:
             pt = pill.TextFrame.TextRange
             pt.Text = f"TIÊU ĐIỂM BƯỚC 0{i+1}"
             pt.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            pt.Font.Size = 10.5
+            pt.Font.Size = 14.5
             pt.Font.Bold = msoTrue
             pt.Font.Color.RGB = hex_to_bgr(brand if is_active else "#38BDF8")
             pill.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -151,7 +151,7 @@ class ProcessesEngine:
             bp = btf.TextRange
             bp.Text = s.get("desc", "")
             bp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            bp.Font.Size = 12.5 if count > 4 else 14.5
+            bp.Font.Size = 15.5 if count > 4 else 14.5
             bp.Font.Color.RGB = hex_to_bgr(ink if is_active else muted)
             bp.ParagraphFormat.Alignment = ppAlignLeft
             bp.ParagraphFormat.LineRuleWithin = msoTrue
@@ -168,7 +168,7 @@ class ProcessesEngine:
             bt = badge.TextFrame.TextRange
             bt.Text = f"✔ Chuẩn Đầu Ra 0{i+1}"
             bt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            bt.Font.Size = 10.0
+            bt.Font.Size = 14.5
             bt.Font.Bold = msoTrue
             bt.Font.Color.RGB = hex_to_bgr(brand if is_active else muted)
             badge.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -250,21 +250,21 @@ class ProcessesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = st.get("name", f"Trạm {i+1}") + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 11
+            p1.Font.Size = 15.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(ink)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = f"★ {st.get('kpi', '')}\n" if st.get("kpi") else ""
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 9.5
+            p2.Font.Size = 16.0.5
             p2.Font.Bold = msoTrue
             p2.Font.Color.RGB = hex_to_bgr(brand)
 
             p3 = tf.TextRange.Paragraphs(3)
             p3.Text = st.get("desc", "")
             p3.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p3.Font.Size = 9.5
+            p3.Font.Size = 16.0.5
             p3.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(tb)
 
@@ -320,7 +320,7 @@ class ProcessesEngine:
         cp = ctf.TextRange
         cp.Text = f"🔄 {cycle_name}"
         cp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        cp.Font.Size = 12.5
+        cp.Font.Size = 15.5
         cp.Font.Bold = msoTrue
         cp.Font.Color.RGB = hex_to_bgr(brand)
         cp.ParagraphFormat.Alignment = ppAlignCenter
@@ -351,7 +351,7 @@ class ProcessesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"{nd.get('step', f'BƯỚC 0{i+1}')}: {nd.get('title', '')}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 13.0
+            p1.Font.Size = 16.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand if i == 0 else ink)
             p1.ParagraphFormat.SpaceAfter = 5
@@ -359,7 +359,7 @@ class ProcessesEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = nd.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 11.5
+            p2.Font.Size = 15.0
             p2.Font.Color.RGB = hex_to_bgr(muted)
             try:
                 p2.ParagraphFormat.SpaceWithin = 1.22
@@ -413,7 +413,7 @@ class ProcessesEngine:
             inp = in_tf.TextRange
             inp.Text = f"GEAR 0{i+1}"
             inp.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            inp.Font.Size = 11
+            inp.Font.Size = 15.0
             inp.Font.Bold = msoTrue
             inp.Font.Color.RGB = hex_to_bgr("#FFFFFF" if is_center else brand)
             inp.ParagraphFormat.Alignment = ppAlignCenter
@@ -435,7 +435,7 @@ class ProcessesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = g.get("title", f"Thành Phần {i+1}") + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 11
+            p1.Font.Size = 15.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(ink)
             p1.ParagraphFormat.Alignment = ppAlignCenter
@@ -443,7 +443,7 @@ class ProcessesEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = g.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 9.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             p2.ParagraphFormat.Alignment = ppAlignCenter
             shapes.append(tb)
@@ -489,7 +489,7 @@ class ProcessesEngine:
         hp = htf.TextRange
         hp.Text = effect
         hp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        hp.Font.Size = 11.5
+        hp.Font.Size = 15.0
         hp.Font.Bold = msoTrue
         hp.Font.Color.RGB = hex_to_bgr(danger)
         hp.ParagraphFormat.Alignment = ppAlignCenter
@@ -523,14 +523,14 @@ class ProcessesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = c.get("cat", "") + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 10.5
+            p1.Font.Size = 14.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = c.get("items", "")
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 9.0
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(tb)
 
@@ -569,7 +569,7 @@ class ProcessesEngine:
         rp = rtf.TextRange
         rp.Text = root_text
         rp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        rp.Font.Size = 11
+        rp.Font.Size = 15.0
         rp.Font.Bold = msoTrue
         rp.Font.Color.RGB = hex_to_bgr(ink)
         rp.ParagraphFormat.Alignment = ppAlignCenter
@@ -596,7 +596,7 @@ class ProcessesEngine:
         dp = dtf.TextRange
         dp.Text = decision_text
         dp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        dp.Font.Size = 11
+        dp.Font.Size = 15.0
         dp.Font.Bold = msoTrue
         dp.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         dp.ParagraphFormat.Alignment = ppAlignCenter
@@ -619,7 +619,7 @@ class ProcessesEngine:
         yp = ytf.TextRange
         yp.Text = f"[ĐẠT - YES]\n{yes_outcome}"
         yp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        yp.Font.Size = 10.5
+        yp.Font.Size = 14.5
         yp.Font.Bold = msoTrue
         yp.Font.Color.RGB = hex_to_bgr(success)
         yp.ParagraphFormat.Alignment = ppAlignCenter
@@ -638,7 +638,7 @@ class ProcessesEngine:
         np = ntf.TextRange
         np.Text = f"[KHÔNG ĐẠT - NO]\n{no_outcome}"
         np.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        np.Font.Size = 10.5
+        np.Font.Size = 14.5
         np.Font.Bold = msoTrue
         np.Font.Color.RGB = hex_to_bgr(danger)
         np.ParagraphFormat.Alignment = ppAlignCenter
@@ -698,7 +698,7 @@ class ProcessesEngine:
             hp = htf.TextRange
             hp.Text = ln.get("dept", f"LÀN 0{i+1}")
             hp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            hp.Font.Size = 12.0
+            hp.Font.Size = 15.5
             hp.Font.Bold = msoTrue
             hp.Font.Color.RGB = hex_to_bgr("#FFFFFF" if i == 0 else self._get_token("colors", "brand", "#38BDF8"))
             hp.ParagraphFormat.Alignment = ppAlignCenter
@@ -731,7 +731,7 @@ class ProcessesEngine:
             tp = tbt.TextRange
             tp.Text = ln.get("task", "")
             tp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            tp.Font.Size = 12.5
+            tp.Font.Size = 15.5
             tp.Font.Color.RGB = hex_to_bgr(ink)
             tp.ParagraphFormat.Alignment = ppAlignLeft
             tp.ParagraphFormat.LineRuleWithin = msoTrue
@@ -786,7 +786,7 @@ class ProcessesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"{st.get('level', '')} ({st.get('kpi', '')})\n"
             p1.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            p1.Font.Size = 12
+            p1.Font.Size = 15.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr("#FFFFFF" if is_top else brand)
             p1.ParagraphFormat.Alignment = ppAlignCenter
@@ -794,7 +794,7 @@ class ProcessesEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = st.get("title", "") + "\n"
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 12
+            p2.Font.Size = 15.5
             p2.Font.Bold = msoTrue
             p2.Font.Color.RGB = hex_to_bgr("#FFFFFF" if is_top else ink)
             p2.ParagraphFormat.Alignment = ppAlignCenter
@@ -802,7 +802,7 @@ class ProcessesEngine:
             p3 = tf.TextRange.Paragraphs(3)
             p3.Text = st.get("desc", "")
             p3.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p3.Font.Size = 10.5
+            p3.Font.Size = 14.5
             p3.Font.Color.RGB = hex_to_bgr("#E2E8F0" if is_top else muted)
             try:
                 p3.ParagraphFormat.SpaceWithin = 1.2
@@ -870,7 +870,7 @@ class ProcessesEngine:
             fp = ftf.TextRange
             fp.Text = m.get("date", f"MỐC 0{i+1}")
             fp.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            fp.Font.Size = 11.5
+            fp.Font.Size = 15.0
             fp.Font.Bold = msoTrue
             fp.Font.Color.RGB = hex_to_bgr("#FFFFFF")
             fp.ParagraphFormat.Alignment = ppAlignCenter
@@ -905,7 +905,7 @@ class ProcessesEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = m.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 12.0
+            p2.Font.Size = 15.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             p2.ParagraphFormat.Alignment = ppAlignCenter
             p2.ParagraphFormat.LineRuleWithin = msoTrue
@@ -923,7 +923,7 @@ class ProcessesEngine:
             bt = badge.TextFrame.TextRange
             bt.Text = f"✔ Chuẩn Đầu Ra 0{i+1}"
             bt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            bt.Font.Size = 10.0
+            bt.Font.Size = 14.5
             bt.Font.Bold = msoTrue
             bt.Font.Color.RGB = hex_to_bgr(brand if i == 0 else muted)
             bt.ParagraphFormat.Alignment = ppAlignCenter
@@ -993,14 +993,14 @@ class ProcessesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"[{ev.get('year', '')}] {ev.get('title', '')}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 10.5
+            p1.Font.Size = 14.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = ev.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 9.0
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(tb)
 
@@ -1044,7 +1044,7 @@ class ProcessesEngine:
             cp = ctf.TextRange
             cp.Text = col
             cp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            cp.Font.Size = 9.5
+            cp.Font.Size = 16.0.5
             cp.Font.Bold = msoTrue
             cp.Font.Color.RGB = hex_to_bgr(muted)
             cp.ParagraphFormat.Alignment = ppAlignCenter
@@ -1065,7 +1065,7 @@ class ProcessesEngine:
             tp = ttf.TextRange
             tp.Text = t.get("name", "")
             tp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            tp.Font.Size = 9.5
+            tp.Font.Size = 16.0.5
             tp.Font.Bold = msoTrue
             tp.Font.Color.RGB = hex_to_bgr(ink)
             tp.ParagraphFormat.Alignment = ppAlignLeft
@@ -1121,21 +1121,21 @@ class ProcessesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"{h.get('h', '')}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 11
+            p1.Font.Size = 15.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = f"Thời Gian: {h.get('time', '')}\n"
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 9.5
+            p2.Font.Size = 16.0.5
             p2.Font.Bold = msoTrue
             p2.Font.Color.RGB = hex_to_bgr(ink)
 
             p3 = tf.TextRange.Paragraphs(3)
             p3.Text = f"Trọng Tâm: {h.get('focus', '')}\n\n{h.get('desc', '')}"
             p3.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p3.Font.Size = 9.0
+            p3.Font.Size = 16.0.5
             p3.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(tb)
 
@@ -1169,7 +1169,7 @@ class ProcessesEngine:
         bp = btf.TextRange
         bp.Text = "PRODUCT BACKLOG\n\n• Yêu cầu người dùng\n• Tính năng mới\n• Sửa lỗi & Nâng cấp\n• Ưu tiên theo giá trị"
         bp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        bp.Font.Size = 10
+        bp.Font.Size = 14.5
         bp.Font.Color.RGB = hex_to_bgr(ink)
         shapes.append(btb)
 
@@ -1188,7 +1188,7 @@ class ProcessesEngine:
         sp = stf.TextRange
         sp.Text = "SPRINT 2-4 TUẦN\n\n• Daily Standup\n• Sprint Review\n• Retrospective"
         sp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        sp.Font.Size = 10
+        sp.Font.Size = 14.5
         sp.Font.Bold = msoTrue
         sp.Font.Color.RGB = hex_to_bgr(brand)
         sp.ParagraphFormat.Alignment = ppAlignCenter
@@ -1209,7 +1209,7 @@ class ProcessesEngine:
         op = otf.TextRange
         op.Text = "BÀN GIAO SẢN PHẨM\n\n• Tính năng hoàn chỉnh\n• Sẵn sàng triển khai\n• Phản hồi khách hàng\n• Đánh giá chất lượng"
         op.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        op.Font.Size = 10
+        op.Font.Size = 14.5
         op.Font.Color.RGB = hex_to_bgr(ink)
         shapes.append(otb)
 
@@ -1247,7 +1247,7 @@ class ProcessesEngine:
         lp_p = ltf.TextRange
         lp_p.Text = as_is
         lp_p.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        lp_p.Font.Size = 10
+        lp_p.Font.Size = 14.5
         lp_p.Font.Color.RGB = hex_to_bgr(ink)
         shapes.append(ltb)
 
@@ -1266,7 +1266,7 @@ class ProcessesEngine:
         rp_p = rtf.TextRange
         rp_p.Text = to_be
         rp_p.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        rp_p.Font.Size = 10
+        rp_p.Font.Size = 14.5
         rp_p.Font.Color.RGB = hex_to_bgr(ink)
         shapes.append(rtb)
 
@@ -1283,7 +1283,7 @@ class ProcessesEngine:
         bp = btf.TextRange
         bp.Text = "CẦU NỐI CHUYỂN ĐỔI: " + " → ".join(bridge_steps)
         bp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        bp.Font.Size = 9.5
+        bp.Font.Size = 16.0.5
         bp.Font.Bold = msoTrue
         bp.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         bp.ParagraphFormat.Alignment = ppAlignCenter
@@ -1334,14 +1334,14 @@ class ProcessesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = p_data.get("title", "") + "\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 11
+            p1.Font.Size = 15.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = p_data.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 9.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(tb)
 
@@ -1389,7 +1389,7 @@ class ProcessesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"0{h_data.get('num', i+1)}\n{h_data.get('title', '')}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 10.5
+            p1.Font.Size = 14.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
             p1.ParagraphFormat.Alignment = ppAlignCenter
@@ -1397,7 +1397,7 @@ class ProcessesEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = h_data.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 8.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             p2.ParagraphFormat.Alignment = ppAlignCenter
             shapes.append(tb)
@@ -1443,14 +1443,14 @@ class ProcessesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"[{st.get('step', '')}]\n{st.get('name', '')}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 11
+            p1.Font.Size = 15.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = f"Công Cụ: {st.get('tools', '')}\n\n{st.get('desc', '')}"
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 9.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(tb)
 
@@ -1496,14 +1496,14 @@ class ProcessesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"★ {lvl_data.get('lvl', '')} - {lvl_data.get('title', '')}: "
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 11
+            p1.Font.Size = 15.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand if inv_idx == 0 else ink)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = lvl_data.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 10
+            p2.Font.Size = 14.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(tb)
 
@@ -1547,7 +1547,7 @@ class ProcessesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"DOMINO 0{d.get('num', i+1)}\n{d.get('title', '')}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 11
+            p1.Font.Size = 15.0
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
             p1.ParagraphFormat.Alignment = ppAlignCenter
@@ -1555,7 +1555,7 @@ class ProcessesEngine:
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = d.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 9.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             p2.ParagraphFormat.Alignment = ppAlignCenter
             shapes.append(tb)
@@ -1599,7 +1599,7 @@ class ProcessesEngine:
         hp = htf.TextRange
         hp.Text = hub_text
         hp.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        hp.Font.Size = 10.5
+        hp.Font.Size = 14.5
         hp.Font.Bold = msoTrue
         hp.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         hp.ParagraphFormat.Alignment = ppAlignCenter
@@ -1632,14 +1632,14 @@ class ProcessesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"{r_data.get('dir', '')}: {r_data.get('title', '')}\n"
             p1.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p1.Font.Size = 10.5
+            p1.Font.Size = 14.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(brand)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = r_data.get("desc", "")
             p2.Font.Name = self._get_token("fonts", "secondary", "Segoe UI")
-            p2.Font.Size = 9.0
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             shapes.append(tb)
 
@@ -1663,7 +1663,7 @@ class ProcessesEngine:
         shapes.append(core)
         tr = core.TextFrame.TextRange
         tr.Text = "CHU TRÌNH\n6 BƯỚC\nLIÊN TỤC"
-        tr.Font.Size = 11.0
+        tr.Font.Size = 15.0
         tr.Font.Bold = msoTrue
         tr.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         tr.ParagraphFormat.Alignment = ppAlignCenter
@@ -1696,7 +1696,7 @@ class ProcessesEngine:
 
             ntr = node.TextFrame.TextRange
             ntr.Text = title
-            ntr.Font.Size = 10.5
+            ntr.Font.Size = 14.5
             ntr.Font.Bold = msoTrue
             ntr.Font.Color.RGB = hex_to_bgr(ink)
             ntr.ParagraphFormat.Alignment = ppAlignCenter
@@ -1743,7 +1743,7 @@ class ProcessesEngine:
 
             tr = sh.TextFrame.TextRange
             tr.Text = f"{title}\n{desc}"
-            tr.Font.Size = 10.5
+            tr.Font.Size = 14.5
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignLeft
 
@@ -1779,7 +1779,7 @@ class ProcessesEngine:
 
             tr = sh.TextFrame.TextRange
             tr.Text = f"{title}: {desc}"
-            tr.Font.Size = 10.5
+            tr.Font.Size = 14.5
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignCenter
 
@@ -1810,7 +1810,7 @@ class ProcessesEngine:
 
             tr = sh.TextFrame.TextRange
             tr.Text = f"{title}\n{desc}"
-            tr.Font.Size = 11.5
+            tr.Font.Size = 15.0
             tr.Font.Bold = msoTrue
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignLeft
@@ -1850,7 +1850,7 @@ class ProcessesEngine:
 
             tr = c.TextFrame.TextRange
             tr.Text = f"{g_title}\n\n{g_desc}"
-            tr.Font.Size = 10.5
+            tr.Font.Size = 14.5
             tr.Font.Bold = msoTrue
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignCenter
@@ -1866,7 +1866,7 @@ class ProcessesEngine:
 
             gtr = g.TextFrame.TextRange
             gtr.Text = gate
-            gtr.Font.Size = 8.5
+            gtr.Font.Size = 16.0.5
             gtr.Font.Color.RGB = hex_to_bgr("#FFFFFF")
             gtr.ParagraphFormat.Alignment = ppAlignCenter
 
@@ -1904,7 +1904,7 @@ class ProcessesEngine:
             shapes.append(c)
             tr = c.TextFrame.TextRange
             tr.Text = f"MỐC {i+1} →\n\n{title}"
-            tr.Font.Size = 11.0
+            tr.Font.Size = 15.0
             tr.Font.Bold = msoTrue
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignCenter
@@ -1922,7 +1922,7 @@ class ProcessesEngine:
             shapes.append(c)
             tr = c.TextFrame.TextRange
             tr.Text = f"← MỐC {4+i}\n\n{title}"
-            tr.Font.Size = 11.0
+            tr.Font.Size = 15.0
             tr.Font.Bold = msoTrue
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignCenter
@@ -1958,7 +1958,7 @@ class ProcessesEngine:
 
             tr = sh.TextFrame.TextRange
             tr.Text = f"{title}: {desc}"
-            tr.Font.Size = 10.5
+            tr.Font.Size = 14.5
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignCenter
 
@@ -2007,7 +2007,7 @@ class ProcessesEngine:
 
             tr = q.TextFrame.TextRange
             tr.Text = text
-            tr.Font.Size = 11.0
+            tr.Font.Size = 15.0
             tr.Font.Color.RGB = hex_to_bgr(ink)
             tr.ParagraphFormat.Alignment = ppAlignLeft
 
@@ -2049,7 +2049,7 @@ class ProcessesEngine:
         dbt = dev_badge.TextFrame.TextRange
         dbt.Text = "◄ PHÁT TRIỂN (DEVELOPMENT)"
         dbt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        dbt.Font.Size = 11.0
+        dbt.Font.Size = 15.0
         dbt.Font.Bold = msoTrue
         dbt.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         dev_badge.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -2081,14 +2081,14 @@ class ProcessesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"{p_title}: "
             p1.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            p1.Font.Size = 10.5
+            p1.Font.Size = 14.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(p_color)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = p_desc
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 9.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             dev_shapes.append(tb)
 
@@ -2117,7 +2117,7 @@ class ProcessesEngine:
         str_t = stf.TextRange
         str_t.Text = "★ AN NINH\nBẢO MẬT\nZERO\nTRUST"
         str_t.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        str_t.Font.Size = 9.5
+        str_t.Font.Size = 16.0.5
         str_t.Font.Bold = msoTrue
         str_t.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         str_t.ParagraphFormat.Alignment = ppAlignCenter
@@ -2147,7 +2147,7 @@ class ProcessesEngine:
         obt = ops_badge.TextFrame.TextRange
         obt.Text = "VẬN HÀNH (OPERATIONS) ►"
         obt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        obt.Font.Size = 11.0
+        obt.Font.Size = 15.0
         obt.Font.Bold = msoTrue
         obt.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         ops_badge.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -2177,14 +2177,14 @@ class ProcessesEngine:
             p1 = tf.TextRange.Paragraphs(1)
             p1.Text = f"{p_title}: "
             p1.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            p1.Font.Size = 10.5
+            p1.Font.Size = 14.5
             p1.Font.Bold = msoTrue
             p1.Font.Color.RGB = hex_to_bgr(p_color)
 
             p2 = tf.TextRange.Paragraphs(2)
             p2.Text = p_desc
             p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            p2.Font.Size = 9.5
+            p2.Font.Size = 16.0.5
             p2.Font.Color.RGB = hex_to_bgr(muted)
             ops_shapes.append(tb)
 
@@ -2224,7 +2224,7 @@ class ProcessesEngine:
         lt = leg_bar.TextFrame.TextRange
         lt.Text = "★ Đường Găng (Critical Path, Float = 0: Tuyệt đối không được trễ)    |    ● Nhánh Phụ Song Song (Float = +2 Ngày: Có thể bù đắp thời gian)"
         lt.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        lt.Font.Size = 10.0
+        lt.Font.Size = 14.5
         lt.Font.Bold = msoTrue
         lt.Font.Color.RGB = hex_to_bgr(ink)
         leg_bar.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -2260,7 +2260,7 @@ class ProcessesEngine:
             ht = hdr.TextFrame.TextRange
             ht.Text = f"{nid}  •  {ndur}"
             ht.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-            ht.Font.Size = 10.0
+            ht.Font.Size = 14.5
             ht.Font.Bold = msoTrue
             ht.Font.Color.RGB = hex_to_bgr("#FFFFFF")
             hdr.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -2275,7 +2275,7 @@ class ProcessesEngine:
             ttr = tf.TextRange
             ttr.Text = ntitle
             ttr.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            ttr.Font.Size = 11.0
+            ttr.Font.Size = 15.0
             ttr.Font.Bold = msoTrue
             ttr.Font.Color.RGB = hex_to_bgr(ink)
             ttr.ParagraphFormat.Alignment = ppAlignCenter
@@ -2289,7 +2289,7 @@ class ProcessesEngine:
             ct = chip.TextFrame.TextRange
             ct.Text = f"★ {nfloat} (ĐƯỜNG GĂNG)"
             ct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-            ct.Font.Size = 8.5
+            ct.Font.Size = 16.0.5
             ct.Font.Bold = msoTrue
             ct.Font.Color.RGB = hex_to_bgr(color)
             chip.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -2328,7 +2328,7 @@ class ProcessesEngine:
         bht = b_hdr.TextFrame.TextRange
         bht.Text = f"{b_nid}  •  {b_dur}"
         bht.Font.Name = self._get_token("fonts", "numeric", "Bahnschrift")
-        bht.Font.Size = 10.0
+        bht.Font.Size = 14.5
         bht.Font.Bold = msoTrue
         bht.Font.Color.RGB = hex_to_bgr("#FFFFFF")
         b_hdr.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter
@@ -2342,7 +2342,7 @@ class ProcessesEngine:
         bttr = btf.TextRange
         bttr.Text = b_title
         bttr.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        bttr.Font.Size = 11.0
+        bttr.Font.Size = 15.0
         bttr.Font.Bold = msoTrue
         bttr.Font.Color.RGB = hex_to_bgr(ink)
         bttr.ParagraphFormat.Alignment = ppAlignCenter
@@ -2355,7 +2355,7 @@ class ProcessesEngine:
         bct = b_chip.TextFrame.TextRange
         bct.Text = f"● {b_float} (NHÁNH PHỤ)"
         bct.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        bct.Font.Size = 8.5
+        bct.Font.Size = 16.0.5
         bct.Font.Bold = msoTrue
         bct.Font.Color.RGB = hex_to_bgr(b_color)
         b_chip.TextFrame.TextRange.ParagraphFormat.Alignment = ppAlignCenter

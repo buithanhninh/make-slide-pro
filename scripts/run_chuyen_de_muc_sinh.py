@@ -40,7 +40,7 @@ def main():
         output_dir=OUTPUT_DIR,
         theme=THEME,
         motion_mode="presenter_click",
-        run_qa=False,
+        run_qa=True,
         open_pptx=False,
         target_slides=TARGET_SLIDES
     )

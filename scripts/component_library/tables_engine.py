@@ -50,7 +50,7 @@ class NativeTablesEngine:
         tr = cell.Shape.TextFrame.TextRange
         tr.Text = str(text).upper()
         tr.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        tr.Font.Size = 11.5
+        tr.Font.Size = 15.0
         tr.Font.Bold = msoTrue
         tr.Font.Color.RGB = hex_to_bgr(fg_color)
         tr.ParagraphFormat.Alignment = align

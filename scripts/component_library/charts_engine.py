@@ -139,7 +139,7 @@ class NativeChartsEngine:
             try:
                 ax = chart.Axes(1)
                 ax.TickLabels.Font.Color = axis_color
-                ax.TickLabels.Font.Size = 10
+                ax.TickLabels.Font.Size = 14.5
                 ax.TickLabels.Font.Name = font_name
             except Exception:
                 pass
@@ -148,7 +148,7 @@ class NativeChartsEngine:
             try:
                 ay = chart.Axes(2)
                 ay.TickLabels.Font.Color = axis_color
-                ay.TickLabels.Font.Size = 9.5
+                ay.TickLabels.Font.Size = 16.0.5
                 ay.TickLabels.Font.Name = font_name
             except Exception:
                 pass
@@ -157,7 +157,7 @@ class NativeChartsEngine:
             try:
                 if chart.HasLegend:
                     chart.Legend.Font.Color = axis_color
-                    chart.Legend.Font.Size = 10
+                    chart.Legend.Font.Size = 14.5
                     chart.Legend.Font.Name = font_name
                     chart.Legend.Format.Fill.Visible = msoFalse
                     chart.Legend.Format.Line.Visible = msoFalse
@@ -293,7 +293,7 @@ class NativeChartsEngine:
         p2 = tf.TextRange.Paragraphs(2)
         p2.Text = center_label
         p2.Font.Name = self._get_token("fonts", "primary", "Segoe UI")
-        p2.Font.Size = 10
+        p2.Font.Size = 14.5
         p2.Font.Color.RGB = hex_to_bgr(self._get_token("colors", "muted", "#CBD5E1"))
         p2.ParagraphFormat.Alignment = ppAlignCenter
         shapes.append(tb)

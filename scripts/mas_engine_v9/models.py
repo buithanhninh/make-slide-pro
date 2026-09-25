@@ -9,6 +9,9 @@ from __future__ import annotations
 from typing import Any, Dict, List, Literal, Optional
 from pydantic import BaseModel, Field
 
+if not hasattr(BaseModel, "model_dump"):
+    BaseModel.model_dump = BaseModel.dict
+
 
 class DefectIssue(BaseModel):
     """Specific flaw detected on a slide with root-cause categorization and action."""
@@ -60,7 +63,7 @@ class MASAuditReport(BaseModel):
 class RemediationDirective(BaseModel):
     """Actionable instruction for the surgical slide re-generator."""
     slide_index: int
-    target_domain: Literal["CONTENT", "MOTION", "LAYOUT", "DATAVIZ"]
+    target_domain: Literal["CONTENT", "MOTION", "LAYOUT", "DATAVIZ", "CONSOLIDATED"]
     root_cause: str
     remediation_action: str
     updated_blueprint: Optional[Dict[str, Any]] = None

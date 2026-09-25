@@ -42,7 +42,7 @@ FILES_TO_PROCESS = [
 
 def main():
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    all_files = sorted([f for f in INPUT_DIR.glob("*.docx") if not f.name.startswith("~$")])
+    all_files = [INPUT_DIR / fname for fname in FILES_TO_PROCESS]
     total_files = len(all_files)
     results = []
     t_start = time.time()
@@ -52,8 +52,18 @@ def main():
     print(f"      Total Documents: {total_files} | Target: {TARGET_SLIDES} slides/deck | Theme: {THEME}")
     print("================================================================================")
 
+    force_rebuild = "--force" in sys.argv or "-f" in sys.argv or True  # Default to True to enforce typography overhaul
+
     for idx, fpath in enumerate(all_files, 1):
         fname = fpath.name
+
+        synced_deck = OUTPUT_DIR / f"{fpath.stem} - {THEME.title()}.pptx"
+        if not force_rebuild and synced_deck.exists():
+            audit_res = audit_deck(synced_deck)
+            if audit_res.get("overall_passed") and audit_res.get("total_slides") == TARGET_SLIDES:
+                print(f"[{idx}/{total_files}] ALREADY CERTIFIED: {synced_deck.name} ({TARGET_SLIDES} slides, 100% PASS)")
+                results.append({"file": fname, "slides": audit_res["total_slides"], "elapsed": 0.0, "status": "SUCCESS", "audit": "CERTIFIED"})
+                continue
 
         print(f"\n[{idx}/{total_files}] STARTING PROCESSING: {fname}")
         t0 = time.time()
@@ -65,7 +75,7 @@ def main():
                 output_dir=OUTPUT_DIR,
                 theme=THEME,
                 motion_mode="presenter_click",
-                run_qa=False,
+                run_qa=True,
                 open_pptx=False,
                 target_slides=TARGET_SLIDES,
             )
@@ -74,6 +84,8 @@ def main():
             
             # Post-render Deep Forensic Audit
             synced_deck = OUTPUT_DIR / f"{fpath.stem} - {THEME.title()}.pptx"
+            if not synced_deck.exists():
+                synced_deck = OUTPUT_DIR / res.get("document", "") / f"{res.get('document', '')}_{THEME.title()}.pptx"
             audit_status = "PASS"
             if synced_deck.exists():
                 print(f"    -> Auditing {synced_deck.name} via Deep Forensic Audit Gate...")

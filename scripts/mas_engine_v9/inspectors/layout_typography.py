@@ -25,6 +25,7 @@ class LayoutTypographyAgent:
         font_sizes: List[float],
         slide_width: float = 960.0,
         slide_height: float = 540.0,
+        total_slides: int = 0,
     ) -> Tuple[float, List[DefectIssue]]:
         defects: List[DefectIssue] = []
         score = 100.0
@@ -47,7 +48,9 @@ class LayoutTypographyAgent:
         area_coverage_ratio = occupied_area / total_canvas_area if total_canvas_area > 0 else 0
 
         # On content slides, area coverage should be balanced (between 25% and 75%)
-        if slide_index > 1 and area_coverage_ratio < 0.20:
+        # Exempt cover (slide 1) and outro/conclusion (total_slides)
+        is_content = (slide_index > 1 and (total_slides <= 0 or slide_index < total_slides))
+        if is_content and area_coverage_ratio < 0.20:
             defects.append(
                 DefectIssue(
                     slide_index=slide_index,
@@ -92,34 +95,35 @@ class LayoutTypographyAgent:
 
         # 3. Typography Hierarchy Check
         if font_sizes:
-            # Exclude tiny footer source text (<10pt if contains docx / nguồn)
+            # Exclude tiny footer source text (<11pt if contains docx / nguồn)
             valid_fonts = [f for f in font_sizes if f > 0]
-            min_font = min(valid_fonts) if valid_fonts else 12.0
-            max_font = max(valid_fonts) if valid_fonts else 24.0
+            min_font = min(valid_fonts) if valid_fonts else 15.0
+            max_font = max(valid_fonts) if valid_fonts else 28.0
 
-            if min_font < 10.5 and slide_index > 1:
+            is_outro = (total_slides > 0 and slide_index == total_slides)
+            if min_font < 14.5 and slide_index > 1 and not is_outro:
                 defects.append(
                     DefectIssue(
                         slide_index=slide_index,
-                        severity="P1",
+                        severity="P0",
                         domain="LAYOUT",
-                        root_cause=f"Illegible typography: body font size {min_font:.1f}pt is below minimum readability threshold (10.5pt).",
-                        remediation_action="Enlarge body typography to 12-14pt bold/regular.",
+                        root_cause=f"Illegible typography: body font size {min_font:.1f}pt is below minimum readability threshold (15.0pt).",
+                        remediation_action="Enlarge body typography to 16-17pt bold/regular.",
                     )
                 )
-                score -= 15.0
+                score -= 30.0
 
-            if max_font < 18.0 and slide_index > 1:
+            if max_font < 24.0 and slide_index > 1:
                 defects.append(
                     DefectIssue(
                         slide_index=slide_index,
-                        severity="P2",
+                        severity="P0",
                         domain="LAYOUT",
-                        root_cause=f"Weak title hierarchy: maximum font size is only {max_font:.1f}pt (<18pt).",
-                        remediation_action="Enforce Assertion Title font size between 22pt and 26pt bold.",
+                        root_cause=f"Weak title hierarchy: assertion title font size is only {max_font:.1f}pt (<24pt).",
+                        remediation_action="Enforce Assertion Title font size between 26pt and 28pt bold.",
                     )
                 )
-                score -= 10.0
+                score -= 20.0
 
         # 4. Loose Shapes / Missing Atomic Grouping Check
         if slide_index > 1:
@@ -141,7 +145,7 @@ class LayoutTypographyAgent:
         return score, defects
 
     def inspect_com_slide(
-        self, slide_index: int, ppt_slide_obj: Any, slide_width: float = 960.0, slide_height: float = 540.0
+        self, slide_index: int, ppt_slide_obj: Any, slide_width: float = 960.0, slide_height: float = 540.0, total_slides: int = 0
     ) -> Tuple[float, List[DefectIssue]]:
         """Inspects live PowerPoint COM slide geometry, group internals, and font sizes."""
         shape_bounds = []
@@ -178,9 +182,18 @@ class LayoutTypographyAgent:
                                 lowest_bottom = c_b
                             if c_item.HasTextFrame and c_item.TextFrame.HasText:
                                 try:
-                                    f_sz = c_item.TextFrame.TextRange.Font.Size
-                                    if f_sz > 0:
-                                        font_sizes.append(float(f_sz))
+                                    tr = c_item.TextFrame.TextRange
+                                    for p_idx in range(1, tr.Paragraphs().Count + 1):
+                                        para = tr.Paragraphs(p_idx)
+                                        p_txt = para.Text.strip()
+                                        if not p_txt or len(p_txt) < 3:
+                                            continue
+                                        # Allow small badge if <= 25 chars and >= 13pt
+                                        p_sz = float(para.Font.Size)
+                                        if len(p_txt) <= 25 and p_sz >= 13.0:
+                                            continue
+                                        if p_sz > 0:
+                                            font_sizes.append(p_sz)
                                 except Exception:
                                     pass
 
@@ -203,12 +216,22 @@ class LayoutTypographyAgent:
                 else:
                     if shp.HasTextFrame and shp.TextFrame.HasText:
                         try:
-                            # If footer text, skip adding to general font_sizes
-                            txt = shp.TextFrame.TextRange.Text.lower()
-                            if "tài liệu đào tạo" not in txt and "nghị quyết" not in txt and "nguồn:" not in txt:
-                                f_sz = shp.TextFrame.TextRange.Font.Size
-                                if f_sz > 0:
-                                    font_sizes.append(float(f_sz))
+                            # Skip footer text and top rail
+                            is_title = ("Anchor_Assertion_Title" in shp.Name or "title" in shp.Name.lower())
+                            is_footer = ("Anchor_Source_Footer" in shp.Name or s_top > 495.0 or "nguồn" in shp.Name.lower())
+                            is_top_rail = (not is_title) and (s_top < 50.0 or "Anchor_Kicker" in shp.Name or "Anchor_Slide_Tracker" in shp.Name or "kicker" in shp.Name.lower() or "tracker" in shp.Name.lower())
+                            if not is_footer and not is_top_rail:
+                                tr = shp.TextFrame.TextRange
+                                for p_idx in range(1, tr.Paragraphs().Count + 1):
+                                    para = tr.Paragraphs(p_idx)
+                                    p_txt = para.Text.strip()
+                                    if not p_txt or len(p_txt) < 3:
+                                        continue
+                                    p_sz = float(para.Font.Size)
+                                    if len(p_txt) <= 25 and p_sz >= 13.0:
+                                        continue
+                                    if p_sz > 0:
+                                        font_sizes.append(p_sz)
                         except Exception:
                             pass
         except Exception as e:
@@ -228,6 +251,7 @@ class LayoutTypographyAgent:
             font_sizes=font_sizes,
             slide_width=slide_width,
             slide_height=slide_height,
+            total_slides=total_slides,
         )
 
         # Merge internal dead space defects
